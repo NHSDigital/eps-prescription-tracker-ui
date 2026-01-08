@@ -273,8 +273,8 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
     expect(container.querySelector('[data-testid="hero-heading"]')).toHaveTextContent("Search for a prescription")
 
-    // Check page title
-    expect(document.title).toBe("Search for a prescription")
+    // Check page title - includes the " - Prescription Tracker" suffix from usePageTitle hook
+    expect(document.title).toBe("Search for a prescription - Prescription Tracker")
   })
 
   it("renders all three tab options", () => {

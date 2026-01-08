@@ -8,8 +8,10 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {useAuth} from "@/context/AuthProvider"
 import {cptAwsRum} from "@/helpers/awsRum"
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 const CookiePolicyPage = () => {
+  usePageTitle(CookieStrings.pageTitle)
   const essentialCookies: Array<Cookie> = CookieStrings.essential
 
   const analyticsCookies: Array<Cookie> = CookieStrings.analytics

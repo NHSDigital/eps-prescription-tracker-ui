@@ -203,42 +203,42 @@ describe("BasicDetailsSearch", () => {
     {
       title: "shows error if last name is missing",
       input: {dobDay: "01", dobMonth: "01", dobYear: "2000"},
-      expectedError: STRINGS.errors.lastNameRequired
+      expectedError: STRINGS.ERRORS.LAST_NAME_REQUIRED
     },
     {
       title: "shows error for long first name",
       input: {firstName: "A".repeat(36), lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: "2000"},
-      expectedError: STRINGS.errors.firstNameTooLong
+      expectedError: STRINGS.ERRORS.FIRST_NAME_TOO_LONG
     },
     {
       title: "shows error for long last name",
       input: {lastName: "B".repeat(36), dobDay: "01", dobMonth: "01", dobYear: "2000"},
-      expectedError: STRINGS.errors.lastNameTooLong
+      expectedError: STRINGS.ERRORS.LAST_NAME_TOO_LONG
     },
     {
       title: "shows error for last name with invalid characters",
       input: {lastName: "Sm!th", dobDay: "01", dobMonth: "01", dobYear: "2000"},
-      expectedError: STRINGS.errors.lastNameInvalidChars
+      expectedError: STRINGS.ERRORS.LAST_NAME_INVALID_CHARS
     },
     {
       title: "shows error for empty DOB",
       input: {lastName: "Smith"},
-      expectedError: STRINGS.errors.dobRequired
+      expectedError: STRINGS.ERRORS.DOB_REQUIRED
     },
     {
       title: "shows error for short year",
       input: {lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: "80"},
-      expectedError: STRINGS.errors.dobYearTooShort
+      expectedError: STRINGS.ERRORS.DOB_YEAR_TOO_SHORT
     },
     {
       title: "shows postcode too short error",
       input: {lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: "2000", postcode: "LS1"},
-      expectedError: STRINGS.errors.postcodeTooShort
+      expectedError: STRINGS.ERRORS.POSTCODE_TOO_SHORT
     },
     {
       title: "shows postcode invalid chars error",
       input: {lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: "2000", postcode: "!!!"},
-      expectedError: STRINGS.errors.postcodeInvalidChars
+      expectedError: STRINGS.ERRORS.POSTCODE_INVALID_CHARS
     }
   ]
 
@@ -253,21 +253,21 @@ describe("BasicDetailsSearch", () => {
 
   describe("DOB validation scenarios", () => {
     const dobCases: Array<[BasicDetailsSearchType, string]> = [
-      [{dobDay: "ab", dobMonth: "ab", dobYear: ""}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "ab", dobMonth: "", dobYear: "ab"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "", dobMonth: "ab", dobYear: "ab"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "ab", dobMonth: "", dobYear: ""}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "", dobMonth: "ab", dobYear: ""}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "", dobMonth: "", dobYear: "ab"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "ab", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "02", dobMonth: "13", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "72", dobMonth: "ab", dobYear: "2020"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "00", dobMonth: "00", dobYear: "0000"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "17", dobMonth: "05", dobYear: "0000000"}, STRINGS.errors.dobInvalidDate],
-      [{dobDay: "", dobMonth: "01", dobYear: "2020"}, STRINGS.errors.dobDayRequired],
-      [{dobDay: "02", dobMonth: "", dobYear: "2020"}, STRINGS.errors.dobMonthRequired],
-      [{dobDay: "02", dobMonth: "01", dobYear: ""}, STRINGS.errors.dobYearRequired],
-      [{dobDay: "02", dobMonth: "01", dobYear: "abc"}, STRINGS.errors.dobNonNumericYear]
+      [{dobDay: "ab", dobMonth: "ab", dobYear: ""}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "ab", dobMonth: "", dobYear: "ab"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "", dobMonth: "ab", dobYear: "ab"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "ab", dobMonth: "", dobYear: ""}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "", dobMonth: "ab", dobYear: ""}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "", dobMonth: "", dobYear: "ab"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "ab", dobMonth: "ab", dobYear: "2020"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "02", dobMonth: "13", dobYear: "2020"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "72", dobMonth: "ab", dobYear: "2020"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "00", dobMonth: "00", dobYear: "0000"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "17", dobMonth: "05", dobYear: "0000000"}, STRINGS.ERRORS.DOB_INVALID_DATE],
+      [{dobDay: "", dobMonth: "01", dobYear: "2020"}, STRINGS.ERRORS.DOB_DAY_REQUIRED],
+      [{dobDay: "02", dobMonth: "", dobYear: "2020"}, STRINGS.ERRORS.DOB_MONTH_REQUIRED],
+      [{dobDay: "02", dobMonth: "01", dobYear: ""}, STRINGS.ERRORS.DOB_YEAR_REQUIRED],
+      [{dobDay: "02", dobMonth: "01", dobYear: "abc"}, STRINGS.ERRORS.DOB_NON_NUMERIC_YEAR]
     ]
 
     it.each(dobCases)(
@@ -305,7 +305,7 @@ describe("BasicDetailsSearch", () => {
     renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "01", dobYear: `${new Date().getFullYear() + 1}`})
     await submitForm()
-    expectInlineAndSummaryError(STRINGS.errors.dobFutureDate)
+    expectInlineAndSummaryError(STRINGS.ERRORS.DOB_FUTURE_DATE)
   })
 
   it("applies error class only to invalid DOB fields", async () => {
@@ -338,7 +338,7 @@ describe("BasicDetailsSearch", () => {
     await fillForm({lastName: "Smith", dobDay: "01", dobMonth: "45", dobYear: "2014"})
     await submitForm()
     const monthInput = screen.getByTestId("dob-month-input")
-    await userEvent.click(screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!)
+    await userEvent.click(screen.getAllByText(STRINGS.ERRORS.DOB_INVALID_DATE).find(el => el.tagName === "A")!)
     expect(document.activeElement).toBe(monthInput)
   })
 
@@ -355,7 +355,7 @@ describe("BasicDetailsSearch", () => {
     renderWithRouter(<BasicDetailsSearch />, defaultSearchState)
     await fillForm({lastName: "Smith", dobDay: "79", dobMonth: "45", dobYear: "2014"})
     await submitForm()
-    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    const link = screen.getAllByText(STRINGS.ERRORS.DOB_INVALID_DATE).find(el => el.tagName === "A")!
     await userEvent.click(link)
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
@@ -367,7 +367,7 @@ describe("BasicDetailsSearch", () => {
     expectFieldHasErrorClass("dob-day-input")
     expectFieldHasErrorClass("dob-month-input")
     expectFieldHasErrorClass("dob-year-input")
-    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    const link = screen.getAllByText(STRINGS.ERRORS.DOB_INVALID_DATE).find(el => el.tagName === "A")!
     await userEvent.click(link)
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
@@ -379,7 +379,7 @@ describe("BasicDetailsSearch", () => {
     expectFieldHasErrorClass("dob-day-input")
     expectFieldHasErrorClass("dob-month-input")
     expectFieldHasErrorClass("dob-year-input")
-    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    const link = screen.getAllByText(STRINGS.ERRORS.DOB_INVALID_DATE).find(el => el.tagName === "A")!
     await userEvent.click(link)
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
@@ -391,7 +391,7 @@ describe("BasicDetailsSearch", () => {
     expectFieldHasErrorClass("dob-day-input")
     expectFieldHasErrorClass("dob-month-input")
     expectFieldHasErrorClass("dob-year-input")
-    const link = screen.getAllByText(STRINGS.errors.dobInvalidDate).find(el => el.tagName === "A")!
+    const link = screen.getAllByText(STRINGS.ERRORS.DOB_INVALID_DATE).find(el => el.tagName === "A")!
     await userEvent.click(link)
     expect(document.activeElement).toBe(screen.getByTestId("dob-day-input"))
   })
