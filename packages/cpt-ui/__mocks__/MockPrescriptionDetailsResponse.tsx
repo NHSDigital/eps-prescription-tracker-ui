@@ -3,18 +3,12 @@ import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
 export const mockPrescriptionDetailsResponse: PrescriptionDetailsResponse = {
   patientDetails: {
     nhsNumber: "123",
-    given: "John",
-    family: "Doe",
-    prefix: "Mr",
-    suffix: "",
+    givenName: ["John"],
+    familyName: "Doe",
     gender: "male",
     dateOfBirth: "1980-01-01",
-    address: {
-      line1: "Some address",
-      line2: "123 Street",
-      city: "City",
-      postcode: "LS11TW"
-    }
+    address: ["Some address", "123 Street", "City"],
+    postcode: "LS11TW"
   },
   prescriptionId: "SUCCESS_ID",
   typeCode: "acute",
