@@ -1,4 +1,4 @@
-.new-header {
+.eps-header {
   background-color: #005eb8;
   min-height: 46px;
   width: 100%;
@@ -18,7 +18,7 @@
   z-index: 9999 !important;
 }
 
-.new-header__content {
+.eps-header__content {
   width: 100%;
   display: flex;
   align-items: center;
@@ -27,7 +27,7 @@
   font-family: Frutiger W01, Arial, Sans-serif;
 }
 
-.new-header__logo-link {
+.eps-header__logo-link {
   text-decoration: none;
   margin-right: auto;
   flex-shrink: 1;
@@ -41,7 +41,7 @@
   &:hover {
     text-decoration: none;
     
-    .new-header__service-name {
+    .eps-header__service-name {
       text-decoration: underline;
     }
     
@@ -74,11 +74,11 @@
       z-index: -1;
     }
     
-    .new-header__service-name {
+    .eps-header__service-name {
       color: #212b32;
     }
     
-    .new-header__logo {
+    .eps-header__logo {
       box-shadow: none;
       
       .nhs-logo__background {
@@ -91,11 +91,11 @@
     }
   }
   
-  .new-header__service-name {
+  .eps-header__service-name {
     text-decoration: none;
   }
   
-  .new-header__logo {
+  .eps-header__logo {
     box-shadow: none;
     flex-shrink: 0;
     width: 3.125rem;
@@ -106,7 +106,7 @@
   }
 }
 
-.new-header__service-name {
+.eps-header__service-name {
   font-size: 16px;
   font-weight: 400;
   margin: 0;
@@ -122,7 +122,7 @@
   }
 }
 
-.new-header__nav {
+.eps-header__nav {
   display: flex;
   width: 100%;
   align-items: right;
@@ -135,7 +135,7 @@
   position: relative;
 }
 
-.new-header__nav-desktop {
+.eps-header__nav-desktop {
   display: flex;
   gap: 4px;
   
@@ -144,7 +144,7 @@
   }
 }
 
-.new-header__nav-mobile {
+.eps-header__nav-mobile {
   display: none;
   position: relative;
   margin-left: auto;
@@ -154,7 +154,7 @@
   }
 }
 
-.new-header__nav-item {
+.eps-header__nav-item {
   position: relative;
   display: flex;
   border-top: none;
@@ -209,7 +209,7 @@
   }
 }
 
-.new-header__menu-toggle {
+.eps-header__menu-toggle {
   position: relative;
   display: flex;
   border-top: none;
@@ -238,7 +238,7 @@
     margin: 0;
   }
 
-  .new-header__menu-icon {
+  .eps-header__menu-icon {
     width: 24px;
     height: 24px;
     transition: transform 0.2s ease;
@@ -246,7 +246,7 @@
   }
 
   &--expanded {
-    .new-header__menu-icon {
+    .eps-header__menu-icon {
       transform: rotate(180deg);
     }
   }
@@ -276,7 +276,7 @@
       text-decoration: none;
     }
     
-    .new-header__menu-icon {
+    .eps-header__menu-icon {
       fill: #212b32;
     }
   }
@@ -287,7 +287,7 @@
   }
 }
 
-.new-header__dropdown {
+.eps-header__dropdown {
   position: absolute;
   top: 100%;
   right: 0;
@@ -306,11 +306,11 @@
   }
 }
 
-.new-header__dropdown--hidden {
+.eps-header__dropdown--hidden {
   display: none !important;
 }
 
-.new-header__dropdown-item {
+.eps-header__dropdown-item {
   display: block;
   background: #005eb8;
   margin: 0;
@@ -358,18 +358,10 @@
   }
 }
 
-.new-header__logo-background {
+.eps-header__logo-background {
   fill: #ffffff;
 }
 
-.new-header__logo-text {
-  fill: #005eb8;
-}
-
-.nhs-logo__background {
-  fill: #ffffff;
-}
-
-.nhs-logo__text {
+.eps-header__logo-text {
   fill: #005eb8;
 }

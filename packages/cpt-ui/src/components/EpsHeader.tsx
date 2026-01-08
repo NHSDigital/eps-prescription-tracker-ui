@@ -3,16 +3,7 @@ import {Link, useNavigate, useLocation} from "react-router-dom"
 import {AuthContext} from "@/context/AuthProvider"
 import {useAuth} from "@/context/AuthProvider"
 import {getHomeLink} from "@/helpers/loginFunctions"
-import {
-  HEADER_FEEDBACK_BUTTON,
-  HEADER_FEEDBACK_TARGET,
-  HEADER_CHANGE_ROLE_BUTTON,
-  HEADER_CHANGE_ROLE_TARGET,
-  HEADER_SELECT_YOUR_ROLE_BUTTON,
-  HEADER_SELECT_YOUR_ROLE_TARGET,
-  HEADER_LOG_OUT_BUTTON,
-  HEADER_SERVICE
-} from "@/constants/ui-strings/HeaderStrings"
+import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
@@ -99,44 +90,44 @@ export default function EpsHeader() {
 
   return (
     <>
-      <header className="new-header">
-        <div className="new-header__content">
+      <header className="eps-header">
+        <div className="eps-header__content">
           <Link
             to={getHomeLink(auth?.isSignedIn || false)}
             onClick={redirectToLogin}
-            className="new-header__logo-link"
+            className="eps-header__logo-link"
             aria-label="Prescription Tracker (Pilot)"
-            aria-labelledby="new-prescription-tracker-header-link"
-            data-testid="new_header_logoLink"
-            id="new-prescription-tracker-header-link"
+            aria-labelledby="eps-prescription-tracker-header-link"
+            data-testid="eps_header_logoLink"
+            id="eps-prescription-tracker-header-link"
           >
             <NhsLogo
-              className="new-header__logo"
+              className="eps-header__logo"
               width="40"
               height="16"
-              ariaLabelledBy="new-prescription-tracker-header-link"
-              titleId="new-nhs-logo_title"
+              ariaLabelledBy="eps-prescription-tracker-header-link"
+              titleId="eps-nhs-logo_title"
               variant="white"
             />
-            <span className="new-header__service-name" data-testid="new_header_serviceName">
-              {HEADER_SERVICE}
+            <span className="eps-header__service-name" data-testid="eps_header_serviceName">
+              {HEADER_STRINGS.SERVICE}
             </span>
           </Link>
 
-          <nav className="new-header__nav" id="new-header-navigation">
+          <nav className="eps-header__nav" id="eps-header-navigation">
             {!isMobileView && (
-              <div className="new-header__nav-desktop">
+              <div className="eps-header__nav-desktop">
                 {shouldShowSelectRole && (
                   <a
                     href="#"
                     onClick={(e: React.MouseEvent) => {
                       e.preventDefault()
-                      navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
+                      navigate(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET)
                     }}
-                    className="new-header__nav-item"
-                    data-testid="new_header_selectYourRoleLink"
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_selectYourRoleLink"
                   >
-                    <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
+                    <span className="text">{HEADER_STRINGS.SELECT_YOUR_ROLE_BUTTON}</span>
                   </a>
                 )}
 
@@ -145,23 +136,23 @@ export default function EpsHeader() {
                     href="#"
                     onClick={(e: React.MouseEvent) => {
                       e.preventDefault()
-                      navigate(HEADER_CHANGE_ROLE_TARGET)
+                      navigate(HEADER_STRINGS.CHANGE_ROLE_TARGET)
                     }}
-                    className="new-header__nav-item"
-                    data-testid="new_header_changeRoleLink"
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_changeRoleLink"
                   >
-                    <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
+                    <span className="text">{HEADER_STRINGS.CHANGE_ROLE_BUTTON}</span>
                   </a>
                 )}
 
                 <a
-                  href={HEADER_FEEDBACK_TARGET}
+                  href={HEADER_STRINGS.FEEDBACK_TARGET}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="new-header__nav-item"
-                  data-testid="new_header_feedbackLink"
+                  className="eps-header__nav-item"
+                  data-testid="eps_header_feedbackLink"
                 >
-                  <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
+                  <span className="text">{HEADER_STRINGS.FEEDBACK_BUTTON}</span>
                 </a>
 
                 {shouldShowLogoutLink && (
@@ -171,10 +162,10 @@ export default function EpsHeader() {
                       handleLogoutClick(e)
                       setIsDropdownOpen(false)
                     }}
-                    className="new-header__nav-item"
-                    data-testid="new_header_logout"
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_logout"
                   >
-                    <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
+                    <span className="text">{HEADER_STRINGS.LOG_OUT_BUTTON}</span>
                   </a>
                 )}
 
@@ -186,8 +177,8 @@ export default function EpsHeader() {
                       navigate(getHomeLink(false))
                       setIsDropdownOpen(false)
                     }}
-                    className="new-header__nav-item"
-                    data-testid="new_header_exit"
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_exit"
                   >
                     <span className="text">Exit</span>
                   </a>
@@ -196,18 +187,18 @@ export default function EpsHeader() {
             )}
 
             {isMobileView && (
-              <div className="new-header__nav-mobile">
+              <div className="eps-header__nav-mobile">
                 <button
-                  className={`new-header__menu-toggle ${
-                    isDropdownOpen ? "new-header__menu-toggle--expanded" : " "
+                  className={`eps-header__menu-toggle ${
+                    isDropdownOpen ? "eps-header__menu-toggle--expanded" : " "
                   }`}
                   onClick={toggleDropdown}
                   aria-label="Toggle navigation menu"
-                  data-testid="new_header_menuToggle"
+                  data-testid="eps_header_menuToggle"
                 >
                   <span className="text">More</span>
                   <svg
-                    className="new-header__menu-icon"
+                    className="eps-header__menu-icon"
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
@@ -223,21 +214,21 @@ export default function EpsHeader() {
                   </svg>
                 </button>
 
-                <div className={`new-header__dropdown ${
-                  isDropdownOpen ? " " : "new-header__dropdown--hidden"
+                <div className={`eps-header__dropdown ${
+                  isDropdownOpen ? " " : "eps-header__dropdown--hidden"
                 }`}>
                   {shouldShowSelectRole && (
                     <a
                       href="#"
                       onClick={(e: React.MouseEvent) => {
                         e.preventDefault()
-                        navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
+                        navigate(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET)
                         setIsDropdownOpen(false)
                       }}
-                      className="new-header__dropdown-item"
-                      data-testid="new_header_selectYourRoleLink_mobile"
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_selectYourRoleLink_mobile"
                     >
-                      <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
+                      <span className="text">{HEADER_STRINGS.SELECT_YOUR_ROLE_BUTTON}</span>
                     </a>
                   )}
 
@@ -246,25 +237,25 @@ export default function EpsHeader() {
                       href="#"
                       onClick={(e: React.MouseEvent) => {
                         e.preventDefault()
-                        navigate(HEADER_CHANGE_ROLE_TARGET)
+                        navigate(HEADER_STRINGS.CHANGE_ROLE_TARGET)
                         setIsDropdownOpen(false)
                       }}
-                      className="new-header__dropdown-item"
-                      data-testid="new_header_changeRoleLink_mobile"
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_changeRoleLink_mobile"
                     >
-                      <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
+                      <span className="text">{HEADER_STRINGS.CHANGE_ROLE_BUTTON}</span>
                     </a>
                   )}
 
                   <a
-                    href={HEADER_FEEDBACK_TARGET}
+                    href={HEADER_STRINGS.FEEDBACK_TARGET}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="new-header__dropdown-item"
-                    data-testid="new_header_feedbackLink_mobile"
+                    className="eps-header__dropdown-item"
+                    data-testid="eps_header_feedbackLink_mobile"
                     onClick={() => setIsDropdownOpen(false)}
                   >
-                    <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
+                    <span className="text">{HEADER_STRINGS.FEEDBACK_BUTTON}</span>
                   </a>
 
                   {shouldShowLogoutLink && (
@@ -274,10 +265,10 @@ export default function EpsHeader() {
                         handleLogoutClick(e)
                         setIsDropdownOpen(false)
                       }}
-                      className="new-header__dropdown-item"
-                      data-testid="new_header_logout_mobile"
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_logout_mobile"
                     >
-                      <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
+                      <span className="text">{HEADER_STRINGS.LOG_OUT_BUTTON}</span>
                     </a>
                   )}
 
@@ -289,8 +280,8 @@ export default function EpsHeader() {
                         navigate(getHomeLink(false))
                         setIsDropdownOpen(false)
                       }}
-                      className="new-header__dropdown-item"
-                      data-testid="new_header_exit_mobile"
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_exit_mobile"
                     >
                       <span className="text">Exit</span>
                     </a>
