@@ -21,3 +21,43 @@
     margin: 0 16px;
     max-width: 960px;
 }
+
+.nhsuk-tab-set {
+    text-decoration: underline;
+}
+
+.tab-divider {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    border-bottom: 1px solid #d8dde0;
+    height: 1px;
+    background-color: white;
+}
+
+.content-wrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    background-color: #F0F4F5;
+}
+
+.content-padding {
+    padding: 2rem;
+}
+
+.prescription-id-aligned-element {
+    max-width: 52%;
+    margin-left: -30px;
+    margin-bottom: 1rem;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

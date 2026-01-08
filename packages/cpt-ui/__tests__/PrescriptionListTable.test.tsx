@@ -431,10 +431,8 @@ describe("PrescriptionsListTable", () => {
       expect(prescriptionButton).toBeInTheDocument()
 
       fireEvent.click(prescriptionButton)
-      expect(mockSetAllSearchParameters).toHaveBeenCalledWith({
-        prescriptionId: "C0C757-A83008-C2D93O",
-        issueNumber: "1"
-      })
+      expect(mockSetPrescriptionId).toHaveBeenCalledWith("C0C757-A83008-C2D93O")
+      expect(mockSetIssueNumber).toHaveBeenCalledWith("1")
     })
 
   })

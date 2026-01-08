@@ -8,7 +8,6 @@ import {PRESCRIPTION_LIST_TABLE_TEXT} from "@/constants/ui-strings/PrescriptionL
 import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
-import {useNavigationContext} from "@/context/NavigationProvider"
 
 export interface PrescriptionsListTableProps {
   textContent: PrescriptionsListStrings;
@@ -26,7 +25,6 @@ const PrescriptionsListTable = ({
   const initialSortConfig: SortConfig = {key: "issueDate", direction: null}
   const currentTabId: TabId = textContent.testid as TabId
   const searchContext = useSearchContext()
-  const navigationContext = useNavigationContext()
 
   // all tabs have own key in state object so each tab can be sorted individually
   const [allSortConfigs, setAllSortConfigs] = React.useState<
@@ -144,32 +142,12 @@ const PrescriptionsListTable = ({
     prescriptionId: string,
     issueNumber: string | undefined
   ) => {
-    const originalSearchParams =
-      navigationContext.getOriginalSearchParameters()
-
-    let relevantParams = {}
-    if (originalSearchParams) {
-      if (originalSearchParams.prescriptionId) {
-        relevantParams =
-          navigationContext.getRelevantSearchParameters("prescriptionId")
-      } else if (originalSearchParams.nhsNumber) {
-        relevantParams =
-          navigationContext.getRelevantSearchParameters("nhsNumber")
-      } else if (
-        originalSearchParams.firstName ||
-        originalSearchParams.lastName
-      ) {
-        relevantParams =
-          navigationContext.getRelevantSearchParameters("basicDetails")
-      }
+    // Only set the prescription-specific parameters needed for the details page
+    // Don't modify or mix with the original search parameters to avoid cross-contamination
+    searchContext.setPrescriptionId(prescriptionId)
+    if (issueNumber) {
+      searchContext.setIssueNumber(issueNumber)
     }
-
-    // only preserve relevant search parameters and add prescription-specific ones
-    searchContext.setAllSearchParameters({
-      ...relevantParams,
-      prescriptionId,
-      issueNumber
-    })
   }
 
   const getSortedItems = () => {
@@ -290,7 +268,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows nowrap-cell"
+          className="prescription-list-table-item"
           data-testid="issue-date-column"
         >
           <div>{formatDateForPrescriptions(row.issueDate)}</div>
@@ -303,7 +281,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows prescription-type-cell"
+          className="prescription-list-table-item"
           data-testid="prescription-type-column"
         >
           <div>
@@ -322,7 +300,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows"
+          className="prescription-list-table-item"
           data-testid="status-code-column"
         >
           <Tag color={getStatusTagColour(row.statusCode)}>
@@ -340,7 +318,7 @@ const PrescriptionsListTable = ({
         <Table.Cell
           key={key}
           headers={headerId}
-          className="eps-prescription-table-rows narrow-cancellation-column"
+          className="prescription-list-table-item"
           data-testid="cancellation-warning-column"
         >
           {showWarning ? (
@@ -369,9 +347,7 @@ const PrescriptionsListTable = ({
           headers={headerId}
           className="eps-prescription-table-rows"
         >
-          <div className="eps-prescription-id">
-            {row.prescriptionId}
-          </div>
+          <span className="prescription-list-table-item">{row.prescriptionId}</span>
           <div>
             {row.isDeleted ? (
               <span
@@ -387,6 +363,8 @@ const PrescriptionsListTable = ({
                 onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
               >
                 {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+                <span className="nhsuk-u-visually-hidden">
+                  {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescriptionScreenReader} {row.prescriptionId}</span>
               </Link>
             )}
           </div>

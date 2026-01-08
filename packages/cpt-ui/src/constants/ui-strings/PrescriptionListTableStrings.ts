@@ -22,6 +22,7 @@ export const PRESCRIPTION_LIST_TABLE_TEXT = {
   button: ", button",
   none: "None",
   viewPrescription: "View prescription",
+  viewPrescriptionScreenReader: "View prescription with id",
   showing: "Showing",
   of: "of",
   sortLabel: "Sort",

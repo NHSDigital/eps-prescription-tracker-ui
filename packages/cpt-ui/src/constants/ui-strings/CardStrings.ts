@@ -1,6 +1,7 @@
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export const SELECT_YOUR_ROLE_PAGE_TEXT = {
+  pageTitle: "Select your role - Prescription Tracker",
   title: "Select your role",
   caption: "Select the role you wish to use to access the service.",
   titleNoAccess: "No access to the Prescription Tracker",
@@ -10,7 +11,8 @@ export const SELECT_YOUR_ROLE_PAGE_TEXT = {
   insetText: {
     visuallyHidden: "Information: ",
     message:
-      "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role."
+      "You are currently logged in at GREENE'S PHARMACY (ODS: FG419) with Health Professional Access Role.",
+    loggedInTemplate: "You are currently logged in at {orgName} (ODS: {odsCode}) with {roleName}."
   },
   confirmButton: {
     text: "Continue to find a prescription",

@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom"
-import {render, screen} from "@testing-library/react"
+import {render} from "@testing-library/react"
+import {screen} from "@testing-library/dom"
 import {useLocation} from "react-router-dom"
 import React from "react"
 import EpsHeader from "@/components/EpsHeader"
@@ -54,8 +55,6 @@ const defaultAuthContext: AuthContextType = {
   invalidSessionCause: undefined,
   rolesWithAccess: [],
   rolesWithoutAccess: [],
-  hasNoAccess: false,
-  hasSingleRoleAccess: false,
   selectedRole: undefined,
   userDetails: undefined,
   isConcurrentSession: false,
@@ -63,6 +62,7 @@ const defaultAuthContext: AuthContextType = {
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),
+  hasSingleRoleAccess: jest.fn().mockReturnValue(false),
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),

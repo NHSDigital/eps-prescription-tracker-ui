@@ -18,8 +18,10 @@ import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
+import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
+import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
 
 // This is passed to the EPS card component.
 export type RolesWithAccessProps = {
@@ -37,6 +39,7 @@ export type RolesWithoutAccessProps = {
 
 interface RoleSelectionPageProps {
   contentText: {
+    pageTitle: string
     title: string
     caption: string
     titleNoAccess: string
@@ -44,6 +47,7 @@ interface RoleSelectionPageProps {
     insetText: {
       visuallyHidden: string
       message: string
+      loggedInTemplate: string
     }
     confirmButton: {
       link: string
@@ -85,12 +89,15 @@ export default function RoleSelectionPage({
 
   const auth = useAuth()
 
-  const [loginInfoMessage, setLoginInfoMessage] = useState<string | null>(null)
   const navigate = useNavigate()
   const redirecting = useRef(false)
 
   const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
   const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
+
+  usePageTitle(auth.rolesWithAccess.length === 0
+    ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle
+    : contentText.pageTitle)
 
   const handleSetSelectedRole = async (
     e: React.MouseEvent | React.KeyboardEvent,
@@ -124,13 +131,13 @@ export default function RoleSelectionPage({
 
   useEffect(() => {
     // Transform roles data for display
-    setRoleCardPropsWithAccess((!auth.hasNoAccess)
-      ? auth.rolesWithAccess.map((role: RoleDetails, index) => ({
+    setRoleCardPropsWithAccess(auth.rolesWithAccess.length === 0
+      ? []
+      : auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
         link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
       }))
-      : []
     )
 
     setRoleCardPropsWithoutAccess(auth.rolesWithoutAccess.map((role, index) => ({
@@ -162,20 +169,10 @@ export default function RoleSelectionPage({
   }, [auth.isSigningIn])
 
   useEffect(() => {
-    if (auth.hasSingleRoleAccess && auth.isSignedIn) {
+    if (auth.hasSingleRoleAccess() && auth.isSignedIn) {
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
   }, [auth.hasSingleRoleAccess, auth.isSignedIn])
-
-  // Set login message when selected role is available
-  useEffect(() => {
-    if (!loginInfoMessage && auth.selectedRole) {
-      setLoginInfoMessage(
-        `You are currently logged in at ${auth.selectedRole.org_name || noOrgName} ` +
-        `(ODS: ${auth.selectedRole.org_code || noODSCode}) with ${auth.selectedRole.role_name || noRoleName}.`
-      )
-    }
-  }, [auth.selectedRole, loginInfoMessage])
 
   // Show spinner while loading or redirecting
   if (redirecting.current) {
@@ -224,33 +221,32 @@ export default function RoleSelectionPage({
       className="nhsuk-main-wrapper"
       data-testid="eps_roleSelectionComponent"
     >
+
       <Container role="contentinfo">
         <Row>
           <Col width="two-thirds">
             <h1 className="nhsuk-heading-xl">
               <span role="text" data-testid="eps_header_selectYourRole">
                 <span className="nhsuk-title">
-                  {auth.hasNoAccess ? titleNoAccess : title}
+                  {auth.rolesWithAccess.length === 0 ? titleNoAccess : title}
                 </span>
                 <span className="nhsuk-caption-l nhsuk-caption--bottom">
                   <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(!auth.hasNoAccess) && caption}
+                  {(auth.rolesWithAccess.length > 0) && caption}
                 </span>
               </span>
             </h1>
 
-            {auth.hasNoAccess && <p>{captionNoAccess}</p>}
+            {auth.rolesWithAccess.length === 0 && <p>{captionNoAccess}</p>}
             {auth.selectedRole && (
               <section aria-label="Login Information">
                 <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                  <span className="nhsuk-u-visually-hidden">
-                    {insetText.visuallyHidden}
-                  </span>
-                  {loginInfoMessage && (
-                    <p
-                      dangerouslySetInnerHTML={{__html: loginInfoMessage}}
-                    ></p>
-                  )}
+                  <p>
+                    {insetText.loggedInTemplate
+                      .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
+                      .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
+                      .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
+                  </p>
                 </InsetText>
                 <Button
                   to={confirmButton.link}
@@ -263,7 +259,7 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(!auth.hasNoAccess) && (roleCardPropsWithAccess.length > 0) && (
+          {(auth.rolesWithAccess.length > 0) && (roleCardPropsWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
                 {roleCardPropsWithAccess

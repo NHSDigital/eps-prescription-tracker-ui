@@ -1,6 +1,6 @@
 
 [project]
-python = "^3.12"
+python = "^3.14"
 name = "eps-clinical-prescription-tracker-ui"
 
 [tool.poetry]
@@ -16,14 +16,14 @@ repository = "https://github.com/NHSDigital/eps-clinical-prescription-tracker-ui
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.14"
 pytest = "^9.0.2"
 requests = "^2.32.3"
 
 [tool.poetry.scripts]
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "^4.1.0"
+pre-commit = "^4.5.1"
 pip-licenses = "^5.0.0"
 
 [build-system]

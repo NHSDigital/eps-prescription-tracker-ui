@@ -18,7 +18,6 @@ import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {signOut} from "@/helpers/logout"
 import NhsLogo from "@/components/icons/NhsLogo"
-import "@/styles/NewHeader.scss"
 
 export default function EpsHeader() {
   const navigate = useNavigate()
@@ -45,7 +44,7 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.LOGOUT &&
       path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
       isSignedIn &&
-      !authContext.hasSingleRoleAccess &&
+      !authContext.hasSingleRoleAccess() &&
       !authContext.selectedRole
     )
 
@@ -55,7 +54,7 @@ export default function EpsHeader() {
       path !== FRONTEND_PATHS.CHANGE_YOUR_ROLE &&
       path !== FRONTEND_PATHS.LOGOUT &&
       isSignedIn &&
-      !authContext.hasSingleRoleAccess &&
+      !authContext.hasSingleRoleAccess() &&
       authContext.selectedRole !== undefined
     )
 
@@ -63,7 +62,7 @@ export default function EpsHeader() {
 
     setShouldShowExitButton(
       (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
-      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.hasNoAccess) ||
+      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.rolesWithAccess.length === 0) ||
       (path === "/notfound")
     )
   }, [location, auth, authContext])
