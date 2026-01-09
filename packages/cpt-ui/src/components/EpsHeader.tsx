@@ -1,47 +1,33 @@
 import React, {useContext, useEffect, useState} from "react"
 import {Link, useNavigate, useLocation} from "react-router-dom"
-import {HeaderWithLogo} from "nhsuk-react-components-extensions"
-import {
-  HEADER_FEEDBACK_BUTTON,
-  HEADER_FEEDBACK_TARGET,
-  HEADER_CHANGE_ROLE_BUTTON,
-  HEADER_CHANGE_ROLE_TARGET,
-  HEADER_SELECT_YOUR_ROLE_BUTTON,
-  HEADER_SELECT_YOUR_ROLE_TARGET,
-  HEADER_LOG_OUT_BUTTON,
-  HEADER_SERVICE
-} from "@/constants/ui-strings/HeaderStrings"
 import {AuthContext} from "@/context/AuthProvider"
 import {useAuth} from "@/context/AuthProvider"
-
+import {getHomeLink} from "@/helpers/loginFunctions"
+import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
-import {getHomeLink} from "@/helpers/loginFunctions"
 import {signOut} from "@/helpers/logout"
+import NhsLogo from "@/components/icons/NhsLogo"
 
-export default function AppHeader() {
+export default function EpsHeader() {
   const navigate = useNavigate()
   const location = useLocation()
-  // TODO: REFACTOR REQUIRED
-  // We should only useAuth instead of useContext...
   const auth = useContext(AuthContext)
   const authContext = useAuth()
 
-  // Individual states to control link visibility:
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
   const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isMobileView, setIsMobileView] = useState(false)
 
-  // Move all conditional logic into one place
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
-
     const path = normalizePath(location.pathname)
 
-    // Show "Select your role" link
     setShouldShowSelectRole(
       path !== FRONTEND_PATHS.SESSION_SELECTION &&
       path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
@@ -53,7 +39,6 @@ export default function AppHeader() {
       !authContext.selectedRole
     )
 
-    // Show "Change role" link (if not single access)
     setShouldShowChangeRole(
       path !== FRONTEND_PATHS.SESSION_SELECTION &&
       path !== FRONTEND_PATHS.SELECT_YOUR_ROLE &&
@@ -64,10 +49,8 @@ export default function AppHeader() {
       authContext.selectedRole !== undefined
     )
 
-    // Show the "Logout" link only if the user is signed in
     setShouldShowLogoutLink(Boolean(auth?.isSignedIn))
 
-    // Show the "Exit" button under these conditions
     setShouldShowExitButton(
       (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
       (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.rolesWithAccess.length === 0) ||
@@ -75,13 +58,23 @@ export default function AppHeader() {
     )
   }, [location, auth, authContext])
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.matchMedia("(max-width: 768px)").matches
+      setIsMobileView(mobile)
+    }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
   const redirectToLogin = async (e: React.MouseEvent | React.KeyboardEvent) => {
-    // Naked href don't respect the router, so this overrides that
     e.preventDefault()
     navigate(getHomeLink(auth?.isSignedIn || false))
   }
 
-  const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault()
     setShowLogoutModal(true)
   }
@@ -91,104 +84,214 @@ export default function AppHeader() {
     signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
 
-  // Trigger resize event on mobile to make the header library recalculate overflow
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 900
-    if (isMobile) {
-      const timer = setTimeout(() => {
-        window.dispatchEvent(new Event("resize"))
-      }, 50)
-
-      return () => clearTimeout(timer)
-    }
-  }, [])
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen)
+  }
 
   return (
     <>
-      <HeaderWithLogo>
-        <Link
-          to={getHomeLink(auth?.isSignedIn || false)}
-          onClick={redirectToLogin}
-          className="combined-logo-and-service-name"
-          style={{display: "flex", alignItems: "center"}}
-          data-testid="eps_header_logoLink"
-          id="prescription-tracker-header-link"
-        >
-          <HeaderWithLogo.Logo
+      <header className="eps-header">
+        <div className="eps-header__content">
+          <Link
+            to={getHomeLink(auth?.isSignedIn || false)}
+            onClick={redirectToLogin}
+            className="eps-header__logo-link"
             aria-label="Prescription Tracker (Pilot)"
-            aria-labelledby="prescription-tracker-header-link"
-          />
-          <HeaderWithLogo.ServiceName
-            data-testid="eps_header_serviceName">
-            {HEADER_SERVICE}
-          </HeaderWithLogo.ServiceName>
-        </Link>
-        <HeaderWithLogo.Nav id="header-navigation">
-          {shouldShowSelectRole && (
-            <HeaderWithLogo.NavItem
-              as="a"
-              href="#"
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault()
-                navigate(HEADER_SELECT_YOUR_ROLE_TARGET)
-              }}
-              data-testid="eps_header_selectYourRoleLink"
-            >
-              <span className="text">{HEADER_SELECT_YOUR_ROLE_BUTTON}</span>
-            </HeaderWithLogo.NavItem>
-          )}
-
-          {shouldShowChangeRole && (
-            <HeaderWithLogo.NavItem
-              as="a"
-              href="#"
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault()
-                navigate(HEADER_CHANGE_ROLE_TARGET)
-              }}
-              data-testid="eps_header_changeRoleLink"
-            >
-              <span className="text">{HEADER_CHANGE_ROLE_BUTTON}</span>
-            </HeaderWithLogo.NavItem>
-          )}
-
-          <HeaderWithLogo.NavItem
-            href={HEADER_FEEDBACK_TARGET}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="eps_header_feedbackLink"
+            aria-labelledby="eps-prescription-tracker-header-link"
+            data-testid="eps_header_logoLink"
+            id="eps-prescription-tracker-header-link"
           >
-            <span className="text">{HEADER_FEEDBACK_BUTTON}</span>
-          </HeaderWithLogo.NavItem>
+            <NhsLogo
+              className="eps-header__logo"
+              width="40"
+              height="16"
+              ariaLabelledBy="eps-prescription-tracker-header-link"
+              titleId="eps-nhs-logo_title"
+              variant="white"
+            />
+            <span className="eps-header__service-name" data-testid="eps_header_serviceName">
+              {HEADER_STRINGS.SERVICE}
+            </span>
+          </Link>
 
-          {shouldShowLogoutLink && (
-            <HeaderWithLogo.NavItem
-              as="a"
-              href="#"
-              onClick={handleLogoutClick}
-              data-testid="eps_header_logout"
-            >
-              <span className="text">{HEADER_LOG_OUT_BUTTON}</span>
-            </HeaderWithLogo.NavItem>
-          )}
+          <nav className="eps-header__nav" id="eps-header-navigation">
+            {!isMobileView && (
+              <div className="eps-header__nav-desktop">
+                {shouldShowSelectRole && (
+                  <a
+                    href="#"
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault()
+                      navigate(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET)
+                    }}
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_selectYourRoleLink"
+                  >
+                    <span className="text">{HEADER_STRINGS.SELECT_YOUR_ROLE_BUTTON}</span>
+                  </a>
+                )}
 
-          {shouldShowExitButton && (
-            <HeaderWithLogo.NavItem
-              as="a"
-              href="#"
-              onClick={(e: React.MouseEvent) => {
-                e.preventDefault()
-                navigate(getHomeLink(false))
-              }}
-              data-testid="eps_header_exit"
-            >
-              <span className="text">Exit</span>
-            </HeaderWithLogo.NavItem>
-          )}
+                {shouldShowChangeRole && (
+                  <a
+                    href="#"
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault()
+                      navigate(HEADER_STRINGS.CHANGE_ROLE_TARGET)
+                    }}
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_changeRoleLink"
+                  >
+                    <span className="text">{HEADER_STRINGS.CHANGE_ROLE_BUTTON}</span>
+                  </a>
+                )}
 
-          <HeaderWithLogo.NavDropdownMenu dropdownText="More" />
-        </HeaderWithLogo.Nav>
-      </HeaderWithLogo>
+                <a
+                  href={HEADER_STRINGS.FEEDBACK_TARGET}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="eps-header__nav-item"
+                  data-testid="eps_header_feedbackLink"
+                >
+                  <span className="text">{HEADER_STRINGS.FEEDBACK_BUTTON}</span>
+                </a>
+
+                {shouldShowLogoutLink && (
+                  <a
+                    href="#"
+                    onClick={(e: React.MouseEvent) => {
+                      handleLogoutClick(e)
+                      setIsDropdownOpen(false)
+                    }}
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_logout"
+                  >
+                    <span className="text">{HEADER_STRINGS.LOG_OUT_BUTTON}</span>
+                  </a>
+                )}
+
+                {shouldShowExitButton && (
+                  <a
+                    href="#"
+                    onClick={(e: React.MouseEvent) => {
+                      e.preventDefault()
+                      navigate(getHomeLink(false))
+                      setIsDropdownOpen(false)
+                    }}
+                    className="eps-header__nav-item"
+                    data-testid="eps_header_exit"
+                  >
+                    <span className="text">Exit</span>
+                  </a>
+                )}
+              </div>
+            )}
+
+            {isMobileView && (
+              <div className="eps-header__nav-mobile">
+                <button
+                  className={`eps-header__menu-toggle ${
+                    isDropdownOpen ? "eps-header__menu-toggle--expanded" : " "
+                  }`}
+                  onClick={toggleDropdown}
+                  aria-label="Toggle navigation menu"
+                  data-testid="eps_header_menuToggle"
+                >
+                  <span className="text">More</span>
+                  <svg
+                    className="eps-header__menu-icon"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polyline
+                      points="9,11 12,14 15,11"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      fill="none"
+                    />
+                  </svg>
+                </button>
+
+                <div className={`eps-header__dropdown ${
+                  isDropdownOpen ? " " : "eps-header__dropdown--hidden"
+                }`}>
+                  {shouldShowSelectRole && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault()
+                        navigate(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_selectYourRoleLink_mobile"
+                    >
+                      <span className="text">{HEADER_STRINGS.SELECT_YOUR_ROLE_BUTTON}</span>
+                    </a>
+                  )}
+
+                  {shouldShowChangeRole && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault()
+                        navigate(HEADER_STRINGS.CHANGE_ROLE_TARGET)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_changeRoleLink_mobile"
+                    >
+                      <span className="text">{HEADER_STRINGS.CHANGE_ROLE_BUTTON}</span>
+                    </a>
+                  )}
+
+                  <a
+                    href={HEADER_STRINGS.FEEDBACK_TARGET}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="eps-header__dropdown-item"
+                    data-testid="eps_header_feedbackLink_mobile"
+                    onClick={() => setIsDropdownOpen(false)}
+                  >
+                    <span className="text">{HEADER_STRINGS.FEEDBACK_BUTTON}</span>
+                  </a>
+
+                  {shouldShowLogoutLink && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        handleLogoutClick(e)
+                        setIsDropdownOpen(false)
+                      }}
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_logout_mobile"
+                    >
+                      <span className="text">{HEADER_STRINGS.LOG_OUT_BUTTON}</span>
+                    </a>
+                  )}
+
+                  {shouldShowExitButton && (
+                    <a
+                      href="#"
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault()
+                        navigate(getHomeLink(false))
+                        setIsDropdownOpen(false)
+                      }}
+                      className="eps-header__dropdown-item"
+                      data-testid="eps_header_exit_mobile"
+                    >
+                      <span className="text">Exit</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+          </nav>
+        </div>
+      </header>
 
       <EpsLogoutModal
         isOpen={showLogoutModal}

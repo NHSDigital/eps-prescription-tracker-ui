@@ -47,7 +47,7 @@ export default function YourSelectedRolePage() {
   } = YOUR_SELECTED_ROLE_STRINGS
 
   return (
-    <main className="nhsuk-main-wrapper">
+    <main className="nhsuk-main-wrapper" id="main-content">
       <Container>
         <Row>
           <Col width="full">
