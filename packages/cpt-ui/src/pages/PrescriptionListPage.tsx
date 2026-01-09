@@ -28,7 +28,7 @@ import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
 
 export default function PrescriptionListPage() {
-  const {setPatientDetails} = usePatientDetails()
+  const {setPatientDetails, setPatientFallback} = usePatientDetails()
   const searchContext = useSearchContext()
 
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -88,6 +88,7 @@ export default function PrescriptionListPage() {
             searchResults
           )
           setPatientDetails(searchResults.patient)
+          setPatientFallback(searchResults.patientFallback)
           setShowNotFound(true)
           setLoading(false)
           return
@@ -97,6 +98,7 @@ export default function PrescriptionListPage() {
         setFuturePrescriptions(searchResults.futurePrescriptions)
         setPastPrescriptions(searchResults.pastPrescriptions)
         setPatientDetails(searchResults.patient)
+        setPatientFallback(searchResults.patientFallback)
         setPrescriptionCount(
           searchResults.pastPrescriptions.length +
           searchResults.futurePrescriptions.length +
