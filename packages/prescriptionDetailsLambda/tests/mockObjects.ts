@@ -7,6 +7,7 @@ import {
   ExtensionWithNested,
   DoHSData
 } from "../src/utils/types"
+import {Patient} from "fhir/r4"
 
 export const mockAPIGatewayProxyEvent = {
   httpMethod: "POST",
@@ -237,6 +238,7 @@ export const mockMergedResponse: PrescriptionDetailsResponse = {
     address: ["123 Main St", "CityName", "Country"],
     postcode: "12345"
   },
+  patientFallback: true,
   prescriptionId: "RX-123456",
   typeCode: "acute",
   statusCode: "active",

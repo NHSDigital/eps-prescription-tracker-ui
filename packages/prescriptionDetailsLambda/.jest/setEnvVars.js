@@ -3,6 +3,7 @@ process.env.apigeeHost = "https://dummyApigee"
 process.env.apigeeCIS2TokenEndpoint = `${process.env.apigeeHost}/cis2_token`
 process.env.apigeeMockTokenEndpoint = `${process.env.apigeeHost}/mock_token`
 process.env.apigeePrescriptionsEndpoint = `${process.env.apigeeHost}/prescriptions`
+process.env.apigeePersonalDemographicsEndpoint = `${process.env.apigeeHost}/Patient`
 
 process.env.TokenMappingTableName = "dummyTable"
 process.env.jwtPrivateKeyArn = "dummy_jwtPrivateKeyArn"
