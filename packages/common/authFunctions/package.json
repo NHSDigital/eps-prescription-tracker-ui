@@ -16,7 +16,7 @@
     "@aws-sdk/client-dynamodb": "^3.956.0",
     "@vitest/coverage-v8": "^1.6.1",
     "axios": "^1.13.2",
-    "mock-jwks": "3.2.2",
+    "mock-jwks": "^3.3.5",
     "vitest": "^1.6.1"
   },
   "dependencies": {
