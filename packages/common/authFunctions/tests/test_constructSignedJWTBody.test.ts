@@ -1,17 +1,15 @@
-import {jest} from "@jest/globals"
+import {
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 import jwt from "jsonwebtoken"
 import {Logger} from "@aws-lambda-powertools/logger"
 
-const mockGetTokenMapping = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  return {
-    getTokenMapping: mockGetTokenMapping
-  }
-})
-
 // mock jwt.sign before importing constructSignedJWTBody
-const sign = jest.spyOn(jwt, "sign")
+const sign = vi.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
 const {constructSignedJWTBody} = await import("../src/apigee")

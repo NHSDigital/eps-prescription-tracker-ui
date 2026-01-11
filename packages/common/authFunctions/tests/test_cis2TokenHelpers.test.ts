@@ -1,20 +1,18 @@
-import {jest} from "@jest/globals"
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 import {APIGatewayProxyEvent} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import jwksClient from "jwks-rsa"
 import jwt from "jsonwebtoken"
 import createJWKSMock from "mock-jwks"
-
-const mockUpdateTokenMapping = jest.fn()
-const mockGetTokenMapping = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-
-  return {
-    updateTokenMapping: mockUpdateTokenMapping,
-    getTokenMapping: mockGetTokenMapping
-  }
-})
 
 const {getSigningKey,
   verifyIdToken} = await import("../src/cis2")
@@ -39,7 +37,7 @@ afterAll(() => {
 })
 
 beforeEach(() => {
-  jest.restoreAllMocks()
+  vi.restoreAllMocks()
 })
 
 interface TokenPayload {
@@ -87,7 +85,7 @@ describe("getSigningKey", () => {
   })
 
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   // it("should return the signing key when key is found", async () => {
@@ -139,13 +137,13 @@ describe("getUsernameFromEvent", () => {
 
 describe("verifyIdToken", () => {
   beforeAll(() => {
-    jest.resetAllMocks()
+    vi.resetAllMocks()
   })
   it("should verify a valid ID token", async () => {
     const payload = createPayload()
     const token = createToken(payload)
 
-    jest.spyOn(jwt, "verify").mockImplementation(() => payload)
+    vi.spyOn(jwt, "verify").mockImplementation(() => payload)
 
     await expect(verifyIdToken(token, logger)).resolves.toMatchObject(expect.objectContaining(
       {
@@ -168,7 +166,7 @@ describe("verifyIdToken", () => {
     const payload = createPayload()
     const token = createToken(payload)
 
-    jest.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
+    vi.spyOn(jwt, "decode").mockReturnValueOnce({header: {}})
 
     await expect(verifyIdToken(token, logger)).rejects.toThrow("Invalid token - no KID present")
   })
@@ -177,7 +175,7 @@ describe("verifyIdToken", () => {
     const payload = createPayload()
     const token = createToken(payload)
 
-    jest.spyOn(jwt, "verify").mockImplementation(() => {
+    vi.spyOn(jwt, "verify").mockImplementation(() => {
       throw new Error("Invalid signature")
     })
 
@@ -217,7 +215,7 @@ describe("verifyIdToken", () => {
   it("should throw an error when ACR claim is invalid", async () => {
     const payload = createPayload({acr: "INVALID_ACR"})
     const token = createToken(payload)
-    jest.spyOn(jwt, "verify").mockImplementation(() => payload)
+    vi.spyOn(jwt, "verify").mockImplementation(() => payload)
 
     await expect(verifyIdToken(token, logger)).rejects.toThrow(
       "Invalid ACR claim in ID token"
