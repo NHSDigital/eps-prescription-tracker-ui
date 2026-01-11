@@ -31,7 +31,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",
     "@vitest/coverage-v8": "^1.6.1",
-    "mock-jwks": "3.2.2",
+    "mock-jwks": "^3.3.5",
     "nock": "^14.0.10",
     "vitest": "^1.6.1"
   }
