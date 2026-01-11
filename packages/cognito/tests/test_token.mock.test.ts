@@ -1,15 +1,35 @@
 /* eslint-disable no-console */
 import {
-  expect,
+  afterEach,
+  beforeEach,
   describe,
+  expect,
   it,
-  jest
-} from "@jest/globals"
+  vi
+} from "vitest"
 
 import createJWKSMock from "mock-jwks"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+
+const {
+  mockInitializeOidcConfig,
+  mockGetSecret,
+  mockInsertTokenMapping,
+  mockTryGetTokenMapping,
+  mockFetchUserInfo,
+  mockExchangeTokenForApigeeAccessToken
+} = vi.hoisted(() => {
+  return {
+    mockInitializeOidcConfig: vi.fn(),
+    mockGetSecret: vi.fn(),
+    mockInsertTokenMapping: vi.fn().mockName("mockInsertTokenMapping"),
+    mockTryGetTokenMapping: vi.fn().mockName("mockTryGetTokenMapping"),
+    mockFetchUserInfo: vi.fn().mockName("mockFetchUserInfo"),
+    mockExchangeTokenForApigeeAccessToken: vi.fn().mockName("mockExchangeTokenForApigeeAccessToken")
+  }
+})
 
 process.env.MOCK_USER_INFO_ENDPOINT = "https://dummy_mock_auth.com/userinfo"
 process.env.MOCK_OIDC_ISSUER = "https://dummy_mock_auth.com"
@@ -43,9 +63,6 @@ const dummyContext = {
 
 const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
-const mockInitializeOidcConfig = jest.fn()
-const mockGetSecret = jest.fn()
-
 const {
   privateKey
 } = generateKeyPairSync("rsa", {
@@ -60,19 +77,14 @@ const {
   }
 })
 
-const mockInsertTokenMapping = jest.fn().mockName("mockInsertTokenMapping")
-const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping")
-
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+vi.mock("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
 
-const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
-const mockExchangeTokenForApigeeAccessToken = jest.fn().mockName("mockExchangeTokenForApigeeAccessToken")
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+vi.mock("@cpt-ui-common/authFunctions", () => {
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
   // this is outside functions so it can be re-used
@@ -126,7 +138,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
   const getSecret = mockGetSecret.mockImplementation(async () => {
     return privateKey
   })
@@ -142,8 +154,8 @@ describe("token mock handler", () => {
   const jwks = createJWKSMock("https://dummy_mock_auth.com/")
 
   beforeEach(() => {
-    jest.resetModules()
-    jest.clearAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
     jwks.start()
   })
 

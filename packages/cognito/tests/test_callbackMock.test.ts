@@ -1,5 +1,12 @@
-import {jest} from "@jest/globals"
 import {APIGatewayProxyEvent} from "aws-lambda"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  test,
+  vi
+} from "vitest"
 
 // Set required environment variables before importing the handler.
 process.env.COGNITO_DOMAIN = "cognito.example.com"
@@ -11,7 +18,7 @@ const {handler} = await import("../src/callbackMock")
 
 describe("Callback mock handler", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should redirect to pull request with correct parameters", async () => {
@@ -64,7 +71,7 @@ describe("Callback mock handler", () => {
 
   test("should handle state not being a JSON object", async () => {
     const state = "non_json_state"
-    const loggerWarnSpy = jest.spyOn(Logger.prototype, "warn")
+    const loggerWarnSpy = vi.spyOn(Logger.prototype, "warn")
     const event: APIGatewayProxyEvent = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {

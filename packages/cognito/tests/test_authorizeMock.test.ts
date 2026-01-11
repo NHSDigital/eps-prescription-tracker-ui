@@ -1,4 +1,10 @@
-import {jest} from "@jest/globals"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 // Set environment variables before importing the handler.
 process.env.IDP_AUTHORIZE_PATH = "https://example.com/authorize"
@@ -13,7 +19,7 @@ const {handler} = await import("../src/authorizeMock")
 
 describe("authorize mock handler", () => {
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it("should redirect to CIS2 with correct parameters", async () => {

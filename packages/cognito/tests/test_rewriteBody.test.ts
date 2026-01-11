@@ -1,11 +1,15 @@
-import {jest} from "@jest/globals"
-
 import jwt from "jsonwebtoken"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {ParsedUrlQuery} from "querystring"
+import {
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 // mock jwt.sign before importing rewriteRequestBody
-const sign = jest.spyOn(jwt, "sign")
+const sign = vi.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
 
 const {rewriteRequestBody} = await import("../src/helpers")
