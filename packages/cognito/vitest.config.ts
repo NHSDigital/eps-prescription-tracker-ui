@@ -6,7 +6,6 @@ const MOCK_OIDC_HOST = "https://dummy_mock_auth.com"
 
 const viteConfig = defineConfig({
   test: {
-    include: ["**/*.test.ts"],
     env: {
       TokenMappingTableName: "dummyTable",
       jwtPrivateKeyArn: "dummy_jwtPrivateKeyArn",

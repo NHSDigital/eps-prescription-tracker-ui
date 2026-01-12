@@ -7,7 +7,6 @@ const MOCK_OIDC_HOST = "https://dummy_mock_auth.com"
 
 const viteConfig = defineConfig({
   test: {
-    dir: "./tests",
     env: {
       apigeeHost: apigeeHost,
       apigeeCIS2TokenEndpoint: `${apigeeHost}/cis2_token`,
