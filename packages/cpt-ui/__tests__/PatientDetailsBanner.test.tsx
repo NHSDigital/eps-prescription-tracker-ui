@@ -48,17 +48,18 @@ describe("PatientDetailsBanner", () => {
     // Check that the patient's name is displayed correctly.
     expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent("William WOLDERTON")
     // Check that the gender is correctly displayed and capitalized (from "male" to "Male")
-    expect(
-      screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(`${STRINGS.GENDER}: Male`)
+    expect(screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(`${STRINGS.GENDER}:`)
+    expect(screen.getByTestId("patient-details-banner-gender-value")).toHaveTextContent("Male")
     // Check that NHS Number is correct displayed and formatted
-    expect(
-      screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(`${STRINGS.NHS_NUMBER}: 590 000 9890`)
+    expect(screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(`${STRINGS.NHS_NUMBER}:`)
+    expect(screen.getByTestId("patient-details-banner-nhsNumber-value")).toHaveTextContent("590 000 9890")
     // Check that dob is correct displayed and formatted
-    expect(
-      screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(`${STRINGS.DOB}: 1 Nov 1988`)
+    expect(screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(`${STRINGS.DOB}:`)
+    expect(screen.getByTestId("patient-details-banner-dob-value")).toHaveTextContent("1 Nov 1988")
     // Check that the address is correct displayed
-    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: 55 Oak Street, OAK LANE, Leeds, LS1 1XX`)
+    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(`${STRINGS.ADDRESS}:`)
+    expect(screen.getByTestId("patient-details-banner-address-value")).toHaveTextContent(
+      "55 Oak Street, OAK LANE, Leeds, LS1 1XX")
 
     // // Verify that the missing data message is not rendered
     expect(screen.queryByTestId("patient-detail-banner-incomplete")).not.toBeInTheDocument()
@@ -80,14 +81,10 @@ describe("PatientDetailsBanner", () => {
 
     // Minimum details returned is just NHS Number
     expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NOT_AVAILABLE)
-    expect(screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(
-      `${STRINGS.GENDER}: ${STRINGS.NOT_AVAILABLE}`)
-    expect(screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(
-      `${STRINGS.NHS_NUMBER}: 590 000 9890`)
-    expect(screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(
-      `${STRINGS.DOB}: ${STRINGS.NOT_AVAILABLE}`)
-    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: ${STRINGS.NOT_AVAILABLE}`)
+    expect(screen.getByTestId("patient-details-banner-gender-value")).toHaveTextContent(`${STRINGS.NOT_AVAILABLE}`)
+    expect(screen.getByTestId("patient-details-banner-nhsNumber-value")).toHaveTextContent("590 000 9890")
+    expect(screen.getByTestId("patient-details-banner-dob-value")).toHaveTextContent(`${STRINGS.NOT_AVAILABLE}`)
+    expect(screen.getByTestId("patient-details-banner-address-value")).toHaveTextContent(`${STRINGS.NOT_AVAILABLE}`)
 
     // The missing data message should be rendered.
     expect(screen.getByTestId("patient-detail-banner-incomplete")).toBeInTheDocument()
@@ -139,14 +136,10 @@ describe("PatientDetailsBanner", () => {
     })
 
     expect(screen.getByTestId("patient-details-banner-name")).toHaveTextContent(STRINGS.NAME_NOT_ON_RECORD)
-    expect(screen.getByTestId("patient-details-banner-gender")).toHaveTextContent(
-      `${STRINGS.GENDER}: ${STRINGS.NOT_ON_RECORD}`)
-    expect(screen.getByTestId("patient-details-banner-nhsNumber")).toHaveTextContent(
-      `${STRINGS.NHS_NUMBER}: 590 000 9890`)
-    expect(screen.getByTestId("patient-details-banner-dob")).toHaveTextContent(
-      `${STRINGS.DOB}: ${STRINGS.NOT_ON_RECORD}`)
-    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: ${STRINGS.NOT_ON_RECORD}`)
+    expect(screen.getByTestId("patient-details-banner-gender-value")).toHaveTextContent(`${STRINGS.NOT_ON_RECORD}`)
+    expect(screen.getByTestId("patient-details-banner-nhsNumber-value")).toHaveTextContent("590 000 9890")
+    expect(screen.getByTestId("patient-details-banner-dob-value")).toHaveTextContent(`${STRINGS.NOT_ON_RECORD}`)
+    expect(screen.getByTestId("patient-details-banner-address-value")).toHaveTextContent(`${STRINGS.NOT_ON_RECORD}`)
 
     // // Verify that the missing data message is not rendered
     expect(screen.queryByTestId("patient-detail-banner-incomplete")).not.toBeInTheDocument()
@@ -242,8 +235,7 @@ describe("PatientDetailsBanner", () => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: LS1 1XX`)
+    expect(screen.getByTestId("patient-details-banner-address-value")).toHaveTextContent("LS1 1XX")
   })
 
   it("renders patient details correctly when postcode is missing from the pds record", async () => {
@@ -265,8 +257,8 @@ describe("PatientDetailsBanner", () => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: 55 Oak Street, OAK LANE, Leeds`)
+    expect(
+      screen.getByTestId("patient-details-banner-address-value")).toHaveTextContent("55 Oak Street, OAK LANE, Leeds")
   })
 
   it("renders patient details correctly when address is temporary", async () => {
@@ -289,7 +281,7 @@ describe("PatientDetailsBanner", () => {
       expect(screen.getByTestId("patient-details-banner")).toBeInTheDocument()
     })
 
-    expect(screen.getByTestId("patient-details-banner-address")).toHaveTextContent(
-      `${STRINGS.ADDRESS}: 55 Oak Street, OAK LANE, Leeds, LS1 1XX${STRINGS.TEMPORARY}`)
+    expect(screen.getByTestId("patient-details-banner-address-value")).toHaveTextContent(
+      `55 Oak Street, OAK LANE, Leeds, LS1 1XX${STRINGS.TEMPORARY}`)
   })
 })

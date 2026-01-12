@@ -7,11 +7,15 @@ import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
 import {signOut} from "@/helpers/logout"
 import {useState} from "react"
+import {usePageTitle} from "@/hooks/usePageTitle"
+import {SESSION_SELECTION_PAGE_STRINGS} from "@/constants/ui-strings/SessionSelectionPage"
 
 export default function SessionSelectionPage() {
   const [startNewSessionClicked, setStartNewSessionClicked] = useState<boolean>(false)
   const navigate = useNavigate()
   const auth = useAuth()
+
+  usePageTitle(SESSION_SELECTION_PAGE_STRINGS.pageTitle)
 
   const logout = async () => {
     signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
@@ -44,11 +48,11 @@ export default function SessionSelectionPage() {
       <Container>
         <Row>
           <Col width="full">
-            <h1 data-testid="title">You are already logged in to the Prescription Tracker</h1>
+            <h1 data-testid="title">{SESSION_SELECTION_PAGE_STRINGS.headerText}</h1>
             <p data-testid="description">
-              There is a session using these login details in another browser, window or device.</p>
+              {SESSION_SELECTION_PAGE_STRINGS.bodyText1}</p>
             <p data-testid="instructions">
-              You can continue to start a new session in this window, but this will end the other session.</p>
+              {SESSION_SELECTION_PAGE_STRINGS.bodyText2}</p>
           </Col>
         </Row>
 
@@ -56,9 +60,9 @@ export default function SessionSelectionPage() {
           <Col width="full">
             <Button id="create-a-new-session" style={{margin: "8px"}} className="nhsuk-button"
               onClick={setSession} disabled={startNewSessionClicked} data-testid="new-session-button">
-                Start a new session</Button>
+              {SESSION_SELECTION_PAGE_STRINGS.buttonText1}</Button>
             <Button id="close-this-window" style={{margin: "8px"}} className="nhsuk-button nhsuk-button--secondary"
-              onClick={logout} data-testid="close-window-button">Close this window</Button>
+              onClick={logout} data-testid="close-window-button">{SESSION_SELECTION_PAGE_STRINGS.buttonText2}</Button>
           </Col>
         </Row>
       </Container>

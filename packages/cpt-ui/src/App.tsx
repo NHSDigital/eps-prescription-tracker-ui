@@ -25,7 +25,7 @@ import SessionSelectionPage from "./pages/SessionSelection"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 import SessionLoggedOutPage from "./pages/SessionLoggedOut"
-import {HEADER_SKIP_TO_MAIN_CONTENT} from "@/constants/ui-strings/HeaderStrings"
+import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 
 function AppContent() {
   const location = useLocation()
@@ -47,7 +47,7 @@ function AppContent() {
         className="nhsuk-skip-link"
         data-testid="eps_header_skipLink"
       >
-        {HEADER_SKIP_TO_MAIN_CONTENT}
+        {HEADER_STRINGS.SKIP_TO_MAIN_CONTENT}
       </a>
       <PrescriptionInformationProvider>
         <SearchProvider>

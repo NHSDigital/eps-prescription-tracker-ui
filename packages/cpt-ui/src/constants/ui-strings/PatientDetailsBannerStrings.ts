@@ -7,5 +7,6 @@ export const STRINGS = {
   DOB: "Date of birth",
   ADDRESS: "Address",
   MISSING_DATA: "Some information is not available. Refresh the page or try again later.",
-  TEMPORARY: " (temporary)"
+  TEMPORARY: " (temporary)",
+  PATIENT_DETAILS: "Patient Details"
 }

@@ -1,7 +1,7 @@
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export const PRESCRIPTION_LIST_PAGE_STRINGS = {
-  PAGE_TITLE: "Prescriptions list",
+  pageTitle: "Prescriptions list - Prescription Tracker",
   HEADING: "Prescriptions list",
   LOADING_MESSAGE: "Loading search results",
   GO_BACK_LINK_TEXT: "Back",

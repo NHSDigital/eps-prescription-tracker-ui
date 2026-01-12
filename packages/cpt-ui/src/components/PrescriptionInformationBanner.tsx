@@ -34,6 +34,7 @@ const PrescriptionInformationBanner: React.FC = () => {
 
   return (
     <div className="prescription-information-banner" data-testid="prescription-information-banner">
+      <h2 className="nhsuk-u-visually-hidden">{STRINGS.PRESCRIPTION_INFORMATION}</h2>
       <div className="prescription-information-banner-row">
         <div className="patient-summary__block prescription-id-block" id="prescription-id">
           <span className="patient-summary__info no-margin-bottom">
