@@ -1,5 +1,5 @@
 export const EpsLogoutStrings = {
-  pageTitle: "We have logged you out - Prescription Tracker",
+  pageTitle: "You have logged out - Prescription Tracker",
   pageTitleAnotherSession: "Logged out because of another session - Prescription Tracker",
   loading: "Logging out",
   title: "Logout successful",
