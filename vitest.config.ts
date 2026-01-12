@@ -10,7 +10,8 @@ const sharedVitestConfig = defineConfig({
       provider: "v8",
       reporter: ["text", "lcov"],
       reportsDirectory: "./coverage"
-    }
+    },
+    exclude: ["**/lib/**"]
   }
 })
 
