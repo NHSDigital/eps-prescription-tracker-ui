@@ -1,9 +1,10 @@
-import {defineProject} from "vitest/config"
+import {defineConfig, mergeConfig} from "vitest/config"
+import {sharedVitestConfig} from "../../vitest.config"
 
 const apigeeHost = "https://dummyApigee"
 const CIS2_OIDC_HOST = "https://dummy_cis2_auth.com"
 const MOCK_OIDC_HOST = "https://dummy_mock_auth.com"
-export default defineProject({
+const viteConfig = defineConfig({
   test: {
     dir: "./tests",
     env: {
@@ -33,3 +34,5 @@ export default defineProject({
     }
   }
 })
+
+export default mergeConfig(sharedVitestConfig, viteConfig)

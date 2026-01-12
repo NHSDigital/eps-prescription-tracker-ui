@@ -1,11 +1,12 @@
-import {defineProject} from "vitest/config"
+import {defineConfig, mergeConfig} from "vitest/config"
+import {sharedVitestConfig} from "../../vitest.config"
 
 const CIS2_OIDC_HOST = "https://dummy_cis2_auth.com"
 const MOCK_OIDC_HOST = "https://dummy_mock_auth.com"
 
-export default defineProject({
+const viteConfig = defineConfig({
   test: {
-    dir: "./tests",
+    include: ["**/*.test.ts"],
     env: {
       TokenMappingTableName: "dummyTable",
       jwtPrivateKeyArn: "dummy_jwtPrivateKeyArn",
@@ -30,3 +31,5 @@ export default defineProject({
     }
   }
 })
+
+export default mergeConfig(sharedVitestConfig, viteConfig)
