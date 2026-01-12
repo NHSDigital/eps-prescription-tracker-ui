@@ -52,18 +52,7 @@ const dummyContext = {
 const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
 const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
 const CIS2_OIDC_HOST = process.env.CIS2_OIDC_HOST ?? ""
-//const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
-//const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
 const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
-//const CIS2_IDP_TOKEN_PATH = process.env.CIS2_IDP_TOKEN_PATH ?? ""
-
-//const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
-//const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
-//const MOCK_OIDC_HOST = process.env.MOCK_OIDC_HOST ?? ""
-//const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
-//const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
-//const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
-//const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
 
 const {
   privateKey

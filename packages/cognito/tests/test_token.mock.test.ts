@@ -31,17 +31,9 @@ const {
   }
 })
 
-process.env.MOCK_USER_INFO_ENDPOINT = "https://dummy_mock_auth.com/userinfo"
-process.env.MOCK_OIDC_ISSUER = "https://dummy_mock_auth.com"
-process.env.MOCK_OIDC_CLIENT_ID = "test-client-id"
-process.env.MOCK_USER_POOL_IDP = "test-idp"
 process.env.TokenMappingTableName = "test-token-mapping-table"
 process.env.SessionManagementTableName = "test-session-management-table"
 process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
-process.env.jwtPrivateKeyArn = "test-private-key-arn"
-process.env.jwtKid = "test-kid"
-process.env.APIGEE_API_KEY = "test-api-key"
-process.env.APIGEE_API_SECRET = "test-api-secret"
 process.env.MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
 // redefining readonly property of the performance object
