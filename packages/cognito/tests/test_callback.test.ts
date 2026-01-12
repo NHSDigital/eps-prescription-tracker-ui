@@ -7,9 +7,6 @@ import {
   vi
 } from "vitest"
 
-// Set required environment variables before importing the handler.
-process.env.COGNITO_DOMAIN = "cognito.example.com"
-
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/callback")

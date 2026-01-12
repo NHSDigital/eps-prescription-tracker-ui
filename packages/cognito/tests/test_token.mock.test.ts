@@ -31,11 +31,6 @@ const {
   }
 })
 
-process.env.TokenMappingTableName = "test-token-mapping-table"
-process.env.SessionManagementTableName = "test-session-management-table"
-process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
-process.env.MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-
 // redefining readonly property of the performance object
 const dummyContext = {
   callbackWaitsForEmptyEventLoop: true,
@@ -348,7 +343,7 @@ describe("token mock handler", () => {
     // check call
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(), // documentClient
-      "test-token-mapping-table", // tableName
+      "dummyTable", // tableName
       {
         username: "Mock_user_details_sub",
         apigeeAccessToken: "new-access-token",
@@ -451,7 +446,7 @@ describe("token mock handler", () => {
       expect.anything(),
       "https://internal-dev.api.service.nhs.uk/oauth2-mock/token",
       expect.objectContaining({
-        redirect_uri: "https://test.cloudfront.net/oauth2/mock-callback" // PR part removed
+        redirect_uri: "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback" // PR part removed
       }),
       expect.anything()
     )
@@ -495,7 +490,7 @@ describe("token mock handler", () => {
     // Should insert into token mapping table (not session management table)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-token-mapping-table", // Should use token mapping table
+      "dummyTable", // Should use token mapping table
       expect.anything(),
       expect.anything()
     )

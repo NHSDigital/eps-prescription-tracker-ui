@@ -7,11 +7,7 @@ import {
 } from "vitest"
 
 // Set environment variables before importing the handler.
-process.env.IDP_AUTHORIZE_PATH = "https://example.com/authorize"
-process.env.OIDC_CLIENT_ID = "cis2Client123"
 process.env.useMock = "true"
-process.env.COGNITO_CLIENT_ID = "userPoolClient123"
-process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
 
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"

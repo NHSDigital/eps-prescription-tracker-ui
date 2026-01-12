@@ -26,7 +26,13 @@ const viteConfig = defineConfig({
       MOCK_USER_POOL_IDP: "MockDummyPoolIdentityProvider",
       MOCK_IDP_TOKEN_PATH: `${MOCK_OIDC_HOST}/token`,
       APIGEE_API_KEY: "apigee_api_key",
-      FULL_CLOUDFRONT_DOMAIN: "cpt-ui-pr-854.dev.eps.national.nhs.uk"
+      FULL_CLOUDFRONT_DOMAIN: "cpt-ui-pr-854.dev.eps.national.nhs.uk",
+      IDP_AUTHORIZE_PATH: "https://example.com/authorize",
+      OIDC_CLIENT_ID: "cis2Client123",
+      COGNITO_CLIENT_ID: "userPoolClient123",
+      COGNITO_DOMAIN: "cognito.example.com",
+      SessionManagementTableName: "test-session-management-table",
+      MOCK_OIDC_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
     }
   }
 })

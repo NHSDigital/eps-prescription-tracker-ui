@@ -8,9 +8,6 @@ import {
   vi
 } from "vitest"
 
-// Set required environment variables before importing the handler.
-process.env.COGNITO_DOMAIN = "cognito.example.com"
-
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
