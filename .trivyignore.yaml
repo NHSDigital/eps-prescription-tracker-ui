@@ -1,0 +1,11 @@
+vulnerabilities:
+  - id: CVE-2025-12816
+    paths:
+      - "package-lock.json"
+    statement: downstream dependency just used in build stage
+    expired_at: 2026-06-01
+  - id: CVE-2025-66031
+    paths:
+      - "package-lock.json"
+    statement: downstream dependency just used in build stage
+    expired_at: 2026-06-01

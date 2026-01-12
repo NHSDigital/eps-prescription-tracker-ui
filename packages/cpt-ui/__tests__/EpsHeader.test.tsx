@@ -9,16 +9,18 @@ import {AccessContext} from "@/context/AccessProvider"
 
 // Mock the strings module
 jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
-  HEADER_SERVICE: "Prescription Tracker (Pilot)",
-  HEADER_EXIT_BUTTON: "Exit",
-  HEADER_EXIT_TARGET: "/exit",
-  HEADER_CHANGE_ROLE_BUTTON: "Change role",
-  HEADER_CHANGE_ROLE_TARGET: "/change-your-role",
-  HEADER_SELECT_YOUR_ROLE_TARGET: "/select-your-role",
-  HEADER_SELECT_YOUR_ROLE_BUTTON: "Select your role",
-  HEADER_LOG_OUT_BUTTON: "Log out",
-  HEADER_FEEDBACK_BUTTON: "Give feedback (opens in new tab)",
-  HEADER_FEEDBACK_TARGET: "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8"
+  HEADER_STRINGS: {
+    CHANGE_ROLE_BUTTON: "Change role",
+    CHANGE_ROLE_TARGET: "/change-your-role",
+    EXIT_BUTTON: "Exit",
+    EXIT_TARGET: "/exit",
+    FEEDBACK_BUTTON: "Give feedback (opens in new tab)",
+    FEEDBACK_TARGET: "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8",
+    LOG_OUT_BUTTON: "Log out",
+    SELECT_YOUR_ROLE_BUTTON: "Select your role",
+    SELECT_YOUR_ROLE_TARGET: "/select-your-role",
+    SERVICE: "Prescription Tracker (Pilot)"
+  }
 }))
 
 // Mock react-router-dom

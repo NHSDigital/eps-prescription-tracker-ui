@@ -1,6 +1,7 @@
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export const SELECT_YOUR_ROLE_PAGE_TEXT = {
+  pageTitle: "Select your role - Prescription Tracker",
   title: "Select your role",
   caption: "Select the role you wish to use to access the service.",
   titleNoAccess: "No access to the Prescription Tracker",

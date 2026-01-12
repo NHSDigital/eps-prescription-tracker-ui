@@ -30,10 +30,10 @@ function validateFirstName(firstName: string): Array<ErrorKey> {
   const onlyLetters = /^[A-Za-zÀ-ÿ \-'.]*$/
 
   // Length check
-  if (firstName.length > 35) errors.push("firstNameTooLong")
+  if (firstName.length > 35) errors.push("FIRST_NAME_TOO_LONG")
 
   // Character validity check
-  if (firstName && !onlyLetters.test(firstName)) errors.push("firstNameInvalidChars")
+  if (firstName && !onlyLetters.test(firstName)) errors.push("FIRST_NAME_INVALID_CHARS")
 
   return errors
 }
@@ -45,11 +45,11 @@ function validateLastName(lastName: string): Array<ErrorKey> {
 
   // Required field check
   if (!lastName.trim()) {
-    errors.push("lastNameRequired")
+    errors.push("LAST_NAME_REQUIRED")
   } else {
     // Length and character validity checks
-    if (lastName.length > 35) errors.push("lastNameTooLong")
-    if (!onlyLetters.test(lastName)) errors.push("lastNameInvalidChars")
+    if (lastName.length > 35) errors.push("LAST_NAME_TOO_LONG")
+    if (!onlyLetters.test(lastName)) errors.push("LAST_NAME_INVALID_CHARS")
   }
 
   return errors
@@ -71,7 +71,7 @@ function validateDob(dobDay: string, dobMonth: string, dobYear: string): Array<E
   const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
 
   // Case: all fields are empty — trigger single required error
-  if (isAllDobFieldsEmpty(hasDay, hasMonth, hasYear)) return ["dobRequired"]
+  if (isAllDobFieldsEmpty(hasDay, hasMonth, hasYear)) return ["DOB_REQUIRED"]
 
   // Case: one or more fields missing or partially invalid
   if (isPartialDob(hasDay, hasMonth, hasYear)) {
@@ -85,15 +85,15 @@ function validateDob(dobDay: string, dobMonth: string, dobYear: string): Array<E
   const formatErrors = getDobFormatErrors(dobDay, dobMonth, dobYear)
 
   // Collapse multiple issues into a single generic error
-  if (formatErrors.length > 1) return ["dobInvalidDate"]
+  if (formatErrors.length > 1) return ["DOB_INVALID_DATE"]
   errors.push(...formatErrors)
 
   // Validate real calendar date and check it's not in the future
   if (canConstructValidDate(isDayNumeric, isMonthNumeric, isYearNumeric, dobYear)) {
     const dob = buildDate(dobDay, dobMonth, dobYear)
 
-    if (!isExactDateMatch(dob, dobDay, dobMonth, dobYear)) return ["dobInvalidDate"]
-    if (dob > new Date()) errors.push("dobFutureDate")
+    if (!isExactDateMatch(dob, dobDay, dobMonth, dobYear)) return ["DOB_INVALID_DATE"]
+    if (dob > new Date()) errors.push("DOB_FUTURE_DATE")
   }
 
   return errors
@@ -148,15 +148,15 @@ function getPartialDobErrors(
     hasInvalidPartialInput(hasDay, hasMonth, hasYear, isDayNumeric, isMonthNumeric, isYearNumeric) ||
     isDayMonthOutOfRange(day, month)
   ) {
-    return ["dobInvalidDate"]
+    return ["DOB_INVALID_DATE"]
   }
 
   const errors: Array<ErrorKey> = []
 
   // Add specific required errors for each missing field
-  if (!hasDay) errors.push("dobDayRequired")
-  if (!hasMonth) errors.push("dobMonthRequired")
-  if (!hasYear) errors.push("dobYearRequired")
+  if (!hasDay) errors.push("DOB_DAY_REQUIRED")
+  if (!hasMonth) errors.push("DOB_MONTH_REQUIRED")
+  if (!hasYear) errors.push("DOB_YEAR_REQUIRED")
 
   return errors
 }
@@ -195,24 +195,24 @@ function getDobFormatErrors(dobDay: string, dobMonth: string, dobYear: string): 
   const isYearNumeric = numericOnly.test(dobYear)
 
   // Add numeric format errors per field
-  if (!isDayNumeric) errors.push("dobNonNumericDay")
-  if (!isMonthNumeric) errors.push("dobNonNumericMonth")
-  if (!isYearNumeric) errors.push("dobNonNumericYear")
+  if (!isDayNumeric) errors.push("DOB_NON_NUMERIC_DAY")
+  if (!isMonthNumeric) errors.push("DOB_NON_NUMERIC_MONTH")
+  if (!isYearNumeric) errors.push("DOB_NON_NUMERIC_YEAR")
 
   // Year must be exactly 4 digits if numeric
-  if (isYearNumeric && dobYear.length < 4) errors.push("dobYearTooShort")
-  if (isYearNumeric && dobYear.length > 4) errors.push("dobInvalidDate")
+  if (isYearNumeric && dobYear.length < 4) errors.push("DOB_YEAR_TOO_SHORT")
+  if (isYearNumeric && dobYear.length > 4) errors.push("DOB_INVALID_DATE")
 
   const numericDay = isDayNumeric ? parseInt(dobDay, 10) : null
   const numericMonth = isMonthNumeric ? parseInt(dobMonth, 10) : null
 
   // Add range errors if numeric values fall outside expected boundaries
   if (numericDay !== null && (numericDay < 1 || numericDay > 31)) {
-    errors.push("dobInvalidDate")
+    errors.push("DOB_INVALID_DATE")
   }
 
   if (numericMonth !== null && (numericMonth < 1 || numericMonth > 12)) {
-    errors.push("dobInvalidDate")
+    errors.push("DOB_INVALID_DATE")
   }
 
   return errors
@@ -228,9 +228,9 @@ function validatePostcode(postcode: string): Array<ErrorKey> {
 
   // Validate character content and length
   if (!isValid) {
-    errors.push("postcodeInvalidChars")
+    errors.push("POSTCODE_INVALID_CHARS")
   } else if (trimmed.length < 5) {
-    errors.push("postcodeTooShort")
+    errors.push("POSTCODE_TOO_SHORT")
   }
 
   return errors
@@ -248,7 +248,7 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
 
   const dobErrors = validateDob(input.dobDay, input.dobMonth, input.dobYear)
   // Collapse excessive DOB errors into a single generic error if needed
-  errors.push(...(dobErrors.length > 2 ? ["dobInvalidDate"] as Array<ErrorKey> : dobErrors))
+  errors.push(...(dobErrors.length > 2 ? ["DOB_INVALID_DATE"] as Array<ErrorKey> : dobErrors))
 
   errors.push(...validatePostcode(input.postcode))
 
@@ -260,45 +260,45 @@ export function validateBasicDetails(input: ValidationInput): Array<ErrorKey> {
  * Used to drive summary links and field-level error hints in the UI.
  */
 export function getInlineErrors(errors: Array<ErrorKey>): Array<[string, string]> {
-  const {errors: STR} = STRINGS
+  const {ERRORS: STR} = STRINGS
   const inlineErrors: Array<[string, string]> = []
 
   const add = (field: string, key: ErrorKey) => inlineErrors.push([field, STR[key]])
 
   // --- First name errors ---
-  const hasFirst = errors.includes("firstNameTooLong") || errors.includes("firstNameInvalidChars")
+  const hasFirst = errors.includes("FIRST_NAME_TOO_LONG") || errors.includes("FIRST_NAME_INVALID_CHARS")
   if (hasFirst) {
-    const message = errors.includes("firstNameTooLong") && errors.includes("firstNameInvalidChars")
+    const message = errors.includes("FIRST_NAME_TOO_LONG") && errors.includes("FIRST_NAME_INVALID_CHARS")
       ? "First name must be 35 characters or less, and can only include letters, hyphens, apostrophes and spaces"
-      : STR[errors.find(e => e.startsWith("firstName"))!]
+      : STR[errors.find(e => e.startsWith("FIRST_NAME"))!]
     inlineErrors.push(["firstName", message])
   }
 
   // --- Last name errors ---
   const hasLast =
-    errors.includes("lastNameRequired") ||
-    errors.includes("lastNameTooLong") ||
-    errors.includes("lastNameInvalidChars")
+    errors.includes("LAST_NAME_REQUIRED") ||
+    errors.includes("LAST_NAME_TOO_LONG") ||
+    errors.includes("LAST_NAME_INVALID_CHARS")
   if (hasLast) {
-    const message = errors.includes("lastNameTooLong") && errors.includes("lastNameInvalidChars")
+    const message = errors.includes("LAST_NAME_TOO_LONG") && errors.includes("LAST_NAME_INVALID_CHARS")
       ? "Last name must be 35 characters or less, and can only include letters, hyphens, apostrophes and spaces"
-      : STR[errors.find(e => e.startsWith("lastName"))!]
+      : STR[errors.find(e => e.startsWith("LAST_NAME"))!]
     inlineErrors.push(["lastName", message])
   }
 
   // --- DOB errors ---
   const dobKeys: Array<ErrorKey> = [
-    "dobRequired", "dobDayRequired", "dobMonthRequired", "dobYearRequired",
-    "dobNonNumericDay", "dobNonNumericMonth", "dobNonNumericYear",
-    "dobYearTooShort", "dobInvalidDate", "dobFutureDate"
+    "DOB_REQUIRED", "DOB_DAY_REQUIRED", "DOB_MONTH_REQUIRED", "DOB_YEAR_REQUIRED",
+    "DOB_NON_NUMERIC_DAY", "DOB_NON_NUMERIC_MONTH", "DOB_NON_NUMERIC_YEAR",
+    "DOB_YEAR_TOO_SHORT", "DOB_INVALID_DATE", "DOB_FUTURE_DATE"
   ]
   for (const key of dobKeys) {
     if (errors.includes(key)) add(key, key)
   }
 
   // --- Postcode errors ---
-  if (errors.includes("postcodeInvalidChars")) add("postcode", "postcodeInvalidChars")
-  else if (errors.includes("postcodeTooShort")) add("postcode", "postcodeTooShort")
+  if (errors.includes("POSTCODE_INVALID_CHARS")) add("postcode", "POSTCODE_INVALID_CHARS")
+  else if (errors.includes("POSTCODE_TOO_SHORT")) add("postcode", "POSTCODE_TOO_SHORT")
 
   return inlineErrors
 }

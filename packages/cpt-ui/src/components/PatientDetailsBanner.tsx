@@ -80,18 +80,27 @@ export default function PatientDetailsBanner() {
     <div
       className={"patient-details-banner"}
       data-testid="patient-details-banner"
-      id="patient-details-banner">
+      id="patient-details-banner"
+    >
+      <h2 className="nhsuk-u-visually-hidden">{STRINGS.PATIENT_DETAILS}</h2>
       <div className={"patient-detail-banner-row"}>
         <div
-          className="patient-detail-name"
+          className = "patient-detail-name"
           data-testid="patient-details-banner-name">
           {patientDetailsText.name}
         </div>
-        <div data-testid="patient-details-banner-gender">{STRINGS.GENDER}: {patientDetailsText.gender}</div>
-        <div data-testid="patient-details-banner-nhsNumber">{STRINGS.NHS_NUMBER}: {patientDetailsText.nhsNumber}</div>
-        <div data-testid="patient-details-banner-dob">{STRINGS.DOB}: {patientDetailsText.dob}</div>
-        <div data-testid="patient-details-banner-address">{STRINGS.ADDRESS}: {patientDetailsText.address}</div>
+        <dl>
+          <dt data-testid="patient-details-banner-gender">{STRINGS.GENDER}:</dt>
+          <dd data-testid="patient-details-banner-gender-value">{patientDetailsText.gender}</dd>
+          <dt data-testid="patient-details-banner-nhsNumber">{STRINGS.NHS_NUMBER}:</dt>
+          <dd data-testid="patient-details-banner-nhsNumber-value">{patientDetailsText.nhsNumber}</dd>
+          <dt data-testid="patient-details-banner-dob">{STRINGS.DOB}:</dt>
+          <dd data-testid="patient-details-banner-dob-value">{patientDetailsText.dob}</dd>
+          <dt data-testid="patient-details-banner-address">{STRINGS.ADDRESS}:</dt>
+          <dd data-testid="patient-details-banner-address-value">{patientDetailsText.address}</dd>
+        </dl>
       </div>
+
       {
         // Places the missing data message on the next line
         (patientFallback && Object.values(patientDetailsText).some((v) => v === STRINGS.NOT_AVAILABLE)) && (

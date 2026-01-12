@@ -2,14 +2,12 @@ import React, {
   useState,
   useEffect,
   useRef,
-  useMemo
+  useMemo,
+  Fragment
 } from "react"
 import {useNavigate} from "react-router-dom"
 
 import {
-  Container,
-  Row,
-  Col,
   Label,
   HintText,
   TextInput,
@@ -30,6 +28,7 @@ import {
 } from "@/helpers/validatePrescriptionDetailsSearch"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
@@ -48,6 +47,10 @@ export default function PrescriptionIdSearch() {
       setPrescriptionId(relevantParams.prescriptionId || "")
     }
   }, [navigationContext])
+
+  usePageTitle(errorKey
+    ? PRESCRIPTION_ID_SEARCH_STRINGS.pageTitle_ERROR
+    : PRESCRIPTION_ID_SEARCH_STRINGS.pageTitle)
 
   // Maps a validation error key to the corresponding user-facing message.
   // Treats "checksum" as "noMatch" to simplify the error display logic.
@@ -113,66 +116,58 @@ export default function PrescriptionIdSearch() {
   }
 
   return (
-    <Container
-      className="nhsuk-width-container-fluid"
-      data-testid="prescription-id-search-container"
-    >
-      <Row>
-        <Col width="one-half">
-          <Form onSubmit={handlePrescriptionDetails} noValidate>
-            {errorKey && (
-              <ErrorSummary
-                data-testid="error-summary"
-                ref={errorRef}
+    <Fragment>
+      {errorKey && (
+        <ErrorSummary
+          data-testid="error-summary"
+          ref={errorRef}
+          className="prescription-id-aligned-element"
+        >
+          <ErrorSummary.Title>
+            {PRESCRIPTION_ID_SEARCH_STRINGS.errorSummaryHeading}
+          </ErrorSummary.Title>
+          <ErrorSummary.Body>
+            <ErrorSummary.List>
+              <ErrorSummary.Item>
+                <a href="#presc-id-input">{displayedError}</a>
+              </ErrorSummary.Item>
+            </ErrorSummary.List>
+          </ErrorSummary.Body>
+        </ErrorSummary>
+      )}
+      <div className="prescription-id-aligned-element">
+        <Form onSubmit={handlePrescriptionDetails} noValidate>
+          <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
+            <Label htmlFor="presc-id-input" id="presc-id-label">
+              <h2
+                className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
+                data-testid="prescription-id-search-heading"
               >
-                <ErrorSummary.Title>
-                  {PRESCRIPTION_ID_SEARCH_STRINGS.errorSummaryHeading}
-                </ErrorSummary.Title>
-                <ErrorSummary.Body>
-                  <ErrorSummary.List>
-                    <ErrorSummary.Item>
-                      <a href="#presc-id-input">{displayedError}</a>
-                    </ErrorSummary.Item>
-                  </ErrorSummary.List>
-                </ErrorSummary.Body>
-              </ErrorSummary>
-            )}
-
-            <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
-              <Label htmlFor="presc-id-input" id="presc-id-label">
-                <h2
-                  className="nhsuk-heading-m nhsuk-u-margin-bottom-1 no-outline"
-                  data-testid="prescription-id-search-heading"
-                >
-                  {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
-                </h2>
-                <HintText id="presc-id-hint" data-testid="prescription-id-hint">
-                  {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
-                </HintText>
-              </Label>
-
-              <ErrorMessage id="presc-id-error" data-testid="prescription-id-error">
-                {errorKey ? displayedError : ""}
-              </ErrorMessage>
-
-              <TextInput
-                id="presc-id-input"
-                name="prescriptionId"
-                value={prescriptionId}
-                onChange={handleInputChange}
-                className={errorKey ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
-                autoComplete="off"
-                data-testid="prescription-id-input"
-                aria-describedby={errorKey ? "presc-id-error" : undefined}
-              />
-            </FormGroup>
-
-            <Button type="submit" data-testid="find-prescription-button">
-              {PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
-            </Button>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
+                {PRESCRIPTION_ID_SEARCH_STRINGS.labelText}
+              </h2>
+              <HintText id="presc-id-hint" data-testid="prescription-id-hint">
+                {PRESCRIPTION_ID_SEARCH_STRINGS.hintText}
+              </HintText>
+            </Label>
+            <ErrorMessage id="presc-id-error" data-testid="prescription-id-error">
+              {errorKey ? displayedError : ""}
+            </ErrorMessage>
+            <TextInput
+              id="presc-id-input"
+              name="prescriptionId"
+              value={prescriptionId}
+              onChange={handleInputChange}
+              className={errorKey ? "nhsuk-input nhsuk-input--error" : "nhsuk-input"}
+              autoComplete="off"
+              data-testid="prescription-id-input"
+              aria-describedby={errorKey ? "presc-id-hint presc-id-error" : "presc-id-hint"}
+            />
+          </FormGroup>
+          <Button type="submit" data-testid="find-prescription-button">
+            {PRESCRIPTION_ID_SEARCH_STRINGS.buttonText}
+          </Button>
+        </Form>
+      </div>
+    </Fragment>
   )
 }

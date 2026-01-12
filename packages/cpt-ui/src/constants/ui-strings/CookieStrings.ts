@@ -1,6 +1,7 @@
 import {FRONTEND_PATHS} from "@/constants/environment"
 
 export const CookieStrings = {
+  pageTitle: "Cookie policy - Prescription Tracker",
   banner : {
     cookie_title: "Cookies on the Prescription Tracker",
     cookie_text_p1: "We've put some small files called cookies on your device to make our site work.",

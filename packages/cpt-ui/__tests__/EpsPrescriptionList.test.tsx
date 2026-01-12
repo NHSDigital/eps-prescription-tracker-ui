@@ -89,13 +89,13 @@ jest.mock("@/constants/environment", () => ({
   PUBLIC_PATHS: ["/login", "/cookies", "/privacy-notice"]
 }))
 
-// Tell TypeScript that axios is a mocked version.
-const mockedAxios = axios as jest.Mocked<typeof axios>
-
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+
+// Tell TypeScript that axios is a mocked version.
+const mockedAxios = axios as jest.Mocked<typeof axios>
 
 const mockGetBackPath = jest.fn()
 const mockSetOriginalSearchPage = jest.fn()
@@ -492,14 +492,15 @@ describe("PrescriptionListPage", () => {
       const tabCurrentHeading = screen
         .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
 
-      expect(tabCurrentHeading).toHaveTextContent("(3)")
+      // Check that the visible text contains the expected format, ignoring accessibility text
+      expect(tabCurrentHeading.textContent).toMatch(/Current prescriptions \(3/)
       const tabPastHeading = screen
         .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_PAST}`)
-      expect(tabPastHeading).toHaveTextContent("(0)")
+      expect(tabPastHeading.textContent).toMatch(/Past prescriptions \(0/)
 
       const tabFutureHeading = screen
         .getByTestId(`eps-tab-heading ${FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE}`)
-      expect(tabFutureHeading).toHaveTextContent("(0)")
+      expect(tabFutureHeading.textContent).toMatch(/Future prescriptions \(0/)
     })
   })
 

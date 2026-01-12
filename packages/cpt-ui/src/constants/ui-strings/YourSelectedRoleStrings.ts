@@ -1,4 +1,5 @@
 export const YOUR_SELECTED_ROLE_STRINGS = {
+  pageTitle: "Role confirmed - Prescription Tracker",
   heading: "Your selected role",
   subheading: "The following role is now active.",
   tableTitle: "Current role Details",

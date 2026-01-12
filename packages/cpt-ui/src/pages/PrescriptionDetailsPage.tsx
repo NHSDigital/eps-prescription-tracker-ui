@@ -28,6 +28,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 import axios from "axios"
 import {handleRestartLogin} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionDetailsPage() {
   const auth = useAuth()
@@ -44,6 +45,7 @@ export default function PrescriptionDetailsPage() {
   const [messageHistory, setMessageHistory] = useState<Array<MessageHistory>>([])
   const searchContext = useSearchContext()
   const navigate = useNavigate()
+  usePageTitle(STRINGS.PRESCRIPTION_DETAILS_pageTitle)
 
   const getPrescriptionDetails = async (
     prescriptionId: string,

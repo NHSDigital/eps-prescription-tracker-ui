@@ -2,23 +2,23 @@
  * Defines all possible validation error keys used in the basic details search page
  */
 export type ErrorKey =
-  | "firstNameTooLong"
-  | "firstNameInvalidChars"
-  | "lastNameTooLong"
-  | "lastNameRequired"
-  | "lastNameInvalidChars"
-  | "dobRequired"
-  | "dobDayRequired"
-  | "dobMonthRequired"
-  | "dobYearRequired"
-  | "dobInvalidDate"
-  | "dobFutureDate"
-  | "dobNonNumericDay"
-  | "dobNonNumericMonth"
-  | "dobNonNumericYear"
-  | "dobYearTooShort"
-  | "postcodeTooShort"
-  | "postcodeInvalidChars"
+  | "FIRST_NAME_TOO_LONG"
+  | "FIRST_NAME_INVALID_CHARS"
+  | "LAST_NAME_TOO_LONG"
+  | "LAST_NAME_REQUIRED"
+  | "LAST_NAME_INVALID_CHARS"
+  | "DOB_REQUIRED"
+  | "DOB_DAY_REQUIRED"
+  | "DOB_MONTH_REQUIRED"
+  | "DOB_YEAR_REQUIRED"
+  | "DOB_INVALID_DATE"
+  | "DOB_FUTURE_DATE"
+  | "DOB_NON_NUMERIC_DAY"
+  | "DOB_NON_NUMERIC_MONTH"
+  | "DOB_NON_NUMERIC_YEAR"
+  | "DOB_YEAR_TOO_SHORT"
+  | "POSTCODE_TOO_SHORT"
+  | "POSTCODE_INVALID_CHARS"
 
 // --- Constants ---
 const NUMERIC_REGEX = /^\d+$/
@@ -86,7 +86,18 @@ export const errorFocusMap: Record<
   firstName: "first-name",
   lastName: "last-name",
   postcode: "postcode-only",
-  // DOB-specific error mappings
+  // DOB-specific error mappings - using uppercase keys to match validation output
+  DOB_REQUIRED: "dob-day",
+  DOB_DAY_REQUIRED: "dob-day",
+  DOB_MONTH_REQUIRED: "dob-month",
+  DOB_YEAR_REQUIRED: "dob-year",
+  DOB_NON_NUMERIC_DAY: "dob-day",
+  DOB_NON_NUMERIC_MONTH: "dob-month",
+  DOB_NON_NUMERIC_YEAR: "dob-year",
+  DOB_YEAR_TOO_SHORT: "dob-year",
+  DOB_FUTURE_DATE: "dob-year",
+  DOB_INVALID_DATE: resolveDobInvalidField,
+  // Legacy camelCase keys for backward compatibility
   dobRequired: "dob-day",
   dobDayRequired: "dob-day",
   dobMonthRequired: "dob-month",

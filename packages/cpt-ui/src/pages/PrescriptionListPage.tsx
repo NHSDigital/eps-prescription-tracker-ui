@@ -26,6 +26,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails, setPatientFallback} = usePatientDetails()
@@ -39,6 +40,7 @@ export default function PrescriptionListPage() {
   const [loading, setLoading] = useState(true)
   const [showNotFound, setShowNotFound] = useState(false)
   const [error, setError] = useState(false)
+  usePageTitle(PRESCRIPTION_LIST_PAGE_STRINGS.pageTitle)
 
   const auth = useAuth()
   const navigate = useNavigate()
@@ -180,7 +182,7 @@ export default function PrescriptionListPage() {
   return (
     <Fragment>
       <Container className="hero-container">
-        <title>{PRESCRIPTION_LIST_PAGE_STRINGS.PAGE_TITLE}</title>
+        <title>{PRESCRIPTION_LIST_PAGE_STRINGS.pageTitle}</title>
         <nav className="nhsuk-breadcrumb" aria-label="Breadcrumb" data-testid="prescription-list-nav">
           <EpsBackLink data-testid="go-back-link">
             {PRESCRIPTION_LIST_PAGE_STRINGS.GO_BACK_LINK_TEXT}

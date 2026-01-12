@@ -4,6 +4,7 @@ import {Container} from "nhsuk-react-components"
 import {NOT_FOUND_PAGE_STRINGS} from "@/constants/ui-strings/NotFoundPage"
 import {useEffect, useState} from "react"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function NotFoundPage() {
   const [headerText, setHeaderText] = useState("")
@@ -12,6 +13,7 @@ export default function NotFoundPage() {
   const [body3, setBody3] = useState("")
   const [body3Link, setBody3Link] = useState("")
   const [body3PostLink, setBody3PostLink] = useState("")
+  usePageTitle(NOT_FOUND_PAGE_STRINGS.pageTitle)
 
   useEffect(() => {
     setHeaderText(NOT_FOUND_PAGE_STRINGS.headerText)
