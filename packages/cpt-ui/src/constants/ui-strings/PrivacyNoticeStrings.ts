@@ -24,9 +24,9 @@ export const PrivacyNoticeStrings = {
     explanation: "We collect a range of your personal data, including:",
     identifiable: "identifiable data - through signing in using ",
     cis2Link: "NHS CIS2 Authentication (opens in new tab)",
-    stores: " we store your CIS2 Unique User ID (UUID), name, role and organisation name",
+    stores: ", we store your CIS2 Unique User ID (UUID), name, role and organisation name",
     usage: "usage data - information about how you interact with the Prescription Tracker, including your IP address,"
-    + " browser type, operating system, and activity logs",
+    + " browser type, operating system and activity logs",
     device: "device information - information about the device you use to access the Prescription Tracker,"
     + " such as device type and device identifiers"
   },
@@ -77,15 +77,15 @@ export const PrivacyNoticeStrings = {
     share1: "your employing organisation - if misuse is detected or reported,"
      + " we may need to share your data with your employing organisation for investigation purposes",
     share2: "legal authorities - if required by law, we may disclose your personal data"
-     + " to law enforcement or other legal entities."
+     + " to law enforcement or other legal entities"
   },
   retention: {
     header: "How long we keep your data for",
     note: "We will keep your personal data for as long as necessary to fulfil the purposes for"
     + " which it was collected, including for legal or reporting requirements. Specific periods include:",
-    account: "account data, which is: kept for 2 years",
+    account: "account data, which is kept for 2 years",
     system: "system data, which is kept for 2 years",
-    analytics:"analytical data, which is: kept for 2 years"
+    analytics:"analytical data, which is kept for 2 years"
   },
   storage: {
     header: "Where we store your data",
@@ -94,7 +94,7 @@ export const PrivacyNoticeStrings = {
   rights: {
     header: "Your data protection rights",
     contact: "You can exercise your"
-    + " rights by emailing emailing us at  ",
+    + " rights by emailing us at  ",
     rights1: "Your right to be informed: you have the right to be told how and why we are using your personal data."
     + " We have published this privacy notice to provide you with this information. ",
     rights2:  "Your right to get copies of your data: you have the right to ask us for copies of your personal data"
