@@ -11,8 +11,8 @@ const sharedVitestConfig = defineConfig({
       reporter: ["text", "lcov"],
       reportsDirectory: "./coverage"
     },
-    exclude: ["**/lib/**"]
+    exclude: ["**/lib/**", "**/node_modules/**", "**/packages/**"]
   }
 })
 
-export {sharedVitestConfig}
+export default sharedVitestConfig
