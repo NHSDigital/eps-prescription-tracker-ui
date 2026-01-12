@@ -13,15 +13,15 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.30.0",
+    "@aws-lambda-powertools/logger": "^2.30.1",
     "@aws-sdk/client-dynamodb": "^3.956.0",
-    "@aws-sdk/lib-dynamodb": "^3.958.0",
+    "@aws-sdk/lib-dynamodb": "^3.966.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
-    "@middy/core": "^6.4.5",
-    "@middy/http-header-normalizer": "^6.4.5",
-    "@middy/input-output-logger": "^6.4.5",
+    "@middy/core": "^7.0.2",
+    "@middy/http-header-normalizer": "^7.0.2",
+    "@middy/input-output-logger": "^7.0.2",
     "aws-lambda": "^1.0.7",
     "axios": "^1.13.2",
     "jwks-rsa": "^3.2.0"
