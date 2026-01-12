@@ -12,13 +12,17 @@
 
 .eps-modal-content {
   background: #fff;
-  padding: 2rem;
+  padding: 2rem 50px;
   border-radius: 4px;
   border: 0px;
   text-align: left;
   position: relative;
   max-width: 700px;
   display: block;
+
+  @media (max-width:768px) {
+    padding: 2rem;
+  }
 }
 
 .eps-modal-button {
