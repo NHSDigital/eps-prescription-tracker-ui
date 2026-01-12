@@ -1,5 +1,12 @@
 /* eslint-disable max-len */
-import {afterEach, beforeEach, describe, expect, it, vi} from "vitest"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 import nock from "nock"
 
 import type {Logger} from "@aws-lambda-powertools/logger"

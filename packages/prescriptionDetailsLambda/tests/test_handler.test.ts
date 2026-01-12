@@ -1,4 +1,10 @@
-import {beforeEach, describe, expect, it, vi} from "vitest"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 import {mockAPIGatewayProxyEvent, mockContext, mockMergedResponse} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
