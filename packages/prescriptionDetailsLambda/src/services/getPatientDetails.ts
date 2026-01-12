@@ -94,7 +94,6 @@ const handlePatientDetailsLookupError = (outcome: pds.patientDetails.Outcome, lo
     case pds.patientDetails.OutcomeType.PDS_ERROR:
       throw new Error("Unreachable")
     default:
-      console.log("throw")
       throw exhaustive_switch_guard(outcome)
   }
 }

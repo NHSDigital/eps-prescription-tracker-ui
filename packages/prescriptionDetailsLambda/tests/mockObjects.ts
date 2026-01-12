@@ -7,7 +7,6 @@ import {
   ExtensionWithNested,
   DoHSData
 } from "../src/utils/types"
-import {Patient} from "fhir/r4"
 
 export const mockAPIGatewayProxyEvent = {
   httpMethod: "POST",
