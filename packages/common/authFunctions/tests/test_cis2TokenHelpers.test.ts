@@ -14,15 +14,25 @@ import jwksClient from "jwks-rsa"
 import jwt from "jsonwebtoken"
 import createJWKSMock from "mock-jwks"
 
-const {getSigningKey,
-  verifyIdToken} = await import("../src/cis2")
-
-const {getUsernameFromEvent} = await import("../src/event")
 // Common test setup
 const logger = new Logger()
 const oidcClientId = "valid_aud"
 const oidcIssuer = "valid_iss"
 const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
+
+process.env["CIS2_OIDC_ISSUER"] = oidcIssuer
+process.env["CIS2_OIDC_CLIENT_ID"] = oidcClientId
+process.env["CIS2_OIDCJWKS_ENDPOINT"] = jwksEndpoint
+process.env["CIS2_USER_INFO_ENDPOINT"] = "https://dummyauth.com/userinfo"
+process.env["CIS2_TOKEN_ENDPOINT"] = "https://dummyauth.com/token"
+process.env["CIS2_USER_POOL_IDP"] = "DummyPoolIdentityProvider"
+process.env["TokenMappingTableName"] = "dummyTable"
+process.env["SessionManagementTableName"] = "dummysessiontable"
+
+const {getSigningKey,
+  verifyIdToken} = await import("../src/cis2")
+
+const {getUsernameFromEvent} = await import("../src/event")
 
 let jwksMock: ReturnType<typeof createJWKSMock>
 let stopJwksMock: () => void
