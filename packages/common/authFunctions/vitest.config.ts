@@ -1,13 +1,11 @@
-import {defineConfig, mergeConfig} from "vitest/config"
-import sharedVitestConfig from "../../../vitest.base.config"
+import {defineProject} from "vitest/config"
 
 const apigeeHost = "https://dummyApigee"
 const CIS2_OIDC_HOST = "https://dummy_cis2_auth.com"
 const MOCK_OIDC_HOST = "https://dummy_mock_auth.com"
-export default mergeConfig(sharedVitestConfig, defineConfig({
+export default defineProject({
   test: {
     dir: "./tests",
-    setupFiles: ["./.jest/setEnvVars.js"],
     env: {
       apigeeHost: apigeeHost,
       apigeeCIS2TokenEndpoint: `${apigeeHost}/cis2_token`,
@@ -39,4 +37,4 @@ export default mergeConfig(sharedVitestConfig, defineConfig({
       FULL_CLOUDFRONT_DOMAIN: "cpt-ui-pr-854.dev.eps.national.nhs.uk"
     }
   }
-}))
+})

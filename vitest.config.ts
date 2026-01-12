@@ -9,7 +9,13 @@ const sharedVitestConfig = defineConfig({
       provider: "v8",
       reporter: ["text", "lcov"],
       reportsDirectory: "./coverage"
-    }
+    },
+    projects: [
+      "packages/cognito/*",
+      "packages/common/authFunctions/*",
+      "packages/prescriptionDetailsLambda/*",
+      "!packages/cpt-ui"
+    ]
   }
 })
 
