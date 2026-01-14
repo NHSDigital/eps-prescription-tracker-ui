@@ -42,7 +42,7 @@ export const PrivacyNoticeStrings = {
     + " we process your data to enable you to use the Prescription Tracker",
     serviceImprovement: "service improvement - we analyse your usage patterns to understand how you use"
     + " the Prescription Tracker and improve its functionality."
-    + " To do this, we put small files called 'analytic cookies' on your device using a software called"
+    + " To do this, we put small files called 'analytic cookies' on your device using software called"
     + " Amazon CloudWatch RUM. These cookies are optional. The information collected includes:"
     + " the type of device you used, your browser type, your operating system, the date and time"
     + " you used the service and how you interacted with the service. For more information, see our ",
@@ -55,7 +55,7 @@ export const PrivacyNoticeStrings = {
     + " and resolve the issue you raised",
     legal:  "to comply with our legal obligations -"
     + " we process your data to comply with our legal obligation to operate the service and any"
-    + " other any applicable laws or regulations"
+    + " other applicable laws or regulations"
   },
   legal: {
     header: "Our legal basis for data processing",
@@ -104,7 +104,7 @@ export const PrivacyNoticeStrings = {
     + " your personal data if you think it is inaccurate or incomplete.",
     rights4: "Your right to limit how we use your data: you have the right to ask us to limit the way we use your"
     + " personal data (restrict processing) in certain circumstances.",
-    rights5: "Right to withdraw consent: you have the right to withdraw consent for analytical"
+    rights5: "Right to withdraw consent: you have the right to withdraw consent for analytic"
     + " cookies to be placed on your device by selecting 'Reject analytics cookies'. See our ",
     cookieLink: "cookie policy for more information",
     method: "If you need to report any issues about exercising your rights, email NHS England's "
