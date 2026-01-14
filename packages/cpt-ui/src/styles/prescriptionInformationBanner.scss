@@ -59,16 +59,30 @@
   box-shadow: 0 4px 0 #004721;
   color: #ffffff;
   display: inline-block;
-  padding-top: 0;
-  padding-bottom: 0;
   font-size: 0.875rem;
   line-height: 1.71429;
+  padding: 4px 12px;
+  font-weight: 400;
 
   @media (max-width: 640px) {
     font-size: 0.75rem;
     line-height: 1.6667;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 6px 10px;
+  }
+}
+
+.nhsuk-button--small {
+  font-size: 14px;
+  line-height: 1.71429;
+  padding: 4px 12px;
+
+  @media (min-width: 40.0625em) {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 40.0525em) {
+    padding: 2px 10px;
   }
 }
 
@@ -83,8 +97,43 @@
 .copy-button.nhsuk-button--secondary-solid::after {
   box-shadow: 0 4px 0 #004721;
 }
+
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:visited,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:active,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:active:visited {
+  background-color: #007f3b;
+  color: #ffffff;
+}
+
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:hover,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:hover:visited {
+  background-color: #00662f;
+  color: #ffffff;
+}
+
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:visited,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:active,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:active:visited,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:visited,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:active,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:active:visited {
+  background-color: #007f3b;
+  color: #ffffff;
+}
+
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:hover,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:hover:visited,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:hover,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:hover:visited {
+  background-color: #00662f;
+  color: #ffffff;
+}
+
 .nhsuk-u-margin-1 {
-  margin: 4px !important;
+  margin: 4px;
 }
 
 #copyText {

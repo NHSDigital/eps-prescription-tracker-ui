@@ -44,7 +44,7 @@ const PrescriptionInformationBanner: React.FC = () => {
             <Button
               id="copyButton"
               aria-label={STRINGS.COPY_BUTTON_ARIA_LABEL}
-              className="nhsuk-button--reverse copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
+              className="nhsuk-button--reverse nhsuk-button--small copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
               onClick={copyToClipboard}
               type="button"
               secondary
