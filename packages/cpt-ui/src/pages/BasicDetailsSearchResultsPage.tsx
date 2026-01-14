@@ -13,7 +13,6 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 
 import EpsSpinner from "@/components/EpsSpinner"
-import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
@@ -124,7 +123,8 @@ export default function SearchResultsPage() {
 
   // Show not found message if no valid patients
   if (patients.length === 0) {
-    return <PatientNotFoundMessage />
+    navigate(FRONTEND_PATHS.NO_PATIENT_FOUND)
+    return null
   }
 
   // Show too many results message if search returns too many patients

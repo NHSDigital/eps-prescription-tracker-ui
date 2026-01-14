@@ -70,6 +70,8 @@ export const FRONTEND_PATHS = {
   PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
   PATIENT_SEARCH_RESULTS: "/patient-search-results",
   PATIENT_NOT_FOUND: "/patient-not-found",
+  NO_PATIENT_FOUND: "/no-patient-found",
+  NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
   PRIVACY_NOTICE: "/privacy-notice",
   COOKIES_SELECTED: "/cookies-selected",
   SESSION_SELECTION: "/select-active-session",

@@ -22,6 +22,8 @@ import CookieSettingsPage from "./pages/CookieSettingsPage"
 import SearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 import PrivacyNoticePage from "./pages/PrivacyNoticePage"
 import SessionSelectionPage from "./pages/SessionSelection"
+import NoPrescriptionsFoundPage from "@/pages/NoPrescriptionsFoundPage"
+import NoPatientsFoundPage from "@/pages/NoPatientsFoundPage"
 
 import {FRONTEND_PATHS} from "@/constants/environment"
 import SessionLoggedOutPage from "./pages/SessionLoggedOut"
@@ -75,6 +77,8 @@ function AppContent() {
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE} element={<PrescriptionDetailsPage />} />
                 <Route path={FRONTEND_PATHS.PATIENT_SEARCH_RESULTS} element={<SearchResultsPage />} />
+                <Route path={FRONTEND_PATHS.NO_PATIENT_FOUND} element={<NoPatientsFoundPage />} />
+                <Route path={FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND} element={<NoPrescriptionsFoundPage />} />
                 <Route path={FRONTEND_PATHS.PRIVACY_NOTICE} element={<PrivacyNoticePage />} />
               </Route>
             </Routes>

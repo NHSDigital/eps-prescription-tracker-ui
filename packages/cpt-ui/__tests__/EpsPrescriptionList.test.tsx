@@ -81,6 +81,7 @@ jest.mock("@/constants/environment", () => ({
     PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
     PATIENT_SEARCH_RESULTS: "/patient-search-results",
     PATIENT_NOT_FOUND: "/patient-not-found",
+    NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected",
     SESSION_SELECTION: "/select-active-session",
@@ -90,6 +91,7 @@ jest.mock("@/constants/environment", () => ({
 }))
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
+import NoPrescriptionsFoundPage from "@/pages/NoPrescriptionsFoundPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
@@ -318,6 +320,7 @@ const renderWithRouter = (
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
+                <Route path={FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND} element={<NoPrescriptionsFoundPage />} />
               </Routes>
             </NavigationProvider>
           </MemoryRouter>
