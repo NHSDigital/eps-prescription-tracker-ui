@@ -105,7 +105,7 @@ export const PrivacyNoticeStrings = {
     rights4: "Your right to limit how we use your data: you have the right to ask us to limit the way we use your"
     + " personal data (restrict processing) in certain circumstances.",
     rights5: "Right to withdraw consent: you have the right to withdraw consent for analytic"
-    + " cookies to be placed on your device by selecting 'Reject analytics cookies'. See our ",
+    + " cookies to be placed on your device by selecting 'Reject analytic cookies'. See our ",
     cookieLink: "cookie policy for more information",
     method: "If you need to report any issues about exercising your rights, email NHS England's "
     + "Data Protection Officer at "
