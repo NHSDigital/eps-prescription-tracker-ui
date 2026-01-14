@@ -18,6 +18,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import EpsBackLink from "@/components/EpsBackLink"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
+import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
 import {handleRestartLogin} from "@/helpers/logout"
@@ -33,6 +34,12 @@ export default function SearchResultsPage() {
   const [error, setError] = useState(false)
 
   const auth = useAuth()
+
+  // different page titles depending on if theres multiple patients matching
+  const pageTitle = patients.length > 0
+    ? `We found ${patients.length} patients - Prescription Tracker`
+    : `${SearchResultsPageStrings.TITLE} - Prescription Tracker`
+  usePageTitle(pageTitle)
 
   useEffect(() => {
     getSearchResults()
