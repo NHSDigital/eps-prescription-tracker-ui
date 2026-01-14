@@ -1,23 +1,24 @@
 import "@testing-library/jest-dom"
+import React from "react"
 import {render, screen} from "@testing-library/react"
 import {MemoryRouter} from "react-router-dom"
-import React from "react"
 
-import NoPatientsFoundPage from "@/pages/NoPatientsFoundPage"
 import {NavigationProvider} from "@/context/NavigationProvider"
 
-// Mock the PatientNotFoundMessage component
+jest.mock("@/hooks/usePageTitle", () => ({
+  usePageTitle: jest.fn()
+}))
+
 jest.mock("@/components/PatientNotFoundMessage", () => {
   return function MockPatientNotFoundMessage() {
     return <div data-testid="patient-not-found-message">Patient not found message</div>
   }
 })
 
-// Mock usePageTitle hook
-const mockUsePageTitle = jest.fn()
-jest.mock("@/hooks/usePageTitle", () => ({
-  usePageTitle: mockUsePageTitle
-}))
+import NoPatientsFoundPage from "@/pages/NoPatientsFoundPage"
+import {usePageTitle} from "@/hooks/usePageTitle"
+
+const mockUsePageTitle = usePageTitle as jest.MockedFunction<typeof usePageTitle>
 
 const renderWithRouter = () => {
   return render(
