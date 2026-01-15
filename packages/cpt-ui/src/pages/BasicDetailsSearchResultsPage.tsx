@@ -13,12 +13,12 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 
 import EpsSpinner from "@/components/EpsSpinner"
-import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import EpsBackLink from "@/components/EpsBackLink"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
+import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
 import {handleRestartLogin} from "@/helpers/logout"
@@ -34,6 +34,12 @@ export default function SearchResultsPage() {
   const [error, setError] = useState(false)
 
   const auth = useAuth()
+
+  // different page titles depending on if theres multiple patients matching
+  const pageTitle = patients.length > 0
+    ? SearchResultsPageStrings.MULTIPLE_PATIENTS_FOUND.replace("{count}", patients.length.toString())
+    : `${SearchResultsPageStrings.TITLE} - Prescription Tracker`
+  usePageTitle(pageTitle)
 
   useEffect(() => {
     getSearchResults()
@@ -124,7 +130,8 @@ export default function SearchResultsPage() {
 
   // Show not found message if no valid patients
   if (patients.length === 0) {
-    return <PatientNotFoundMessage />
+    navigate(FRONTEND_PATHS.NO_PATIENT_FOUND)
+    return null
   }
 
   // Show too many results message if search returns too many patients
