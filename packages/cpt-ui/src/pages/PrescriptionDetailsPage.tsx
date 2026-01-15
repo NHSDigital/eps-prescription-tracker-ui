@@ -95,6 +95,12 @@ export default function PrescriptionDetailsPage() {
     setPatientDetails(payload.patientDetails)
     setPatientFallback(payload.patientFallback)
 
+    // Only update patient details if using prescription fallback
+    //TODO: revisit in AEA-5821, once prescription details is doing a pds lookup
+    // if (patientFallback){
+    setPatientDetails(payload.patientDetails)
+    // }
+
     return payload
   }
 
