@@ -9,8 +9,8 @@ export default function SessionLoggedOutPage() {
   const auth = useAuth()
 
   usePageTitle(auth.invalidSessionCause === "ConcurrentSession"
-    ? EpsLogoutStrings.pageTitle
-    : EpsLogoutStrings.pageTitleAnotherSession)
+    ? EpsLogoutStrings.PAGE_TITLE
+    : EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
@@ -18,17 +18,17 @@ export default function SessionLoggedOutPage() {
         <Container>
           <Row>
             <Col width="full">
-              <h1 data-testid="concurrent-title">{EpsLogoutStrings.logoutConcurrentTitle}</h1>
+              <h1 data-testid="concurrent-title">{EpsLogoutStrings.LOGOUT_CONCURRENT_TITLE}</h1>
               <p data-testid="concurrent-description">
-                {EpsLogoutStrings.logoutConcurrentDescription}</p>
+                {EpsLogoutStrings.LOGOUT_CONCURRENT_DESCRIPTION}</p>
               <p data-testid="concurrent-contact">
-                {EpsLogoutStrings.logoutConcurrentContact}{" "}
-                <a href={`mailto:${EpsLogoutStrings.logoutConcurrentEmail}`} data-testid="nhs-service-desk-email">
-                  {EpsLogoutStrings.logoutConcurrentEmail}
+                {EpsLogoutStrings.LOGOUT_CONCURRENT_CONTACT}{" "}
+                <a href={`mailto:${EpsLogoutStrings.LOGOUT_CONCURRENT_EMAIL}`} data-testid="nhs-service-desk-email">
+                  {EpsLogoutStrings.LOGOUT_CONCURRENT_EMAIL}
                 </a>{" "}
-                {EpsLogoutStrings.logoutConcurrentFurther}
+                {EpsLogoutStrings.LOGOUT_CONCURRENT_FURTHER}
               </p>
-              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.loginLink}</Link>
+              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
             </Col>
           </Row>
         </Container>
@@ -40,11 +40,11 @@ export default function SessionLoggedOutPage() {
       <Container>
         <Row>
           <Col width="full">
-            <h1 data-testid="timeout-title">{EpsLogoutStrings.logoutTimeoutTitle}</h1>
+            <h1 data-testid="timeout-title">{EpsLogoutStrings.LOGOUT_TIMEOUT_TITLE}</h1>
             <p data-testid="timeout-description">
-              {EpsLogoutStrings.logoutTimeoutDescription}</p>
-            <p data-testid="timeout-description2">{EpsLogoutStrings.logoutTimeoutFurther}</p>
-            <Link to="/login" data-testid="login-link">{EpsLogoutStrings.loginLink}</Link>
+              {EpsLogoutStrings.LOGOUT_TIMEOUT_DESCRIPTION}</p>
+            <p data-testid="timeout-description2">{EpsLogoutStrings.LOGOUT_TIMEOUT_FURTHER}</p>
+            <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
           </Col>
         </Row>
       </Container>
