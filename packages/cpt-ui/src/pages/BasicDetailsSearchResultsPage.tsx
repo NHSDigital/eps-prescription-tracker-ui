@@ -37,7 +37,7 @@ export default function SearchResultsPage() {
 
   // different page titles depending on if theres multiple patients matching
   const pageTitle = patients.length > 0
-    ? `We found ${patients.length} patients - Prescription Tracker`
+    ? SearchResultsPageStrings.MULTIPLE_PATIENTS_FOUND.replace("{count}", patients.length.toString())
     : `${SearchResultsPageStrings.TITLE} - Prescription Tracker`
   usePageTitle(pageTitle)
 
