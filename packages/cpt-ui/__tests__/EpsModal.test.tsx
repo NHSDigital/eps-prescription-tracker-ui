@@ -1,7 +1,44 @@
 import React from "react"
-import {render, screen, fireEvent} from "@testing-library/react"
-import "@testing-library/jest-dom"
-import {EpsModal} from "@/components/EpsModal"
+import {render} from "@testing-library/react"
+import {EpsModal} from "../src/components/EpsModal"
+
+const mockShowModal = jest.fn()
+const mockClose = jest.fn()
+const mockAddEventListener = jest.fn()
+const mockRemoveEventListener = jest.fn()
+
+beforeAll(() => {
+  Object.defineProperty(HTMLElement.prototype, "showModal", {
+    value: mockShowModal,
+    writable: true,
+    configurable: true
+  })
+
+  Object.defineProperty(HTMLElement.prototype, "close", {
+    value: mockClose,
+    writable: true,
+    configurable: true
+  })
+
+  const originalAddEventListener = HTMLElement.prototype.addEventListener
+  const originalRemoveEventListener = HTMLElement.prototype.removeEventListener
+
+  HTMLElement.prototype.addEventListener = function(...args: Parameters<typeof originalAddEventListener>) {
+    if (this.tagName === "DIALOG") {
+      mockAddEventListener.apply(this, args)
+    } else {
+      originalAddEventListener.apply(this, args)
+    }
+  }
+
+  HTMLElement.prototype.removeEventListener = function(...args: Parameters<typeof originalRemoveEventListener>) {
+    if (this.tagName === "DIALOG") {
+      mockRemoveEventListener.apply(this, args)
+    } else {
+      originalRemoveEventListener.apply(this, args)
+    }
+  }
+})
 
 describe("EpsModal", () => {
   beforeEach(() => {
@@ -9,87 +46,143 @@ describe("EpsModal", () => {
   })
 
   test("does not render the modal when isOpen is false", () => {
-    render(
+    const {container} = render(
       <EpsModal isOpen={false} onClose={jest.fn()}>
         <div>Modal Content</div>
       </EpsModal>
     )
-    // The content should not be in the document
-    expect(screen.queryByText(/Modal Content/i)).not.toBeInTheDocument()
+
+    expect(container.firstChild).toBeNull()
   })
 
   test("renders the modal when isOpen is true", () => {
+    const {container} = render(
+      <EpsModal isOpen={true} onClose={jest.fn()}>
+        <div>Modal Content</div>
+      </EpsModal>
+    )
+
+    expect(container.querySelector("dialog")).toBeInTheDocument()
+    expect(mockShowModal).toHaveBeenCalledTimes(1)
+  })
+
+  test("calls showModal when modal opens", () => {
     render(
       <EpsModal isOpen={true} onClose={jest.fn()}>
         <div>Modal Content</div>
       </EpsModal>
     )
-    // The content should appear in the document
-    expect(screen.getByText(/Modal Content/i)).toBeInTheDocument()
+
+    expect(mockShowModal).toHaveBeenCalledTimes(1)
   })
 
-  test("calls onClose when user clicks outside modal content", () => {
-    const onCloseMock = jest.fn()
+  test("calls onClose when cancel event is fired", () => {
+    let cancelHandler: ((event: Event) => void) | null = null
+
+    mockAddEventListener.mockImplementation((type, listener) => {
+      if (type === "cancel" && typeof listener === "function") {
+        cancelHandler = listener
+      }
+    })
+
+    const mockOnClose = jest.fn()
     render(
-      <EpsModal isOpen={true} onClose={onCloseMock}>
-        <div data-testid="modal-content">Modal Content</div>
-      </EpsModal>
-    )
-
-    const overlay = screen.getByTestId("eps-modal-overlay")
-    const modalContent = screen.getByTestId("modal-content")
-
-    // Clicking directly on the content should NOT trigger onClose
-    fireEvent.click(modalContent)
-    expect(onCloseMock).not.toHaveBeenCalled()
-
-    // Clicking on the overlay (outside the content) should trigger onClose
-    fireEvent.click(overlay)
-    expect(onCloseMock).toHaveBeenCalledTimes(1)
-  })
-
-  test("calls onClose when user clicks the close button", () => {
-    const onCloseMock = jest.fn()
-    render(
-      <EpsModal isOpen={true} onClose={onCloseMock}>
-        <div>Modal Content</div>
-        <button onClick={onCloseMock}>TEST CLOSE BUTTON</button>
-      </EpsModal>
-    )
-
-    const closeButton = screen.getByText(/TEST CLOSE BUTTON/)
-    fireEvent.click(closeButton)
-    expect(onCloseMock).toHaveBeenCalledTimes(1)
-  })
-
-  test("calls onClose when user presses Escape", () => {
-    const onCloseMock = jest.fn()
-    render(
-      <EpsModal isOpen={true} onClose={onCloseMock}>
+      <EpsModal isOpen={true} onClose={mockOnClose}>
         <div>Modal Content</div>
       </EpsModal>
     )
 
-    // Fire 'Escape' keydown event on window
-    fireEvent.keyDown(window, {key: "Escape"})
-    expect(onCloseMock).toHaveBeenCalledTimes(1)
+    expect(cancelHandler).not.toBeNull()
+
+    if (cancelHandler) {
+      const mockEvent = {preventDefault: jest.fn()} as unknown as Event
+      ;(cancelHandler as (event: Event) => void)(mockEvent)
+
+      expect(mockEvent.preventDefault).toHaveBeenCalled()
+      expect(mockOnClose).toHaveBeenCalledTimes(1)
+    }
   })
 
-  test("calls onClose when user presses Enter or Space on the backdrop", () => {
-    const onCloseMock = jest.fn()
-    render(
-      <EpsModal isOpen={true} onClose={onCloseMock}>
+  test("handles null dialog ref gracefully", () => {
+    const originalUseRef = React.useRef
+    React.useRef = jest.fn().mockReturnValue({current: null})
+
+    expect(() => {
+      render(
+        <EpsModal isOpen={true} onClose={jest.fn()}>
+          <div>Modal Content</div>
+        </EpsModal>
+      )
+    }).not.toThrow()
+
+    React.useRef = originalUseRef
+  })
+
+  test("renders with aria-labelledby when provided", () => {
+    const {container} = render(
+      <EpsModal isOpen={true} onClose={jest.fn()} ariaLabelledBy="test-label">
         <div>Modal Content</div>
       </EpsModal>
     )
 
-    const overlay = screen.getByTestId("eps-modal-overlay")
+    const dialog = container.querySelector("dialog")
+    expect(dialog).toHaveAttribute("aria-labelledby", "test-label")
+  })
 
-    fireEvent.keyDown(overlay, {key: "Enter"})
-    expect(onCloseMock).toHaveBeenCalledTimes(1)
+  test("does not have aria-labelledby attribute when not provided", () => {
+    const {container} = render(
+      <EpsModal isOpen={true} onClose={jest.fn()}>
+        <div>Modal Content</div>
+      </EpsModal>
+    )
 
-    // Fire again with ' '
-    fireEvent.keyDown(overlay, {key: " "})
-    expect(onCloseMock).toHaveBeenCalledTimes(2)
+    const dialog = container.querySelector("dialog")
+    expect(dialog).not.toHaveAttribute("aria-labelledby")
+  })
+
+  test("has correct CSS classes", () => {
+    const {container} = render(
+      <EpsModal isOpen={true} onClose={jest.fn()}>
+        <div>Modal Content</div>
+      </EpsModal>
+    )
+
+    const dialog = container.querySelector("dialog")
+    expect(dialog).toHaveClass("eps-modal-overlay", "eps-modal-content")
+  })
+
+  test("cleans up event listener on unmount", () => {
+    let cancelHandler: ((event: Event) => void) | null = null
+
+    mockAddEventListener.mockImplementation((type, listener) => {
+      if (type === "cancel" && typeof listener === "function") {
+        cancelHandler = listener
+      }
+    })
+
+    const {unmount} = render(
+      <EpsModal isOpen={true} onClose={jest.fn()}>
+        <div>Modal Content</div>
+      </EpsModal>
+    )
+
+    expect(cancelHandler).not.toBeNull()
+
+    unmount()
+
+    expect(mockRemoveEventListener).toHaveBeenCalledWith("cancel", cancelHandler)
+  })
+
+  test("renders children correctly", () => {
+    const {getByTestId} = render(
+      <EpsModal isOpen={true} onClose={jest.fn()}>
+        <div data-testid="child-content">
+          <h1>Modal Title</h1>
+          <p>Modal content text</p>
+        </div>
+      </EpsModal>
+    )
+
+    expect(getByTestId("child-content")).toBeInTheDocument()
   })
 })
