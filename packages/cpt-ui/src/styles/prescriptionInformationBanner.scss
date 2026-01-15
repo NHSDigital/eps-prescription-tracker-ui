@@ -71,6 +71,23 @@
   outline-offset: 0;
 }
 
+.copy-button:focus:active,
+.copy-button.nhsuk-button--reverse:focus:active {
+  background-color: #004721 !important;
+  box-shadow: 0 4px 0 #002c15 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus:active,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus:active,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus:active {
+  background-color: #004721 !important;
+  box-shadow: 0 4px 0 #002c15 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
 .copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus,
 .copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus,
 .copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus {
