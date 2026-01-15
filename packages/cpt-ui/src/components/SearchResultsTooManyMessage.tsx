@@ -4,12 +4,15 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import EpsBackLink from "@/components/EpsBackLink"
+import {usePageTitle} from "@/hooks/usePageTitle"
 
 type SearchResultsTooManyMessageProps = {
   readonly search?: string
 }
 
 export default function SearchResultsTooManyMessage({search = ""}: SearchResultsTooManyMessageProps) {
+
+  usePageTitle(STRINGS.PAGE_TITLE)
   return (
     <Container
       className="nhsuk-width-container-fluid patient-search-form-container"
@@ -17,7 +20,7 @@ export default function SearchResultsTooManyMessage({search = ""}: SearchResults
     >
       <nav className="nhsuk-breadcrumb nhsuk-u-padding-bottom-0 nhsuk-u-padding-left-2" aria-label="Breadcrumb">
         <EpsBackLink data-testid="go-back-link">
-          {STRINGS.goBackLink}
+          {STRINGS.GO_BACK_LINK}
         </EpsBackLink>
       </nav>
       <main
@@ -38,33 +41,33 @@ export default function SearchResultsTooManyMessage({search = ""}: SearchResults
                 id="results-header"
                 data-testid="too-many-results-heading"
               >
-                {STRINGS.heading}
+                {STRINGS.HEADING}
               </h1>
 
               <p id="results-message" data-testid="too-many-results-message">
-                {STRINGS.resultsMessage}
+                {STRINGS.RESULTS_MESSAGE}
               </p>
 
               <p id="results-count-text" data-testid="too-many-results-count-text">
-                {STRINGS.retryMessage}
+                {STRINGS.RETRY_MESSAGE}
                 <Link
                   data-testid="too-many-results-basic-details-link"
                   to={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS + (search || "")}>
-                  {STRINGS.basicDetailsLinkText}
+                  {STRINGS.BASIC_DETAILS_LINK_TEXT}
                 </Link>
-                {STRINGS.retryMessageSuffix}
+                {STRINGS.RETRY_MESSAGE_SUFFIX}
               </p>
 
               <p data-testid="too-many-results-alt-options">
-                {STRINGS.alternativeSearch}
+                {STRINGS.ALTERNATIVE_SEARCH}
                 <Link
                   data-testid="too-many-results-nhs-number-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>{STRINGS.nhsNumberLinkText}</Link>
-                {STRINGS.orText}
+                  to={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}>{STRINGS.NHS_NUMBER_LINK_TEXT}</Link>
+                {STRINGS.OR_TEXT}
                 <Link
                   data-testid="too-many-results-prescription-id-link"
-                  to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>{STRINGS.prescriptionIdLinkText}</Link>
-                {STRINGS.endPunctuation}
+                  to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}>{STRINGS.PRESCRIPTION_ID_LINK_TEXT}</Link>
+                {STRINGS.END_PUNCTUATION}
               </p>
             </div>
           </Col>

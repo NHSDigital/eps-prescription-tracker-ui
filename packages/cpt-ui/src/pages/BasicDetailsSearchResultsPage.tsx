@@ -8,20 +8,102 @@ import {
 } from "nhsuk-react-components"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import {API_ENDPOINTS, FRONTEND_PATHS} from "@/constants/environment"
-import {PatientSummary} from "@cpt-ui-common/common-types/src"
+import {
+  NOT_AVAILABLE,
+  PatientAddressUse,
+  PatientNameUse,
+  PatientSummary
+} from "@cpt-ui-common/common-types/src"
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 
 import EpsSpinner from "@/components/EpsSpinner"
-import PatientNotFoundMessage from "@/components/PatientNotFoundMessage"
 import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import EpsBackLink from "@/components/EpsBackLink"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
+import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
 import {handleRestartLogin} from "@/helpers/logout"
+import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
+import {format} from "date-fns"
+import {DOB_FORMAT, NHS_NUMBER_FORMAT_REGEX} from "@/constants/misc"
+
+interface TableResultsRowProps {
+  patient: PatientSummary
+}
+const TableResultsRow = ({patient}: TableResultsRowProps) => {
+  const navigate = useNavigate()
+  const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
+
+  let nameText = STRINGS.NOT_ON_RECORD
+  if (patient.givenName !== NOT_AVAILABLE && patient.familyName !== NOT_AVAILABLE) {
+    nameText = `${patient.givenName?.filter(Boolean).join(" ")} ${patient.familyName}${
+      patient.nameUse === PatientNameUse.TEMP ? STRINGS.TEMPORARY : ""}`
+  }
+
+  const nhsNumberText = patient.nhsNumber.replace(NHS_NUMBER_FORMAT_REGEX, "$1 $2 $3")
+
+  const genderText = patient.gender === NOT_AVAILABLE ? STRINGS.NOT_ON_RECORD :
+    `${patient.gender?.charAt(0).toUpperCase()}${patient.gender?.slice(1)}`
+
+  const dobText = patient.dateOfBirth === NOT_AVAILABLE ? STRINGS.NOT_ON_RECORD :
+    format(new Date(patient.dateOfBirth as string), DOB_FORMAT)
+
+  let addressText
+  if (patient.address === NOT_AVAILABLE && patient.postcode === NOT_AVAILABLE) {
+    addressText = STRINGS.NOT_ON_RECORD
+  } else {
+    const addressParts: Array<string> = []
+    if (patient.address !== NOT_AVAILABLE){
+      addressParts.push(...patient.address as Array<string>)
+    }
+    if(patient.postcode !== NOT_AVAILABLE){
+      addressParts.push(patient.postcode as string)
+    }
+    addressText = `${addressParts.filter(Boolean).join(", ")}${
+      patient.addressUse === PatientAddressUse.TEMP ? STRINGS.TEMPORARY : ""}`
+  }
+
+  const handleRowClick = (nhsNumber: string) => {
+    // only preserve relevant search parameters and add NHS number
+    const relevantParams =
+      navigationContext.getRelevantSearchParameters("basicDetails")
+    searchContext.setAllSearchParameters({
+      ...relevantParams,
+      nhsNumber: nhsNumber
+    })
+    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
+  }
+
+  return (
+    <Table.Row
+      id={`patient-row-${patient.nhsNumber}`}
+      key={patient.nhsNumber}
+      onClick={() => handleRowClick(patient.nhsNumber)}
+      onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}>
+      <Table.Cell headers="header-name">
+        <a
+          href={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${patient.nhsNumber}`}
+          onClick={(e) => {
+            e.preventDefault()
+            handleRowClick(patient.nhsNumber)
+          }}>
+          {nameText}
+          <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
+            {`NHS number ${nhsNumberText}`}
+          </span>
+        </a>
+      </Table.Cell>
+      <Table.Cell headers="header-gender">{genderText}</Table.Cell>
+      <Table.Cell headers="header-dob">{dobText}</Table.Cell>
+      <Table.Cell headers="header-address">{addressText}</Table.Cell>
+      <Table.Cell headers="header-nhs">{nhsNumberText}</Table.Cell>
+    </Table.Row>)
+}
 
 export default function SearchResultsPage() {
   const location = useLocation()
@@ -34,6 +116,12 @@ export default function SearchResultsPage() {
   const [error, setError] = useState(false)
 
   const auth = useAuth()
+
+  // different page titles depending on if theres multiple patients matching
+  const pageTitle = patients.length > 0
+    ? SearchResultsPageStrings.MULTIPLE_PATIENTS_FOUND.replace("{count}", patients.length.toString())
+    : `${SearchResultsPageStrings.TITLE} - Prescription Tracker`
+  usePageTitle(pageTitle)
 
   useEffect(() => {
     getSearchResults()
@@ -87,17 +175,6 @@ export default function SearchResultsPage() {
     }
   }
 
-  const handleRowClick = (nhsNumber: string) => {
-    // only preserve relevant search parameters and add NHS number
-    const relevantParams =
-      navigationContext.getRelevantSearchParameters("basicDetails")
-    searchContext.setAllSearchParameters({
-      ...relevantParams,
-      nhsNumber: nhsNumber
-    })
-    navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
-  }
-
   // Sort by first name
   const sortedPatients = patients
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
@@ -124,7 +201,8 @@ export default function SearchResultsPage() {
 
   // Show not found message if no valid patients
   if (patients.length === 0) {
-    return <PatientNotFoundMessage />
+    navigate(FRONTEND_PATHS.NO_PATIENT_FOUND)
+    return null
   }
 
   // Show too many results message if search returns too many patients
@@ -175,33 +253,7 @@ export default function SearchResultsPage() {
                 </Table.Head>
                 <Table.Body className="patients">
                   {sortedPatients.map((patient) => (
-                    <Table.Row
-                      id={`patient-row-${patient.nhsNumber}`}
-                      key={patient.nhsNumber}
-                      onClick={() => handleRowClick(patient.nhsNumber)}
-                      onKeyDown={e => (e.key === "Enter" || e.key === " ") && handleRowClick(patient.nhsNumber)}
-                    >
-                      <Table.Cell headers="header-name">
-                        <a
-                          href={`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}?nhsNumber=${patient.nhsNumber}`}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            handleRowClick(patient.nhsNumber)
-                          }}
-                        >
-                          {patient.givenName?.[0] ?? ""} {patient.familyName}
-                          <span id={`patient-details-${patient.nhsNumber}`} className="nhsuk-u-visually-hidden">
-                            {`NHS number ${patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}`}
-                          </span>
-                        </a>
-                      </Table.Cell>
-                      <Table.Cell headers="header-gender">{patient.gender}</Table.Cell>
-                      <Table.Cell headers="header-dob">{patient.dateOfBirth}</Table.Cell>
-                      <Table.Cell headers="header-address">{patient.address?.join(", ")}</Table.Cell>
-                      <Table.Cell headers="header-nhs">
-                        {patient.nhsNumber.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
-                      </Table.Cell>
-                    </Table.Row>
+                    <TableResultsRow patient={patient}/>
                   ))}
                 </Table.Body>
               </Table>

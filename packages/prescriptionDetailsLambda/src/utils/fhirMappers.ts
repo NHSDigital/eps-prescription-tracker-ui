@@ -1,5 +1,5 @@
-import {MedicationDispense, MedicationRequest, Patient} from "fhir/r4"
-import {ItemDetails, PatientDetails} from "@cpt-ui-common/common-types"
+import {MedicationDispense, MedicationRequest} from "fhir/r4"
+import {ItemDetails} from "@cpt-ui-common/common-types"
 import {findExtensionByKey, getBooleanFromNestedExtension, getCodeFromNestedExtension} from "./extensionUtils"
 import {Logger} from "@aws-lambda-powertools/logger"
 
@@ -76,39 +76,6 @@ export const mapPrescriptionOrigin = (typeCode: string): string => {
   if (typeCode.startsWith("02") || typeCode.startsWith("2")) return "Wales"
   if (typeCode.startsWith("05") || typeCode.startsWith("50")) return "Isle of Man"
   return "Unknown"
-}
-
-/**
- * Extracts patient details from FHIR Patient resource
- */
-export const extractPatientDetails = (patient: Patient): PatientDetails => {
-  // Extract NHS number from identifiers
-  const nhsNumber = patient.identifier?.[0]?.value ?? "Unknown"
-
-  // Extract name components
-  const name = patient.name?.[0]
-  const prefix = name?.prefix?.[0] ?? ""
-  const suffix = name?.suffix?.[0] ?? ""
-  const given = name?.given?.join(" ") ?? "Unknown"
-  const family = name?.family ?? "Unknown"
-
-  // Extract address components
-  const patientAddress = patient.address?.[0]
-  let address = "Not Found"
-  if (patientAddress) {
-    address = patientAddress.text!
-  }
-
-  return {
-    nhsNumber,
-    prefix,
-    suffix,
-    given,
-    family,
-    gender: patient.gender ?? null,
-    dateOfBirth: patient.birthDate ?? null,
-    address
-  }
 }
 
 /**
