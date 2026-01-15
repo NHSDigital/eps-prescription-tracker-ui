@@ -10,7 +10,6 @@ import {usePatientDetails} from "@/context/PatientDetailsProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import PrescriptionsListTabs from "@/components/prescriptionList/PrescriptionsListTab"
 import {TabHeader} from "@/components/EpsTabs"
-import PrescriptionNotFoundMessage from "@/components/PrescriptionNotFoundMessage"
 import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import EpsBackLink from "@/components/EpsBackLink"
 
@@ -38,7 +37,6 @@ export default function PrescriptionListPage() {
   const [prescriptionCount, setPrescriptionCount] = useState(0)
   const [tabData, setTabData] = useState<Array<TabHeader>>([])
   const [loading, setLoading] = useState(true)
-  const [showNotFound, setShowNotFound] = useState(false)
   const [error, setError] = useState(false)
   usePageTitle(PRESCRIPTION_LIST_PAGE_STRINGS.pageTitle)
 
@@ -48,7 +46,6 @@ export default function PrescriptionListPage() {
   useEffect(() => {
     const runSearch = async () => {
       setLoading(true)
-      setShowNotFound(false) // Reset when search changes
 
       const searchParams = new URLSearchParams()
 
@@ -71,8 +68,7 @@ export default function PrescriptionListPage() {
         logger.info("Response status", {status: response.status})
         if (response.status === 404) {
           logger.warn("No search results were returned")
-          setShowNotFound(true)
-          setLoading(false)
+          navigate(FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND)
           return
         } else if (response.status !== 200) {
           throw new Error(`Status Code: ${response.status}`)
@@ -91,8 +87,7 @@ export default function PrescriptionListPage() {
           )
           setPatientDetails(searchResults.patient)
           setPatientFallback(searchResults.patientFallback)
-          setShowNotFound(true)
-          setLoading(false)
+          navigate(FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND)
           return
         }
 
@@ -130,7 +125,8 @@ export default function PrescriptionListPage() {
             return
           } else if (err.response?.status === 404) {
             logger.warn("No search results were returned", err)
-            setShowNotFound(true)
+            navigate(FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND)
+            return
           } else {
             setError(true)
             logger.error("Error during search", err)
@@ -172,11 +168,6 @@ export default function PrescriptionListPage() {
 
   if (error) {
     return <UnknownErrorMessage />
-  }
-
-  // Show PrescriptionNotFoundMessage if no prescriptions found
-  if (showNotFound) {
-    return <PrescriptionNotFoundMessage />
   }
 
   return (

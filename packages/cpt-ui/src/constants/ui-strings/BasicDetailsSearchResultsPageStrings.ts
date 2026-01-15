@@ -1,6 +1,7 @@
 export const SearchResultsPageStrings = {
   GO_BACK: "Back",
   TITLE: "Search results",
+  MULTIPLE_PATIENTS_FOUND: "We found {count} patients - Prescription Tracker",
   RESULTS_COUNT: "We found {count} results.",
   LOADING: "Loading search results",
   TABLE: {

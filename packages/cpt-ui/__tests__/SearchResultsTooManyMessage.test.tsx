@@ -79,23 +79,23 @@ describe("SearchResultsTooManyMessage", () => {
   })
   it("renders static text content", () => {
     renderWithRouter()
-    expect(screen.getByTestId("too-many-results-heading")).toHaveTextContent(STRINGS.heading)
-    expect(screen.getByTestId("too-many-results-message")).toHaveTextContent(STRINGS.resultsMessage)
-    expect(screen.getByTestId("too-many-results-count-text")).toHaveTextContent(STRINGS.retryMessage)
-    expect(screen.getByTestId("too-many-results-alt-options")).toHaveTextContent(STRINGS.alternativeSearch)
+    expect(screen.getByTestId("too-many-results-heading")).toHaveTextContent(STRINGS.HEADING)
+    expect(screen.getByTestId("too-many-results-message")).toHaveTextContent(STRINGS.RESULTS_MESSAGE)
+    expect(screen.getByTestId("too-many-results-count-text")).toHaveTextContent(STRINGS.RETRY_MESSAGE)
+    expect(screen.getByTestId("too-many-results-alt-options")).toHaveTextContent(STRINGS.ALTERNATIVE_SEARCH)
   })
 
   const navigationLinks = [
     {
-      label: STRINGS.basicDetailsLinkText,
+      label: STRINGS.BASIC_DETAILS_LINK_TEXT,
       expected: "Basic Details Search"
     },
     {
-      label: STRINGS.nhsNumberLinkText,
+      label: STRINGS.NHS_NUMBER_LINK_TEXT,
       expected: "NHS Number Search"
     },
     {
-      label: STRINGS.prescriptionIdLinkText,
+      label: STRINGS.PRESCRIPTION_ID_LINK_TEXT,
       expected: "Prescription ID Search"
     }
   ]
