@@ -62,6 +62,23 @@
   font-weight: 700;
 }
 
+.copy-button:focus,
+.copy-button.nhsuk-button--reverse:focus {
+  background-color: #ffeb3b !important;
+  box-shadow: 0 4px 0 #212b32 !important;
+  color: #212b32 !important;
+  outline: 3px solid #ffeb3b;
+  outline-offset: 0;
+}
+
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus {
+  background-color: #ffeb3b !important;
+  box-shadow: 0 4px 0 #212b32 !important;
+  color: #212b32 !important;
+}
+
 .nhsuk-button--small {
   font-size: 14px;
   line-height: 1.2;
