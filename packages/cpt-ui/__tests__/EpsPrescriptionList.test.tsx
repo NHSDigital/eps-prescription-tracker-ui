@@ -81,6 +81,7 @@ jest.mock("@/constants/environment", () => ({
     PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
     PATIENT_SEARCH_RESULTS: "/patient-search-results",
     PATIENT_NOT_FOUND: "/patient-not-found",
+    NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected",
     SESSION_SELECTION: "/select-active-session",
@@ -90,6 +91,7 @@ jest.mock("@/constants/environment", () => ({
 }))
 
 import PrescriptionListPage from "@/pages/PrescriptionListPage"
+import NoPrescriptionsFoundPage from "@/pages/NoPrescriptionsFoundPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
@@ -194,19 +196,14 @@ const defaultSearchState: SearchProviderContextType = {
 const mockSearchResponse: SearchResponse = {
   patient: {
     nhsNumber: "5900009890",
-    prefix: "Mr",
-    suffix: "",
-    given: "William",
-    family: "Wolderton",
+    givenName: ["William"],
+    familyName: "Wolderton",
     gender: "male",
     dateOfBirth: "01-Nov-1988",
-    address: {
-      line1: "55 OAK STREET",
-      line2: "OAK LANE",
-      city: "Leeds",
-      postcode: "LS1 1XX"
-    }
+    address: ["55 OAK STREET", "OAK LANE", "Leeds"],
+    postcode: "LS1 1XX"
   },
+  patientFallback: false,
   currentPrescriptions: [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
@@ -318,6 +315,7 @@ const renderWithRouter = (
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_PAST} element={<PrescriptionListPage />} />
                 <Route path={FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE} element={<PrescriptionListPage />} />
+                <Route path={FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND} element={<NoPrescriptionsFoundPage />} />
               </Routes>
             </NavigationProvider>
           </MemoryRouter>
@@ -468,6 +466,7 @@ describe("PrescriptionListPage", () => {
   it("shows 0 when there are no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
+      patientFallback: false,
       currentPrescriptions: mockSearchResponse.currentPrescriptions,
       pastPrescriptions: [],
       futurePrescriptions: []
@@ -673,6 +672,7 @@ describe("PrescriptionListPage", () => {
   it("renders the prescription not found message when prescriptionId query returns no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
+      patientFallback: false,
       currentPrescriptions: [],
       pastPrescriptions: [],
       futurePrescriptions: []

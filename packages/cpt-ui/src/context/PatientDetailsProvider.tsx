@@ -7,14 +7,16 @@ import React, {
 } from "react"
 import {useLocation} from "react-router-dom"
 
-import {PatientDetails} from "@cpt-ui-common/common-types"
+import {PatientSummary} from "@cpt-ui-common/common-types"
 import {normalizePath} from "@/helpers/utils"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 
 export type PatientDetailsContextType = {
-  patientDetails: PatientDetails | undefined
-  setPatientDetails: (value: PatientDetails | undefined) => void
+  patientDetails: PatientSummary | undefined
+  patientFallback: boolean
+  setPatientDetails: (value: PatientSummary | undefined) => void
+  setPatientFallback: (value: boolean) => void
   clear: () => void
 }
 
@@ -24,11 +26,13 @@ export const PatientDetailsContext = createContext<PatientDetailsContextType | u
 
 export const PatientDetailsProvider = ({children}: {children: ReactNode}) => {
   const location = useLocation()
-  const [patientDetails, setPatientDetails] = useState<PatientDetails | undefined>(undefined)
+  const [patientDetails, setPatientDetails] = useState<PatientSummary | undefined>(undefined)
+  const [patientFallback, setPatientFallback] = useState<boolean>(true)
 
   const clear = () => {
     logger.info("Clearing patient details context...")
     setPatientDetails(undefined)
+    setPatientFallback(true)
   }
 
   // Clear the patient details if the user navigates away from the pages about the patient
@@ -51,7 +55,9 @@ export const PatientDetailsProvider = ({children}: {children: ReactNode}) => {
     <PatientDetailsContext.Provider
       value={{
         patientDetails,
+        patientFallback,
         setPatientDetails,
+        setPatientFallback,
         clear
       }}
     >

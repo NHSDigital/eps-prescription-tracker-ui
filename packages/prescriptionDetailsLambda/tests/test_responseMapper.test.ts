@@ -159,11 +159,9 @@ describe("mergePrescriptionDetails", () => {
       birthDate: "1980-01-01",
       address: [{
         text: "123 Main St, Anytown, 12345",
-        line: ["123 Main St"],
-        city: "Anytown",
-        district: "AnyDistrict",
+        line: ["123 Main St", "Anytown", "AnyDistrict"],
         postalCode: "12345",
-        type: "physical",
+        type: "both",
         use: "home"
       }]
     }
@@ -295,13 +293,12 @@ describe("mergePrescriptionDetails", () => {
     expect(result).toEqual({
       patientDetails: {
         nhsNumber: "P123",
-        prefix: "Mr.",
-        given: "John",
-        family: "Doe",
-        suffix: "Jr.",
+        givenName: ["John"],
+        familyName: "Doe",
         gender: "male",
         dateOfBirth: "1980-01-01",
-        address: "123 Main St, Anytown, 12345"
+        address: ["123 Main St", "Anytown", "AnyDistrict"],
+        postcode: "12345"
       },
       prescriptionId: "RX123",
       typeCode: "Acute",
@@ -367,20 +364,15 @@ describe("mergePrescriptionDetails", () => {
     })
   })
 
-  it('should default patient details to "Not found" when they are not present', () => {
+  it("should only include the patient details included on the prescription", () => {
     delete patient.name
     delete patient.address
 
     const result = mergePrescriptionDetails(prescriptionBundle, {}, odsCodes)
     expect(result.patientDetails).toEqual({
       nhsNumber: "P123",
-      prefix: "",
-      given: "Unknown",
-      family: "Unknown",
-      suffix: "",
       gender: "male",
-      dateOfBirth: "1980-01-01",
-      address: "Not Found"
+      dateOfBirth: "1980-01-01"
     })
   })
 
@@ -433,13 +425,12 @@ describe("mergePrescriptionDetails", () => {
     // Should use patient1 details
     expect(result.patientDetails).toEqual({
       nhsNumber: "P123",
-      prefix: "Mr.",
-      given: "John",
-      family: "Doe",
-      suffix: "Jr.",
+      givenName: ["John"],
+      familyName: "Doe",
       gender: "male",
       dateOfBirth: "1980-01-01",
-      address: "123 Main St, Anytown, 12345"
+      address: ["123 Main St", "Anytown", "AnyDistrict"],
+      postcode: "12345"
     })
   })
 
