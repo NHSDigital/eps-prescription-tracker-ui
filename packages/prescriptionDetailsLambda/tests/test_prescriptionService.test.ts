@@ -11,7 +11,8 @@ import nock from "nock"
 
 import type {Logger} from "@aws-lambda-powertools/logger"
 import {getDoHSData, processPrescriptionRequest} from "../src/services/prescriptionService"
-import {extractOdsCodes} from "../src/utils/extensionUtils"
+import {Bundle, FhirResource} from "fhir/r4"
+import {PrescriptionOdsCodes, extractOdsCodes} from "../src/utils/extensionUtils"
 
 const {
   mockUuidV4,
@@ -39,10 +40,6 @@ vi.mock("@cpt-ui-common/doHSClient", () => ({
 vi.mock("../src/utils/responseMapper", () => ({
   mergePrescriptionDetails: mockMergePrescriptionDetails
 }))
-
-// Import some mock objects to use in our tests.
-import {Bundle, FhirResource} from "fhir/r4"
-import {PrescriptionOdsCodes} from "../src/utils/extensionUtils"
 
 describe("prescriptionService", () => {
   let logger: Logger
