@@ -13,6 +13,7 @@ import nock from "nock"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {handler} from "../src/token"
 
 const {
   mockVerifyIdToken,
@@ -145,11 +146,6 @@ vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
     getSecret
   }
 })
-
-process.env.useMock = "false"
-process.env.TokenMappingTableName = "test-token-mapping-table"
-process.env.SessionManagementTableName = "test-session-management-table"
-const {handler} = await import("../src/token")
 
 describe("cis2 token handler", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
@@ -293,7 +289,7 @@ describe("cis2 token handler", () => {
     // Should insert into token mapping table (not concurrent session)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-token-mapping-table", // token mapping table
+      "dummyTable", // token mapping table
       {
         username: `${CIS2_USER_POOL_IDP}_foo`,
         sessionId: "session-id",
@@ -341,7 +337,7 @@ describe("cis2 token handler", () => {
     // Should insert into token mapping table (new user)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-token-mapping-table", // token mapping table
+      "dummyTable", // token mapping table
       {
         username: `${CIS2_USER_POOL_IDP}_foo`,
         sessionId: "session-id",

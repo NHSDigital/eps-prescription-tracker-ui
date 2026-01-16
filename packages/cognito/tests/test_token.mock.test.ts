@@ -12,6 +12,7 @@ import createJWKSMock from "mock-jwks"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {handler} from "../src/tokenMock"
 
 const {
   mockInitializeOidcConfig,
@@ -47,8 +48,6 @@ const dummyContext = {
   fail: () => console.log("Failed!"),
   succeed: () => console.log("Succeeded!")
 }
-
-const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
 const {
   privateKey
@@ -102,6 +101,7 @@ vi.mock("@cpt-ui-common/authFunctions", () => {
       cacheMaxEntries: 5,
       cacheMaxAge: 3600000 // 1 hour
     })
+    const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
     const mockOidcConfig: OidcConfig = {
       oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
@@ -134,8 +134,6 @@ vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
     getSecret
   }
 })
-
-const {handler} = await import("../src/tokenMock")
 
 describe("token mock handler", () => {
   const jwks = createJWKSMock("https://dummy_mock_auth.com/")

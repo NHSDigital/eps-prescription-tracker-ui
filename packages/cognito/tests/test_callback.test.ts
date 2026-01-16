@@ -9,7 +9,7 @@ import {
 
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/callback")
+import {handler} from "../src/callback"
 
 describe("callback handler", () => {
   beforeEach(() => {

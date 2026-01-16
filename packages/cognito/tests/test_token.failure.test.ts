@@ -12,6 +12,7 @@ import createJWKSMock from "mock-jwks"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {handler} from "../src/token"
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -137,8 +138,6 @@ vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
     getSecret
   }
 })
-
-const {handler} = await import("../src/token")
 
 describe("cis2 token handler tests - failures", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")

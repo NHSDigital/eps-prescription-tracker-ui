@@ -11,7 +11,7 @@ process.env.useMock = "true"
 
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/authorizeMock")
+import {handler} from "../src/authorizeMock"
 
 describe("authorize mock handler", () => {
   beforeEach(() => {

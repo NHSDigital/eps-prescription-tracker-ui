@@ -7,12 +7,11 @@ import {
   it,
   vi
 } from "vitest"
+import {rewriteRequestBody} from "../src/helpers"
 
 // mock jwt.sign before importing rewriteRequestBody
 const sign = vi.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
-
-const {rewriteRequestBody} = await import("../src/helpers")
 
 describe("rewriteRequestBody tests", () => {
   const logger = new Logger()

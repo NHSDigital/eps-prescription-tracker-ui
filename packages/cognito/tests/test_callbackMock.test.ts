@@ -11,7 +11,7 @@ import {
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
-const {handler} = await import("../src/callbackMock")
+import {handler} from "../src/callbackMock"
 
 describe("Callback mock handler", () => {
   beforeEach(() => {
