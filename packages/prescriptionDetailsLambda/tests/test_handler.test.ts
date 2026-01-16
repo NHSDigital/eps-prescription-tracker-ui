@@ -11,6 +11,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
 import {AuthenticateRequestOptions} from "@cpt-ui-common/authFunctions"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {newHandler} from "../src/handler"
 
 const {
   mockProcessPrescriptionRequest,
@@ -38,9 +39,6 @@ vi.mock("@cpt-ui-common/authFunctions", () => ({
   buildApigeeHeaders: mockBuildApigeeHeaders,
   authenticationMiddleware: mockAuthenticationMiddleware
 }))
-
-// Import the handler after the mocks have been defined.
-const {newHandler} = await import("../src/handler")
 
 describe("Lambda Handler Tests", () => {
   // Create copy of the event for testing.
