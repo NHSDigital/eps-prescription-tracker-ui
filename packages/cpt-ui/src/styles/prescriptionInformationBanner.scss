@@ -56,14 +56,16 @@
 
 .copy-button {
   background-color: #007f3b;
-  box-shadow: 0 4px 0 #004721;
   color: #ffffff;
   display: inline-block;
   font-weight: 700;
 }
 
 .copy-button:focus,
-.copy-button.nhsuk-button--reverse:focus {
+.copy-button.nhsuk-button--reverse:focus,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus {
   background-color: #ffeb3b !important;
   box-shadow: 0 4px 0 #212b32 !important;
   color: #212b32 !important;
@@ -72,13 +74,7 @@
 }
 
 .copy-button:focus:active,
-.copy-button.nhsuk-button--reverse:focus:active {
-  background-color: #004721 !important;
-  box-shadow: 0 4px 0 #002c15 !important;
-  color: #ffffff !important;
-  outline: none !important;
-}
-
+.copy-button.nhsuk-button--reverse:focus:active,
 .copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus:active,
 .copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus:active,
 .copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus:active {
@@ -88,13 +84,7 @@
   outline: none !important;
 }
 
-.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus,
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus {
-  background-color: #ffeb3b !important;
-  box-shadow: 0 4px 0 #212b32 !important;
-  color: #212b32 !important;
-}
+
 
 .nhsuk-button--small {
   font-size: 14px;
@@ -123,32 +113,6 @@
 .copy-button.nhsuk-button--reverse.nhsuk-button--reverse:active,
 .copy-button.nhsuk-button--reverse.nhsuk-button--reverse:active:visited {
   background-color: #007f3b;
-  color: #ffffff;
-}
-
-.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:hover,
-.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:hover:visited {
-  background-color: #00662f;
-  color: #ffffff;
-}
-
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary,
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:visited,
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:active,
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:active:visited,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:visited,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:active,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:active:visited {
-  background-color: #007f3b;
-  color: #ffffff;
-}
-
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:hover,
-.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:hover:visited,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:hover,
-.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:hover:visited {
-  background-color: #00662f;
   color: #ffffff;
 }
 
