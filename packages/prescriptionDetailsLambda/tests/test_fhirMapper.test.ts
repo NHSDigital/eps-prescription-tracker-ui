@@ -1,10 +1,5 @@
-import {MedicationDispense, MedicationRequest, Patient} from "fhir/r4"
-import {
-  extractPatientDetails,
-  mapMessageHistoryTitleToMessageCode,
-  mapPrescriptionOrigin,
-  extractItems
-} from "../src/utils/fhirMappers"
+import {MedicationDispense, MedicationRequest} from "fhir/r4"
+import {mapMessageHistoryTitleToMessageCode, mapPrescriptionOrigin, extractItems} from "../src/utils/fhirMappers"
 
 describe("mapMessageHistoryTitleToMessageCode", () => {
   it("should map common message titles correctly", () => {
@@ -57,83 +52,6 @@ describe("mapPrescriptionOrigin", () => {
 
   it("should handle undefined typeCode gracefully", () => {
     expect(mapPrescriptionOrigin("")).toBe("Unknown")
-  })
-})
-
-describe("extractPatientDetails", () => {
-  it("should extract complete patient details", () => {
-    const patient: Patient = {
-      resourceType: "Patient",
-      identifier: [{value: "1234567890"}],
-      name: [{
-        prefix: ["Mr."],
-        given: ["John", "Q."],
-        family: "Doe",
-        suffix: ["Jr."]
-      }],
-      gender: "male",
-      birthDate: "1980-01-15",
-      address: [{
-        line: ["123 Main St", "Apt 4B"],
-        city: "Anytown",
-        postalCode: "12345",
-        text: "123 Main St, Apt 4B, Anytown, 12345"
-      }]
-    }
-
-    const result = extractPatientDetails(patient)
-    expect(result).toEqual({
-      nhsNumber: "1234567890",
-      prefix: "Mr.",
-      suffix: "Jr.",
-      given: "John Q.",
-      family: "Doe",
-      gender: "male",
-      dateOfBirth: "1980-01-15",
-      address: "123 Main St, Apt 4B, Anytown, 12345"
-    })
-  })
-
-  it("should handle minimal patient data", () => {
-    const patient: Patient = {
-      resourceType: "Patient",
-      identifier: [{value: "1234567890"}],
-      name: [{family: "Doe"}]
-    }
-
-    const result = extractPatientDetails(patient)
-    expect(result).toEqual({
-      nhsNumber: "1234567890",
-      prefix: "",
-      suffix: "",
-      given: "Unknown",
-      family: "Doe",
-      gender: null,
-      dateOfBirth: null,
-      address: "Not Found"
-    })
-  })
-
-  it("should handle patient with missing address", () => {
-    const patient: Patient = {
-      resourceType: "Patient",
-      identifier: [{value: "1234567890"}],
-      name: [{family: "Doe", given: ["John"]}],
-      gender: "male"
-    }
-
-    const result = extractPatientDetails(patient)
-    expect(result.address).toBe("Not Found")
-  })
-
-  it("should join multiple given names", () => {
-    const patient: Patient = {
-      resourceType: "Patient",
-      name: [{given: ["John", "James", "Jacob"]}]
-    }
-
-    const result = extractPatientDetails(patient)
-    expect(result.given).toBe("John James Jacob")
   })
 })
 

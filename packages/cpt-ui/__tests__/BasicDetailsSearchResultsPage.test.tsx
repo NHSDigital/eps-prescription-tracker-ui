@@ -13,6 +13,13 @@ import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
 import {AxiosError, AxiosHeaders} from "axios"
+import {
+  PatientAddressUse,
+  PatientNameUse,
+  PatientSummary,
+  PatientSummaryGender
+} from "@cpt-ui-common/common-types"
+import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
@@ -103,22 +110,24 @@ const defaultSearchState: SearchProviderContextType = {
   setAllSearchParameters: mockSetAllSearchParameters
 }
 
-const mockPatients = [
+const mockPatients: Array<PatientSummary> = [
   {
     nhsNumber: "9726919207",
     givenName: ["Issac"],
     familyName: "Wolderton-Rodriguez",
-    gender: "Male",
-    dateOfBirth: "6-May-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
+    gender: PatientSummaryGender.MALE,
+    dateOfBirth: "2013-05-06",
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+    postcode: "LS6 1JL"
   },
   {
     nhsNumber: "9725919207",
     givenName: ["Steve"],
     familyName: "Wolderton-Rodriguez",
-    gender: "Male",
-    dateOfBirth: "6-May-2013",
-    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire", "LS6 1JL"]
+    gender: PatientSummaryGender.MALE,
+    dateOfBirth: "2013-05-16",
+    address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+    postcode: "LS6 1JL"
   }
 ]
 
@@ -219,7 +228,7 @@ describe("BasicDetailsSearchResultsPage", () => {
       // Check first patient
       expect(screen.getByText("Issac Wolderton-Rodriguez")).toBeInTheDocument()
       expect(screen.getAllByText("Male")[0]).toBeInTheDocument()
-      expect(screen.getAllByText("6-May-2013")[0]).toBeInTheDocument()
+      expect(screen.getAllByText("16 May 2013")[0]).toBeInTheDocument()
       expect(screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL")[0])
         .toBeInTheDocument()
       expect(screen.getByText("972 691 9207")).toBeInTheDocument()
@@ -227,10 +236,134 @@ describe("BasicDetailsSearchResultsPage", () => {
       // Check second patient
       expect(screen.getByText("Steve Wolderton-Rodriguez")).toBeInTheDocument()
       expect(screen.getAllByText("Male")[1]).toBeInTheDocument()
-      expect(screen.getAllByText("6-May-2013")[1]).toBeInTheDocument()
+      expect(screen.getAllByText("6 May 2013")[0]).toBeInTheDocument()
       expect(screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL")[1])
         .toBeInTheDocument()
       expect(screen.getByText("972 591 9207")).toBeInTheDocument()
+    })
+  })
+
+  it("renders patient data correctly when values are temporary", async () => {
+    const mockTempPatients: Array<PatientSummary> = [
+      {
+        nhsNumber: "9726919207",
+        givenName: ["Issac"],
+        familyName: "Wolderton-Rodriguez",
+        gender: PatientSummaryGender.MALE,
+        nameUse: PatientNameUse.TEMP,
+        dateOfBirth: "2013-05-06",
+        address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+        postcode: "LS6 1JL"
+      },
+      {
+        nhsNumber: "9725919207",
+        givenName: ["Steve"],
+        familyName: "Wolderton-Rodriguez",
+        gender: PatientSummaryGender.MALE,
+        dateOfBirth: "2013-05-16",
+        address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+        postcode: "LS6 1JL",
+        addressUse: PatientAddressUse.TEMP
+      }
+    ]
+
+    mockAxiosGet.mockResolvedValue({
+      status: 200,
+      data: mockTempPatients})
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getByText(`Issac Wolderton-Rodriguez${STRINGS.TEMPORARY}`)).toBeInTheDocument()
+      expect(screen.getByText(`123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL${STRINGS.TEMPORARY}`)
+      ).toBeInTheDocument()
+    })
+  })
+
+  it("renders patient data correctly when partial values are returned", async () => {
+    const mockPartialPatients: Array<PatientSummary> = [
+      {
+        nhsNumber: "9726919207",
+        givenName: ["Issac"],
+        familyName: "n/a",
+        gender: PatientSummaryGender.MALE,
+        dateOfBirth: "2013-05-06",
+        address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+        postcode: "LS6 1JL"
+      },
+      {
+        nhsNumber: "9725919207",
+        givenName: "n/a",
+        familyName: "Wolderton-Rodriguez",
+        gender: PatientSummaryGender.MALE,
+        dateOfBirth: "2013-05-16",
+        address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+        postcode: "LS6 1JL"
+      },
+      {
+        nhsNumber: "9726919207",
+        givenName: ["Issac"],
+        familyName: "Wolderton-Rodriguez",
+        gender: PatientSummaryGender.MALE,
+        dateOfBirth: "2013-05-06",
+        address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+        postcode: "n/a"
+      },
+      {
+        nhsNumber: "9725919207",
+        givenName: ["Steve"],
+        familyName: "Wolderton-Rodriguez",
+        gender: PatientSummaryGender.MALE,
+        dateOfBirth: "2013-05-16",
+        address: "n/a",
+        postcode: "LS6 1JL"
+      }
+    ]
+
+    mockAxiosGet.mockResolvedValue({
+      status: 200,
+      data: mockPartialPatients})
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getAllByText(STRINGS.NOT_ON_RECORD)[0]).toBeInTheDocument()
+      expect(screen.getAllByText(STRINGS.NOT_ON_RECORD)[1]).toBeInTheDocument()
+      expect(screen.getByText("123 Brundel Close, Headingley, Leeds, West Yorkshire")).toBeInTheDocument()
+      expect(screen.getByText("LS6 1JL")).toBeInTheDocument()
+    })
+  })
+
+  it("renders not available content for fields when pds record has missing data", async () => {
+    const mockNAPatients: Array<PatientSummary> = [
+      {
+        nhsNumber: "9726919207",
+        givenName: ["Issac"],
+        familyName: "Wolderton-Rodriguez",
+        gender: PatientSummaryGender.MALE,
+        dateOfBirth: "2013-05-06",
+        address: ["123 Brundel Close", "Headingley", "Leeds", "West Yorkshire"],
+        postcode: "LS6 1JL"
+      },
+      {
+        nhsNumber: "9725919207",
+        givenName: "n/a",
+        familyName: "n/a",
+        gender: "n/a",
+        dateOfBirth: "n/a",
+        address: "n/a",
+        postcode: "n/a"
+      }
+    ]
+
+    mockAxiosGet.mockResolvedValue({
+      status: 200,
+      data: mockNAPatients})
+
+    renderWithRouter()
+
+    await waitFor(() => {
+      expect(screen.getAllByText(STRINGS.NOT_ON_RECORD)).toHaveLength(4)
     })
   })
 
@@ -387,7 +520,7 @@ describe("BasicDetailsSearchResultsPage", () => {
       const genderCells = screen.getAllByText("Male")
       expect(genderCells[0].closest("td")).toHaveAttribute("headers", "header-gender")
 
-      const dobCells = screen.getAllByText("6-May-2013")
+      const dobCells = screen.getAllByText("6 May 2013")
       expect(dobCells[0].closest("td")).toHaveAttribute("headers", "header-dob")
 
       const addressCells = screen.getAllByText("123 Brundel Close, Headingley, Leeds, West Yorkshire, LS6 1JL")
