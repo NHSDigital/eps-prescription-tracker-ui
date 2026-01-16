@@ -1,55 +1,58 @@
-import {jest} from "@jest/globals"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import jwksClient from "jwks-rsa"
+import {fetchUserInfo} from "../src/userInfoHelpers"
 
 const oidcClientId = "valid_aud"
 const oidcIssuer = "valid_iss"
 const jwksEndpoint = "https://dummyauth.com/.well-known/jwks.json"
 
+const {
+  mockExtractRoleInformation,
+  mockVerifyIdToken,
+  mockDecodeToken
+} = vi.hoisted(() => ({
+  mockExtractRoleInformation: vi.fn(),
+  mockVerifyIdToken: vi.fn(),
+  mockDecodeToken: vi.fn()
+}))
+
 const mockLogger: Partial<Logger> = {
-  info: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn()
+  info: vi.fn(),
+  debug: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn()
 }
 
-const mockExtractRoleInformation = jest.fn()
-
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  return {
-    extractRoleInformation: mockExtractRoleInformation
-  }
-})
-
-const mockVerifyIdToken = jest.fn()
-const mockDecodeToken = jest.fn()
+vi.mock("@cpt-ui-common/dynamoFunctions", () => ({
+  extractRoleInformation: mockExtractRoleInformation
+}))
 
 // We need a dummy verification to pass so we can decode out the selected role ID
-jest.unstable_mockModule("../src/cis2", async () => {
-  const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
-    return {
-      selected_roleid: "role-id-1"
-    }
-  })
+vi.mock("../src/cis2", () => {
+  mockVerifyIdToken.mockImplementation(async () => ({
+    selected_roleid: "role-id-1"
+  }))
 
-  const decodeToken = mockDecodeToken.mockImplementation(() => {
-    return {
-      selected_roleid: "role-id-1"
-    }
-  })
+  mockDecodeToken.mockImplementation(() => ({
+    selected_roleid: "role-id-1"
+  }))
 
   return {
     __esModule: true,
-    // This will need to be made to return the decoded ID token, which should be like:
-    // { selected_roleid: "foo" }
-    verifyIdToken: verifyIdToken,
-    decodeToken: decodeToken
+    verifyIdToken: mockVerifyIdToken,
+    decodeToken: mockDecodeToken
   }
 })
-
-const {fetchUserInfo} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
   const accessToken = "test-access-token"
@@ -75,7 +78,7 @@ describe("fetchUserInfo", () => {
   }
 
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   afterEach(() => {
@@ -136,7 +139,7 @@ describe("fetchUserInfo", () => {
       ]
     }
 
-    const getSpy = jest.spyOn(axios, "get").mockResolvedValue({data})
+    const getSpy = vi.spyOn(axios, "get").mockResolvedValue({data})
 
     mockVerifyIdToken.mockImplementation(async () => {
       return {
@@ -281,7 +284,7 @@ describe("fetchUserInfo", () => {
       ]
     }
 
-    const getSpy = jest.spyOn(axios, "get").mockResolvedValue({data})
+    const getSpy = vi.spyOn(axios, "get").mockResolvedValue({data})
 
     mockVerifyIdToken.mockImplementation(async () => {
       return {
@@ -390,7 +393,7 @@ describe("fetchUserInfo", () => {
   })
 
   it("should throw an error if axios request fails", async () => {
-    jest.spyOn(axios, "get").mockRejectedValue(new Error("Network error"))
+    vi.spyOn(axios, "get").mockRejectedValue(new Error("Network error"))
 
     await expect(
       fetchUserInfo(

@@ -1,50 +1,57 @@
 /* eslint-disable max-len */
-import {jest} from "@jest/globals"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 import nock from "nock"
 
 import type {Logger} from "@aws-lambda-powertools/logger"
+import {getDoHSData, processPrescriptionRequest} from "../src/services/prescriptionService"
+import {Bundle, FhirResource} from "fhir/r4"
+import {PrescriptionOdsCodes, extractOdsCodes} from "../src/utils/extensionUtils"
+
+const {
+  mockUuidV4,
+  mockDoHSClient,
+  mockMergePrescriptionDetails
+} = vi.hoisted(() => {
+  return {
+    mockUuidV4: vi.fn(() => "test-uuid"),
+    mockDoHSClient: vi.fn(),
+    mockMergePrescriptionDetails: vi.fn()
+  }
+})
 
 // Mock uuid so that it is predictable.
-jest.unstable_mockModule("uuid", () => ({
-  v4: jest.fn(() => "test-uuid")
+vi.mock("uuid", () => ({
+  v4: mockUuidV4
 }))
 
 // Create a mock for the doHSClient function.
-const mockDoHSClient = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/doHSClient", () => ({
+vi.mock("@cpt-ui-common/doHSClient", () => ({
   doHSClient: mockDoHSClient
 }))
 
 // Mock mergePrescriptionDetails from responseMapper.
-const mockMergePrescriptionDetails = jest.fn()
-jest.unstable_mockModule("../src/utils/responseMapper", () => ({
+vi.mock("../src/utils/responseMapper", () => ({
   mergePrescriptionDetails: mockMergePrescriptionDetails
 }))
-
-// Import some mock objects to use in our tests.
-import {Bundle, FhirResource} from "fhir/r4"
-import {PrescriptionOdsCodes} from "../src/utils/extensionUtils"
-
-const {
-  getDoHSData,
-  processPrescriptionRequest
-} = await import("../src/services/prescriptionService")
-
-const {
-  extractOdsCodes
-} = await import("../src/utils/extensionUtils")
 
 describe("prescriptionService", () => {
   let logger: Logger
 
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
     // Clean up any pending nock interceptors
     nock.cleanAll()
     logger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
     } as unknown as Logger
   })
 

@@ -72,44 +72,8 @@ test: compile
 	npm run test --workspace packages/testingSupport/clearActiveSessions
 
 clean:
-	rm -rf packages/cdk/coverage
-	rm -rf packages/cdk/lib
-	rm -rf packages/CIS2SignOutLambda/coverage
-	rm -rf packages/CIS2SignOutLambda/lib
-	rm -rf packages/cloudfrontFunctions/coverage
-	rm -rf packages/cloudfrontFunctions/lib
-	rm -rf packages/cognito/coverage
-	rm -rf packages/cognito/lib
-	rm -rf packages/cpt-ui/dist
-	rm -rf packages/cpt-ui/coverage
-	rm -rf packages/patientSearchLambda/coverage
-	rm -rf packages/patientSearchLambda/lib
-	rm -rf packages/prescriptionDetailsLambda/coverage
-	rm -rf packages/prescriptionDetailsLambda/lib
-	rm -rf packages/prescriptionListLambda/coverage
-	rm -rf packages/prescriptionListLambda/lib
-	rm -rf packages/selectedRoleLambda/coverage
-	rm -rf packages/selectedRoleLambda/lib
-	rm -rf packages/trackerUserInfoLambda/coverage
-	rm -rf packages/trackerUserInfoLambda/lib
-	rm -rf packages/sessionManagementLambda/coverage
-	rm -rf packages/sessionManagementLambda/lib
-	rm -rf packages/common/authFunctions/coverage
-	rm -rf packages/common/authFunctions/lib
-	rm -rf packages/common/commonTypes/coverage
-	rm -rf packages/common/commonTypes/lib
-	rm -rf packages/common/doHSClient/coverage
-	rm -rf packages/common/doHSClient/lib
-	rm -rf packages/common/dynamoFunctions/coverage
-	rm -rf packages/common/dynamoFunctions/lib
-	rm -rf packages/common/lambdaUtils/coverage
-	rm -rf packages/common/lambdaUtils/lib
-	rm -rf packages/common/middyErrorHandler/coverage
-	rm -rf packages/common/middyErrorHandler/lib
-	rm -rf packages/common/pdsClient/coverage
-	rm -rf packages/common/pdsClient/lib
-	rm -rf packages/common/testing/coverage
-	rm -rf packages/common/testing/lib
+	find . -name 'coverage' -type d -prune -exec rm -rf '{}' +
+	find . -name 'lib' -type d -prune -exec rm -rf '{}' +
 	rm -rf cdk.out
 	rm -rf .local_config
 	rm -rf cfn_guard_output

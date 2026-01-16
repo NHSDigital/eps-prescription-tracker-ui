@@ -1,17 +1,19 @@
-import {jest} from "@jest/globals"
-
 import {APIGatewayProxyEvent} from "aws-lambda"
-
-// Set required environment variables before importing the handler.
-process.env.COGNITO_DOMAIN = "cognito.example.com"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 // Import the handler after setting env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/callback")
+import {handler} from "../src/callback"
 
 describe("callback handler", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it("should redirect to Cognito with correct parameters", async () => {
