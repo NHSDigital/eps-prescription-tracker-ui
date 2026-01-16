@@ -9,6 +9,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
+import {authenticateRequest} from "../src/authenticateRequest"
 
 const {
   mockJwtDecode,
@@ -87,9 +88,6 @@ vi.mock("../src/index", () => ({
   decodeToken: mockDecodeToken,
   verifyIdToken: mockVerifyIdToken
 }))
-
-const authModule = await import("../src/authenticateRequest")
-const {authenticateRequest} = authModule
 
 describe("authenticateRequest", () => {
   // Common test setup

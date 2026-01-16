@@ -11,6 +11,7 @@ import {
 
 import type {AxiosInstance} from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
+import {exchangeTokenForApigeeAccessToken, refreshApigeeAccessToken, buildApigeeHeaders} from "../src/apigee"
 
 const mockLogger: Partial<Logger> = {
   info: vi.fn(),
@@ -22,10 +23,6 @@ const mockAxiosPost = vi.fn()
 const axiosInstance = {
   post: mockAxiosPost
 } as unknown as AxiosInstance
-
-const {exchangeTokenForApigeeAccessToken,
-  refreshApigeeAccessToken,
-  buildApigeeHeaders} = await import("../src/apigee")
 
 describe("apigeeUtils", () => {
   beforeAll(() => {

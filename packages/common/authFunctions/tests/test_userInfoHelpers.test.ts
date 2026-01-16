@@ -10,6 +10,7 @@ import {
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios from "axios"
 import jwksClient from "jwks-rsa"
+import {fetchUserInfo} from "../src/userInfoHelpers"
 
 const oidcClientId = "valid_aud"
 const oidcIssuer = "valid_iss"
@@ -52,8 +53,6 @@ vi.mock("../src/cis2", () => {
     decodeToken: mockDecodeToken
   }
 })
-
-const {fetchUserInfo} = await import("../src/userInfoHelpers")
 
 describe("fetchUserInfo", () => {
   const accessToken = "test-access-token"

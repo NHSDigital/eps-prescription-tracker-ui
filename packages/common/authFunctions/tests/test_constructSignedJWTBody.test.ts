@@ -7,12 +7,11 @@ import {
 
 import jwt from "jsonwebtoken"
 import {Logger} from "@aws-lambda-powertools/logger"
+import {constructSignedJWTBody} from "../src/apigee"
 
 // mock jwt.sign before importing constructSignedJWTBody
 const sign = vi.spyOn(jwt, "sign")
 sign.mockImplementation(() => "mocked-jwt-token")
-
-const {constructSignedJWTBody} = await import("../src/apigee")
 
 describe("constructSignedJWTBody tests", () => {
   const logger = new Logger()

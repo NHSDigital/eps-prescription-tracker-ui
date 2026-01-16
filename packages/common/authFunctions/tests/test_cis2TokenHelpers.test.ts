@@ -13,17 +13,14 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import jwksClient from "jwks-rsa"
 import jwt from "jsonwebtoken"
 import createJWKSMock from "mock-jwks"
+import {getSigningKey, verifyIdToken} from "../src/cis2"
+import {getUsernameFromEvent} from "../src/event"
 
 // Common test setup
 const logger = new Logger()
 const oidcClientId = process.env["CIS2_OIDC_CLIENT_ID"]
 const oidcIssuer = process.env["CIS2_OIDC_ISSUER"]
 const jwksEndpoint = process.env["CIS2_OIDCJWKS_ENDPOINT"]
-
-const {getSigningKey,
-  verifyIdToken} = await import("../src/cis2")
-
-const {getUsernameFromEvent} = await import("../src/event")
 
 let jwksMock: ReturnType<typeof createJWKSMock>
 let stopJwksMock: () => void

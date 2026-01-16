@@ -10,6 +10,7 @@ import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
+import {authenticationConcurrentAwareMiddleware} from "../src/authenticationConcurrentAwareMiddleware"
 
 const {
   mockGetUsernameFromEvent,
@@ -35,8 +36,6 @@ vi.mock("../src/authenticateRequest", () => ({
 vi.mock("@cpt-ui-common/dynamoFunctions", () => ({
   tryGetTokenMapping: mockTryGetTokenMapping
 }))
-
-const {authenticationConcurrentAwareMiddleware} = await import("../src/authenticationConcurrentAwareMiddleware")
 
 describe("authenticationConcurrentAwareMiddleware", () => {
   let logger: Logger
