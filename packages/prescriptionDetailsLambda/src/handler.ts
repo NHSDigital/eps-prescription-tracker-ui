@@ -15,8 +15,7 @@ import {
   AuthenticateRequestOptions,
   authenticationMiddleware,
   authParametersFromEnv,
-  AuthResult,
-  buildApigeeHeaders
+  AuthResult
 } from "@cpt-ui-common/authFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
@@ -26,7 +25,8 @@ import {formatHeaders} from "@cpt-ui-common/lambdaUtils/lib/src/headers"
 
 type HandlerParameters = {
   logger: Logger,
-  apigeePrescriptionsEndpoint: string
+  prescriptionsEndpoint: string
+  personalDemographicsEndpoint: string
 }
 
 export type HandlerInitialisationParameters = {
@@ -34,13 +34,14 @@ export type HandlerInitialisationParameters = {
   logger: Logger,
   documentClient: DynamoDBDocumentClient,
   apigeePrescriptionsEndpoint: string,
+  apigeePersonalDemographicsEndpoint: string,
   authenticationParameters: AuthenticateRequestOptions,
   axiosInstance: AxiosInstance
 }
 
 const lambdaHandler = async (
   event: APIGatewayProxyEventBase<AuthResult>,
-  {logger, apigeePrescriptionsEndpoint}: HandlerParameters
+  {logger, prescriptionsEndpoint, personalDemographicsEndpoint}: HandlerParameters
 ): Promise<APIGatewayProxyResult> => {
   const correlationId = event.headers["x-correlation-id"] || crypto.randomUUID()
 
@@ -68,14 +69,12 @@ const lambdaHandler = async (
   // Extract issueNumber from query parameters, default to "1" if not provided
   const issueNumber = event.queryStringParameters?.issueNumber || "1"
 
-  const headers = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
-
   // Pass the gathered data in to the processor for the request
   const response = await processPrescriptionRequest(
     prescriptionId,
     issueNumber,
-    apigeePrescriptionsEndpoint,
-    headers,
+    {prescriptionsEndpoint, personalDemographicsEndpoint},
+    {apigeeAccessToken, roleId, orgCode, correlationId},
     logger
   )
 
@@ -92,7 +91,8 @@ const lambdaHandler = async (
 export const newHandler = (initParams: HandlerInitialisationParameters) => {
   const params: HandlerParameters = {
     logger: initParams.logger,
-    apigeePrescriptionsEndpoint: initParams.apigeePrescriptionsEndpoint
+    prescriptionsEndpoint: initParams.apigeePrescriptionsEndpoint,
+    personalDemographicsEndpoint: initParams.apigeePersonalDemographicsEndpoint
   }
 
   return middy((event: APIGatewayProxyEventBase<AuthResult>) => lambdaHandler(event, params))
@@ -120,6 +120,7 @@ export const newHandler = (initParams: HandlerInitialisationParameters) => {
 
 // External endpoints and environment variables
 const apigeePrescriptionsEndpoint = process.env["apigeePrescriptionsEndpoint"] as string
+const apigeePersonalDemographicsEndpoint = process.env["apigeePersonalDemographicsEndpoint"] as string
 const authenticationParameters = authParametersFromEnv()
 
 // DynamoDB client setup
@@ -135,6 +136,7 @@ const DEFAULT_HANDLER_PARAMETERS: HandlerInitialisationParameters = {
   logger: new Logger({serviceName: "prescriptionDetails"}),
   documentClient,
   apigeePrescriptionsEndpoint,
+  apigeePersonalDemographicsEndpoint,
   authenticationParameters,
   axiosInstance
 }

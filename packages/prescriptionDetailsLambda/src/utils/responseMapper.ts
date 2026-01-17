@@ -264,6 +264,7 @@ export const mergePrescriptionDetails = (
 
   return {
     patientDetails,
+    patientFallback: true,
     prescriptionId,
     typeCode,
     ...(statusCode ? {statusCode} : {statusCode: "unknown"}),

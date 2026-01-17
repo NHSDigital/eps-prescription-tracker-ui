@@ -10,6 +10,7 @@ export const mockPrescriptionDetailsResponse: PrescriptionDetailsResponse = {
     address: ["Some address", "123 Street", "City"],
     postcode: "LS11TW"
   },
+  patientFallback: false,
   prescriptionId: "SUCCESS_ID",
   typeCode: "acute",
   statusCode: "status",

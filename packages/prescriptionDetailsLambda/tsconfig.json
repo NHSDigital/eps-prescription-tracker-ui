@@ -20,6 +20,12 @@
     },
     {
       "path": "../common/commonTypes"
+    },
+    {
+      "path": "../common/lambdaUtils"
+    },
+    {
+      "path": "../common/pdsClient"
     }
   ]
 }

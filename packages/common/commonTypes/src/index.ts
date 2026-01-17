@@ -36,4 +36,4 @@ export type {
   TrackerUserInfoResult
 } from "./trackerUserInfo"
 
-export {Headers} from "./headers"
+export {Headers, ApigeeConfig} from "./headers"
