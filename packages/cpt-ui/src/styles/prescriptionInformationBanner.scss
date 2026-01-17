@@ -56,19 +56,43 @@
 
 .copy-button {
   background-color: #007f3b;
-  box-shadow: 0 4px 0 #004721;
   color: #ffffff;
   display: inline-block;
-  padding-top: 0;
-  padding-bottom: 0;
-  font-size: 0.875rem;
-  line-height: 1.71429;
+  font-weight: 700;
+}
 
-  @media (max-width: 640px) {
-    font-size: 0.75rem;
-    line-height: 1.6667;
-    padding-top: 0;
-    padding-bottom: 0;
+.copy-button:focus,
+.copy-button.nhsuk-button--reverse:focus,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus {
+  background-color: #ffeb3b !important;
+  box-shadow: 0 4px 0 #212b32 !important;
+  color: #212b32 !important;
+  outline: 3px solid #ffeb3b;
+  outline-offset: 0;
+}
+
+.copy-button:focus:active,
+.copy-button.nhsuk-button--reverse:focus:active,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:focus:active,
+.copy-button.nhsuk-button--secondary.nhsuk-button--secondary:focus:active,
+.copy-button.nhsuk-button--secondary-solid.nhsuk-button--secondary-solid:focus:active {
+  background-color: #004721 !important;
+  box-shadow: 0 4px 0 #002c15 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
+
+
+.nhsuk-button--small {
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 4px 16px;
+
+  @media (max-width: 40.0525em) {
+    padding: 3px 12px;
   }
 }
 
@@ -83,8 +107,26 @@
 .copy-button.nhsuk-button--secondary-solid::after {
   box-shadow: 0 4px 0 #004721;
 }
+
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:visited,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:active,
+.copy-button.nhsuk-button--reverse.nhsuk-button--reverse:active:visited {
+  background-color: #007f3b;
+  color: #ffffff;
+}
+
 .nhsuk-u-margin-1 {
-  margin: 4px !important;
+  margin: 0 4px;
+}
+
+.screen-reader-only {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 #copyText {
