@@ -60,7 +60,7 @@ export function formatDobForDisplay({
   dobMonth,
   dobYear
 }: Pick<BasicDetailsSearchType, "dobDay" | "dobMonth" | "dobYear">): string {
-  if (!dobDay || !dobMonth || !dobYear) return STRINGS.UNKNOWN
+  if (!dobDay || !dobMonth || !dobYear) return STRINGS.NOT_AVAILABLE
 
   const day = dobDay.padStart(2, "0")
   const monthIndex = parseInt(dobMonth, 10) - 1
@@ -74,7 +74,7 @@ export function formatDobForDisplay({
  */
 export const formatDobTextForDisplay = (dobText: string): string => {
   const date = parseDate(dobText)
-  return date ? formatDate(date) : STRINGS.UNKNOWN
+  return date ? formatDate(date) : STRINGS.NOT_AVAILABLE
 }
 
 export function formatMessageDateTime(isoDateString: string): string {

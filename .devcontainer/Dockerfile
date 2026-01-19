@@ -1,19 +1,6 @@
-FROM ubuntu:22.04
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
 ARG TARGETARCH
 ENV TARGETARCH=${TARGETARCH}
-
-# Install essential packages first
-RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    git \
-    sudo \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create vscode user with sudo access
-RUN groupadd -r vscode && useradd -r -g vscode -m -s /bin/bash vscode \
-    && echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 ARG ASDF_VERSION
 COPY .tool-versions.asdf /tmp/.tool-versions.asdf

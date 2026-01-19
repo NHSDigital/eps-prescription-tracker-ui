@@ -5,6 +5,7 @@ import * as examples from "./examples/index"
 import {URL} from "url"
 
 import * as pds from "../../src"
+import {PatientAddressUse, PatientNameUse} from "@cpt-ui-common/common-types"
 const OutcomeType = pds.patientSearch.OutcomeType
 
 describe("PatientSearch Unit Tests", () => {
@@ -98,21 +99,21 @@ describe("PatientSearch Unit Tests", () => {
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
       expect((outcome as any).patients).toEqual([{
-        "nhsNumber": "9000000009",
-        "familyName": "Smith",
-        "givenName":  [
-          "Jane"
-        ],
-        "gender": "female",
-        "dateOfBirth": "2010-10-22",
-        "address":  [
+        nhsNumber: "9000000009",
+        familyName: "Smith",
+        givenName:  ["Jane"],
+        nameUse: PatientNameUse.USUAL,
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        address:  [
           "1 Trevelyan Square",
           "Boar Lane",
           "City Centre",
           "Leeds",
           "West Yorkshire"
         ],
-        "postcode": "LS1 6AE"
+        postcode: "LS1 6AE",
+        addressUse: PatientAddressUse.HOME
       }])
     })
 
@@ -129,7 +130,8 @@ describe("PatientSearch Unit Tests", () => {
           gender: "female",
           dateOfBirth: "2010-10-22",
           familyName: "Smith",
-          givenName: [ "Jane" ],
+          givenName: ["Jane"],
+          nameUse: PatientNameUse.USUAL,
           address: [
             "1 Trevelyan Square",
             "Boar Lane",
@@ -137,14 +139,16 @@ describe("PatientSearch Unit Tests", () => {
             "Leeds",
             "West Yorkshire"
           ],
-          postcode: "LS1 6AE"
+          postcode: "LS1 6AE",
+          addressUse: PatientAddressUse.HOME
         },
         {
           nhsNumber: "9000000017",
           gender: "female",
           dateOfBirth: "2010-10-22",
           familyName: "Smyth",
-          givenName: [ "Jayne" ],
+          givenName: ["Jayne"],
+          nameUse: PatientNameUse.USUAL,
           address: [
             "1 Trevelyan Square",
             "Boar Lane",
@@ -152,7 +156,8 @@ describe("PatientSearch Unit Tests", () => {
             "Leeds",
             "West Yorkshire"
           ],
-          postcode: "LS1 6AE"
+          postcode: "LS1 6AE",
+          addressUse: PatientAddressUse.HOME
         }
       ])
     })
@@ -194,21 +199,21 @@ describe("PatientSearch Unit Tests", () => {
 
       expect(outcome.type).toBe(OutcomeType.SUCCESS)
       expect((outcome as any).patients).toEqual([{
-        "address": [
+        nhsNumber: "9000000009",
+        gender: "female",
+        dateOfBirth: "2010-10-22",
+        familyName: "Smith",
+        givenName: ["Jane"],
+        nameUse: PatientNameUse.USUAL,
+        address: [
           "1 Trevelyan Square",
           "Boar Lane",
           "City Centre",
           "Leeds",
           "West Yorkshire"
         ],
-        "dateOfBirth": "2010-10-22",
-        "familyName": "Smith",
-        "gender": "female",
-        "givenName": [
-          "Jane"
-        ],
-        "nhsNumber": "9000000009",
-        "postcode": "LS1 6AE"
+        postcode: "LS1 6AE",
+        addressUse: PatientAddressUse.HOME
       }])
 
     })
