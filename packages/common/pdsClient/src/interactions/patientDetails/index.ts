@@ -1,5 +1,3 @@
-export * as ValidatePatientDetails from "./validatePatientDetails"
-
 export * from "./interface"
 export * as utils from "./utils"
 

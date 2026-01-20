@@ -196,19 +196,14 @@ const defaultSearchState: SearchProviderContextType = {
 const mockSearchResponse: SearchResponse = {
   patient: {
     nhsNumber: "5900009890",
-    prefix: "Mr",
-    suffix: "",
-    given: "William",
-    family: "Wolderton",
+    givenName: ["William"],
+    familyName: "Wolderton",
     gender: "male",
     dateOfBirth: "01-Nov-1988",
-    address: {
-      line1: "55 OAK STREET",
-      line2: "OAK LANE",
-      city: "Leeds",
-      postcode: "LS1 1XX"
-    }
+    address: ["55 OAK STREET", "OAK LANE", "Leeds"],
+    postcode: "LS1 1XX"
   },
+  patientFallback: false,
   currentPrescriptions: [
     {
       prescriptionId: "C0C757-A83008-C2D93O",
@@ -471,6 +466,7 @@ describe("PrescriptionListPage", () => {
   it("shows 0 when there are no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
+      patientFallback: false,
       currentPrescriptions: mockSearchResponse.currentPrescriptions,
       pastPrescriptions: [],
       futurePrescriptions: []
@@ -676,6 +672,7 @@ describe("PrescriptionListPage", () => {
   it("renders the prescription not found message when prescriptionId query returns no results", async () => {
     const noResults: SearchResponse = {
       patient: mockSearchResponse.patient,
+      patientFallback: false,
       currentPrescriptions: [],
       pastPrescriptions: [],
       futurePrescriptions: []
