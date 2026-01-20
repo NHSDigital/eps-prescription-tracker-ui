@@ -1,5 +1,5 @@
 import {defineConfig, mergeConfig} from "vitest/config"
-import sharedVitestConfig from "../../vitest.shard.config"
+import sharedVitestConfig from "../../vitest.shared.config"
 
 const apigeeHost = "https://dummyApigee"
 const CIS2_OIDC_HOST = "https://dummy_cis2_auth.com"

@@ -1,5 +1,5 @@
 import {defineConfig, mergeConfig} from "vitest/config"
-import sharedVitestConfig from "../../vitest.shard.config"
+import sharedVitestConfig from "../../vitest.shared.config"
 
 const CIS2_OIDC_HOST = "https://dummy_cis2_auth.com"
 const MOCK_OIDC_HOST = "https://dummy_mock_auth.com"
