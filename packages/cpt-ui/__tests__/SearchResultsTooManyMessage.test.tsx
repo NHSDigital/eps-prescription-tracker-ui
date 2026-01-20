@@ -55,14 +55,14 @@ function makeQuery(params: Record<string, string>): string {
 
 const renderWithRouter = (
   queryParams: Record<string, string> = {},
-  initialPath = "/search-too-many"
+  initialPath = "/too-many-search-results"
 ) => {
   const search = makeQuery(queryParams)
   return render(
     <MemoryRouter initialEntries={[initialPath + search]}>
       <NavigationProvider>
         <Routes>
-          <Route path="/search-too-many" element={<TestWrapper />} />
+          <Route path="/too-many-search-results" element={<TestWrapper />} />
           <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
           <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
           <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
