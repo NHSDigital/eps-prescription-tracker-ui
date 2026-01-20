@@ -24,9 +24,9 @@ export const PrivacyNoticeStrings = {
     explanation: "We collect a range of your personal data, including:",
     identifiable: "identifiable data - through signing in using ",
     cis2Link: "NHS CIS2 Authentication (opens in new tab)",
-    stores: " we store your CIS2 Unique User ID (UUID), name, role and organisation name",
+    stores: ", we store your CIS2 Unique User ID (UUID), name, role and organisation name",
     usage: "usage data - information about how you interact with the Prescription Tracker, including your IP address,"
-    + " browser type, operating system, and activity logs",
+    + " browser type, operating system and activity logs",
     device: "device information - information about the device you use to access the Prescription Tracker,"
     + " such as device type and device identifiers"
   },
@@ -42,7 +42,7 @@ export const PrivacyNoticeStrings = {
     + " we process your data to enable you to use the Prescription Tracker",
     serviceImprovement: "service improvement - we analyse your usage patterns to understand how you use"
     + " the Prescription Tracker and improve its functionality."
-    + " To do this, we put small files called 'analytic cookies' on your device using a software called"
+    + " To do this, we put small files called 'analytic cookies' on your device using software called"
     + " Amazon CloudWatch RUM. These cookies are optional. The information collected includes:"
     + " the type of device you used, your browser type, your operating system, the date and time"
     + " you used the service and how you interacted with the service. For more information, see our ",
@@ -55,7 +55,7 @@ export const PrivacyNoticeStrings = {
     + " and resolve the issue you raised",
     legal:  "to comply with our legal obligations -"
     + " we process your data to comply with our legal obligation to operate the service and any"
-    + " other any applicable laws or regulations"
+    + " other applicable laws or regulations"
   },
   legal: {
     header: "Our legal basis for data processing",
@@ -77,15 +77,15 @@ export const PrivacyNoticeStrings = {
     share1: "your employing organisation - if misuse is detected or reported,"
      + " we may need to share your data with your employing organisation for investigation purposes",
     share2: "legal authorities - if required by law, we may disclose your personal data"
-     + " to law enforcement or other legal entities."
+     + " to law enforcement or other legal entities"
   },
   retention: {
     header: "How long we keep your data for",
     note: "We will keep your personal data for as long as necessary to fulfil the purposes for"
     + " which it was collected, including for legal or reporting requirements. Specific periods include:",
-    account: "account data, which is: kept for 2 years",
+    account: "account data, which is kept for 2 years",
     system: "system data, which is kept for 2 years",
-    analytics:"analytical data, which is: kept for 2 years"
+    analytics:"analytical data, which is kept for 2 years"
   },
   storage: {
     header: "Where we store your data",
@@ -94,7 +94,7 @@ export const PrivacyNoticeStrings = {
   rights: {
     header: "Your data protection rights",
     contact: "You can exercise your"
-    + " rights by emailing emailing us at  ",
+    + " rights by emailing us at  ",
     rights1: "Your right to be informed: you have the right to be told how and why we are using your personal data."
     + " We have published this privacy notice to provide you with this information. ",
     rights2:  "Your right to get copies of your data: you have the right to ask us for copies of your personal data"
@@ -104,8 +104,8 @@ export const PrivacyNoticeStrings = {
     + " your personal data if you think it is inaccurate or incomplete.",
     rights4: "Your right to limit how we use your data: you have the right to ask us to limit the way we use your"
     + " personal data (restrict processing) in certain circumstances.",
-    rights5: "Right to withdraw consent: you have the right to withdraw consent for analytical"
-    + " cookies to be placed on your device by selecting 'Reject analytics cookies'. See our ",
+    rights5: "Right to withdraw consent: you have the right to withdraw consent for analytic"
+    + " cookies to be placed on your device by selecting 'Reject analytic cookies'. See our ",
     cookieLink: "cookie policy for more information",
     method: "If you need to report any issues about exercising your rights, email NHS England's "
     + "Data Protection Officer at "
