@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useState} from "react"
 import {Button} from "nhsuk-react-components"
 
 import {usePrescriptionInformation} from "@/context/PrescriptionInformationProvider"
@@ -12,11 +12,14 @@ import {CANCELLATION_REASON_MAP, NON_DISPENSING_REASON_MAP} from "@/constants/ui
 
 const PrescriptionInformationBanner: React.FC = () => {
   const {prescriptionInformation: prescription} = usePrescriptionInformation()
+  const [screenReaderMessage, setScreenReaderMessage] = useState("")
 
   if (!prescription) return null
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(prescription.prescriptionId)
+    setScreenReaderMessage("")
+    setTimeout(() => setScreenReaderMessage("copied"), 10)
   }
 
   const renderType = () => {
@@ -44,7 +47,7 @@ const PrescriptionInformationBanner: React.FC = () => {
             <Button
               id="copyButton"
               aria-label={STRINGS.COPY_BUTTON_ARIA_LABEL}
-              className="nhsuk-button--reverse copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
+              className="nhsuk-button--reverse nhsuk-button--small copy-button nhsuk-u-margin-1 nhsuk-u-margin-right-4"
               onClick={copyToClipboard}
               type="button"
               secondary
@@ -79,6 +82,11 @@ const PrescriptionInformationBanner: React.FC = () => {
           <BannerField name="erd-days" label={STRINGS.DAYS_SUPPLY} value={`${prescription.daysSupply} days`}/>
         )}
       </div>
+      <span
+        aria-live="polite"
+        aria-atomic="true"
+        className="screen-reader-only"
+      >{screenReaderMessage}</span>
       <div id="patientview-sentinel" style={{height: "1px", backgroundColor: "transparent"}} />
     </div>
   )
