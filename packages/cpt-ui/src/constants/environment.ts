@@ -69,6 +69,7 @@ export const FRONTEND_PATHS = {
   SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
   PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
   PATIENT_SEARCH_RESULTS: "/patient-search-results",
+  TOO_MANY_SEARCH_RESULTS: "/too-many-search-results",
   PATIENT_NOT_FOUND: "/patient-not-found",
   NO_PATIENT_FOUND: "/no-patient-found",
   NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",

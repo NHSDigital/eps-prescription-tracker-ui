@@ -13,7 +13,6 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 
 import EpsSpinner from "@/components/EpsSpinner"
-import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessage"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import EpsBackLink from "@/components/EpsBackLink"
@@ -136,7 +135,8 @@ export default function SearchResultsPage() {
 
   // Show too many results message if search returns too many patients
   if (patients.length > 10) {
-    return <SearchResultsTooManyMessage search={location.search} />
+    navigate(FRONTEND_PATHS.TOO_MANY_SEARCH_RESULTS + location.search)
+    return null
   }
 
   return (
