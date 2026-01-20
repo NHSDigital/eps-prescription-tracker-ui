@@ -1,15 +1,18 @@
 /* eslint-disable no-console */
 import {
-  expect,
+  afterEach,
+  beforeEach,
   describe,
+  expect,
   it,
-  jest
-} from "@jest/globals"
+  vi
+} from "vitest"
 
 import createJWKSMock from "mock-jwks"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {handler} from "../src/token"
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -28,9 +31,23 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
-const mockVerifyIdToken = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
-const mockGetSecret = jest.fn()
+const {
+  mockVerifyIdToken,
+  mockInitializeOidcConfig,
+  mockGetSecret,
+  mockInsertTokenMapping,
+  mockGetTokenMapping,
+  mockTryGetTokenMapping
+} = vi.hoisted(() => {
+  return {
+    mockVerifyIdToken: vi.fn(),
+    mockInitializeOidcConfig: vi.fn(),
+    mockGetSecret: vi.fn(),
+    mockInsertTokenMapping: vi.fn(),
+    mockGetTokenMapping: vi.fn(),
+    mockTryGetTokenMapping: vi.fn()
+  }
+})
 
 const {
   privateKey
@@ -45,17 +62,14 @@ const {
     format: "pem"
   }
 })
-const mockInsertTokenMapping = jest.fn()
-const mockGetTokenMapping = jest.fn()
-const mockTryGetTokenMapping = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+vi.mock("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     getTokenMapping: mockGetTokenMapping,
     tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+vi.mock("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
       sub: "foo",
@@ -115,7 +129,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
   const getSecret = mockGetSecret.mockImplementation(async () => {
     return privateKey
   })
@@ -125,13 +139,11 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
   }
 })
 
-const {handler} = await import("../src/token")
-
 describe("cis2 token handler tests - failures", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
-    jest.resetModules()
-    jest.clearAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
     jwks.start()
   })
 

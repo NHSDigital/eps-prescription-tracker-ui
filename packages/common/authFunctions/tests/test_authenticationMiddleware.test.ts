@@ -1,31 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {jest} from "@jest/globals"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
+import {authenticationMiddleware} from "../src/authenticationMiddleware"
 
-// Mock dependencies
-const mockGetUsernameFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockGetSessionIdFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockAuthenticateRequest = jest.fn() as jest.MockedFunction<any>
-const mockGetTokenMapping = jest.fn() as jest.MockedFunction<any>
+const {
+  mockGetUsernameFromEvent,
+  mockGetSessionIdFromEvent,
+  mockAuthenticateRequest,
+  mockGetTokenMapping
+} = vi.hoisted(() => ({
+  mockGetUsernameFromEvent: vi.fn(),
+  mockGetSessionIdFromEvent: vi.fn(),
+  mockAuthenticateRequest: vi.fn(),
+  mockGetTokenMapping: vi.fn()
+}))
 
-jest.unstable_mockModule("../src/event", () => ({
+vi.mock("../src/event", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
   getSessionIdFromEvent: mockGetSessionIdFromEvent
 }))
 
-jest.unstable_mockModule("../src/authenticateRequest", () => ({
+vi.mock("../src/authenticateRequest", () => ({
   authenticateRequest: mockAuthenticateRequest
 }))
 
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => ({
+vi.mock("@cpt-ui-common/dynamoFunctions", () => ({
   getTokenMapping: mockGetTokenMapping
 }))
-
-// Import the middleware after mocking
-const {authenticationMiddleware} = await import("../src/authenticationMiddleware")
 
 describe("authenticationMiddleware", () => {
   let logger: Logger
@@ -36,18 +46,18 @@ describe("authenticationMiddleware", () => {
   let mockRequest: any
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     logger = new Logger({serviceName: "test"})
-    logger.info = jest.fn()
-    logger.error = jest.fn()
+    logger.info = vi.fn()
+    logger.error = vi.fn()
 
     const dynamoClient = new DynamoDBClient({})
     ddbClient = DynamoDBDocumentClient.from(dynamoClient)
 
     axiosInstance = {
-      post: jest.fn(),
-      get: jest.fn()
+      post: vi.fn(),
+      get: vi.fn()
     } as unknown as AxiosInstance
 
     authOptions = {

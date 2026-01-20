@@ -1,28 +1,36 @@
 /* eslint-disable no-console */
 import {
-  expect,
+  afterEach,
+  beforeEach,
   describe,
+  expect,
   it,
-  jest
-} from "@jest/globals"
+  vi
+} from "vitest"
 
 import createJWKSMock from "mock-jwks"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {handler} from "../src/tokenMock"
 
-process.env.MOCK_USER_INFO_ENDPOINT = "https://dummy_mock_auth.com/userinfo"
-process.env.MOCK_OIDC_ISSUER = "https://dummy_mock_auth.com"
-process.env.MOCK_OIDC_CLIENT_ID = "test-client-id"
-process.env.MOCK_USER_POOL_IDP = "test-idp"
-process.env.TokenMappingTableName = "test-token-mapping-table"
-process.env.SessionManagementTableName = "test-session-management-table"
-process.env.FULL_CLOUDFRONT_DOMAIN = "test.cloudfront.net"
-process.env.jwtPrivateKeyArn = "test-private-key-arn"
-process.env.jwtKid = "test-kid"
-process.env.APIGEE_API_KEY = "test-api-key"
-process.env.APIGEE_API_SECRET = "test-api-secret"
-process.env.MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
+const {
+  mockInitializeOidcConfig,
+  mockGetSecret,
+  mockInsertTokenMapping,
+  mockTryGetTokenMapping,
+  mockFetchUserInfo,
+  mockExchangeTokenForApigeeAccessToken
+} = vi.hoisted(() => {
+  return {
+    mockInitializeOidcConfig: vi.fn(),
+    mockGetSecret: vi.fn(),
+    mockInsertTokenMapping: vi.fn().mockName("mockInsertTokenMapping"),
+    mockTryGetTokenMapping: vi.fn().mockName("mockTryGetTokenMapping"),
+    mockFetchUserInfo: vi.fn().mockName("mockFetchUserInfo"),
+    mockExchangeTokenForApigeeAccessToken: vi.fn().mockName("mockExchangeTokenForApigeeAccessToken")
+  }
+})
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -41,11 +49,6 @@ const dummyContext = {
   succeed: () => console.log("Succeeded!")
 }
 
-const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-
-const mockInitializeOidcConfig = jest.fn()
-const mockGetSecret = jest.fn()
-
 const {
   privateKey
 } = generateKeyPairSync("rsa", {
@@ -60,19 +63,14 @@ const {
   }
 })
 
-const mockInsertTokenMapping = jest.fn().mockName("mockInsertTokenMapping")
-const mockTryGetTokenMapping = jest.fn().mockName("mockTryGetTokenMapping")
-
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+vi.mock("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
 
-const mockFetchUserInfo = jest.fn().mockName("mockFetchUserInfo")
-const mockExchangeTokenForApigeeAccessToken = jest.fn().mockName("mockExchangeTokenForApigeeAccessToken")
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+vi.mock("@cpt-ui-common/authFunctions", () => {
   const initializeOidcConfig = mockInitializeOidcConfig.mockImplementation( () => {
     // Create a JWKS client for cis2 and mock
   // this is outside functions so it can be re-used
@@ -103,6 +101,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
       cacheMaxEntries: 5,
       cacheMaxAge: 3600000 // 1 hour
     })
+    const MOCK_OIDC_TOKEN_ENDPOINT = "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
 
     const mockOidcConfig: OidcConfig = {
       oidcIssuer: process.env["MOCK_OIDC_ISSUER"] ?? "",
@@ -126,7 +125,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
   const getSecret = mockGetSecret.mockImplementation(async () => {
     return privateKey
   })
@@ -136,14 +135,12 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
   }
 })
 
-const {handler} = await import("../src/tokenMock")
-
 describe("token mock handler", () => {
   const jwks = createJWKSMock("https://dummy_mock_auth.com/")
 
   beforeEach(() => {
-    jest.resetModules()
-    jest.clearAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
     jwks.start()
   })
 
@@ -344,7 +341,7 @@ describe("token mock handler", () => {
     // check call
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(), // documentClient
-      "test-token-mapping-table", // tableName
+      "dummyTable", // tableName
       {
         username: "Mock_user_details_sub",
         apigeeAccessToken: "new-access-token",
@@ -447,7 +444,7 @@ describe("token mock handler", () => {
       expect.anything(),
       "https://internal-dev.api.service.nhs.uk/oauth2-mock/token",
       expect.objectContaining({
-        redirect_uri: "https://test.cloudfront.net/oauth2/mock-callback" // PR part removed
+        redirect_uri: "https://cpt-ui.dev.eps.national.nhs.uk/oauth2/mock-callback" // PR part removed
       }),
       expect.anything()
     )
@@ -491,7 +488,7 @@ describe("token mock handler", () => {
     // Should insert into token mapping table (not session management table)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-token-mapping-table", // Should use token mapping table
+      "dummyTable", // Should use token mapping table
       expect.anything(),
       expect.anything()
     )

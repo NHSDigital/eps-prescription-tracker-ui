@@ -96,7 +96,11 @@
         "packages/staticContent",
         "packages/common/testing",
         "packages/common/commonTypes",
-        "packages/staticContent"
+        "packages/staticContent",
+        "packages/cognito",
+        "packages/prescriptionDetailsLambda",
+        "packages/common/authFunctions",
+        "packages/testingSupport"
       ],
       "jest.useJest30": true,
       "python.testing.pytestEnabled": false,
@@ -207,7 +211,8 @@
       },
       "[scss]": {
         "editor.defaultFormatter": "vscode.css-language-features"
-      }
+      },
+      "vitest.configSearchPatternExclude": "{**/node_modules/**,**/.*/**,**/*.d.ts,**/lib/*}"
     },
     "extensions": {
       "recommendations": [
@@ -229,7 +234,8 @@
         "streetsidesoftware.code-spell-checker",
         "timonwong.shellcheck",
         "mkhl.direnv",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "vitest.explorer"
       ]
     }
   }
