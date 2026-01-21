@@ -5,7 +5,12 @@ import {
   fireEvent,
   waitFor
 } from "@testing-library/react"
-import {MemoryRouter, Routes, Route} from "react-router-dom"
+import {
+  MemoryRouter,
+  Routes,
+  Route,
+  useNavigate
+} from "react-router-dom"
 import BasicDetailsSearchResultsPage from "@/pages/BasicDetailsSearchResultsPage"
 import {SearchResultsPageStrings} from "@/constants/ui-strings/BasicDetailsSearchResultsPageStrings"
 import http from "@/helpers/axios"
@@ -47,6 +52,11 @@ const mockNavigationContext = {
 jest.mock("@/context/NavigationProvider", () => ({
   ...jest.requireActual("@/context/NavigationProvider"),
   useNavigationContext: () => mockNavigationContext
+}))
+
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: jest.fn()
 }))
 
 const mockAuthContext: AuthContextType = {
@@ -139,6 +149,7 @@ function renderWithRouter(initialEntries = ["/patient-search-results"]) {
           <NavigationProvider>
             <Routes>
               <Route path="/patient-search-results" element={<BasicDetailsSearchResultsPage />} />
+              <Route path="/too-many-search-results" element={<div data-testid="too-many-results-page-shown" />} />
               <Route path="/login" element={<div data-testid="login-page-shown" />} />
               <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
               <Route path="/search-by-basic-details" element={<div data-testid="search-page-shown" />} />
@@ -368,6 +379,9 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("navigates to prescription list when there is only one result", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
     mockAxiosGet.mockResolvedValue({
       status: 200,
       data: [mockPatients[0]]
@@ -375,7 +389,7 @@ describe("BasicDetailsSearchResultsPage", () => {
     renderWithRouter()
 
     await waitFor(() => {
-      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
+      expect(mockNavigate).toHaveBeenCalledWith("/prescription-list-current")
       expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
         "basicDetails"
       )
@@ -392,6 +406,9 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("navigates to prescription list when clicking a patient row", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
     renderWithRouter()
     await waitFor(() => {
       const firstPatientRow = screen
@@ -399,7 +416,7 @@ describe("BasicDetailsSearchResultsPage", () => {
         .closest("tr")
       fireEvent.click(firstPatientRow!)
 
-      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
+      expect(mockNavigate).toHaveBeenCalledWith("/prescription-list-current")
       expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
         "basicDetails"
       )
@@ -416,13 +433,16 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("navigates to prescription list when clicking a patient name link", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
     renderWithRouter()
 
     await waitFor(() => {
       const patientNameLink = screen.getByText("Issac Wolderton-Rodriguez")
       fireEvent.click(patientNameLink)
 
-      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
+      expect(mockNavigate).toHaveBeenCalledWith("/prescription-list-current")
       expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
         "basicDetails"
       )
@@ -455,13 +475,16 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("handles enter key navigation for patient rows", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
     renderWithRouter()
 
     await waitFor(() => {
       const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
       fireEvent.keyDown(firstPatientRow!, {key: "Enter"})
 
-      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
+      expect(mockNavigate).toHaveBeenCalledWith("/prescription-list-current")
       expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
         "basicDetails"
       )
@@ -478,13 +501,16 @@ describe("BasicDetailsSearchResultsPage", () => {
   })
 
   it("handles space key navigation for patient rows", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
     renderWithRouter()
 
     await waitFor(() => {
       const firstPatientRow = screen.getByText("Issac Wolderton-Rodriguez").closest("tr")
       fireEvent.keyDown(firstPatientRow!, {key: " "})
 
-      expect(screen.getByTestId("prescription-list-shown")).toBeInTheDocument()
+      expect(mockNavigate).toHaveBeenCalledWith("/prescription-list-current")
       expect(mockGetRelevantSearchParameters).toHaveBeenCalledWith(
         "basicDetails"
       )
@@ -544,6 +570,33 @@ describe("BasicDetailsSearchResultsPage", () => {
       expect(screen.getByTestId("unknown-error-message")).toBeInTheDocument()
       expect(screen.getByTestId("unknown-error-heading"))
         .toHaveTextContent("Sorry, there is a problem with this service")
+    })
+  })
+
+  it("navigates to too many search results page when more than 10 patients are returned", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
+    // Create a list of 11 patients to trigger the "too many" logic
+    const manyPatients = Array.from({length: 11}, (_, i) => ({
+      nhsNumber: `972691920${i}`,
+      givenName: [`Patient${i}`],
+      familyName: `TestPatient${i}`,
+      gender: PatientSummaryGender.MALE,
+      dateOfBirth: "2013-05-06",
+      address: [`${i} Test Street`, "Leeds", "West Yorkshire"],
+      postcode: "LS6 1JL"
+    }))
+
+    mockAxiosGet.mockResolvedValue({
+      status: 200,
+      data: manyPatients
+    })
+
+    renderWithRouter(["/patient-search-results?firstName=Test"])
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/too-many-search-results?firstName=Test")
     })
   })
 })
