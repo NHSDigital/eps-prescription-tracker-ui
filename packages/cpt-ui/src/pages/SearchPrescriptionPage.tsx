@@ -224,6 +224,7 @@ export default function SearchPrescriptionPage() {
                     {PRESCRIPTION_SEARCH_TABS.map((tab, index) => (
                       <TabSet.Tab
                         key={tab.link}
+                        id={`tab-${index}`}
                         active={activeTab === index}
                         controls={`search-panel-${index}`}
                         onClick={() => handleTabClick(index)}
