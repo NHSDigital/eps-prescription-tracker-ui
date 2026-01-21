@@ -43,6 +43,7 @@ export interface OrgSummary {
 // Complete response
 export interface PrescriptionDetailsResponse {
     patientDetails: PatientSummary
+    patientFallback: boolean
     prescriptionId: string
     typeCode: "acute" | "continuous" | "continuous-repeat-dispensing"
     statusCode: string

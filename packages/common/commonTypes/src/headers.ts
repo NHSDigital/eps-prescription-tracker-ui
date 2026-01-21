@@ -4,3 +4,10 @@ export enum Headers {
   x_rum_session_id = "x-rum-session-id",
   x_session_id = "x-session-id",
 }
+
+export interface ApigeeConfig {
+  apigeeAccessToken: string
+  roleId: string
+  orgCode: string
+  correlationId: string
+}

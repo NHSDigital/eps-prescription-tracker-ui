@@ -34,6 +34,7 @@ describe("Lambda Handler Tests", () => {
     logger: logger,
     documentClient: {} as unknown as DynamoDBDocumentClient,
     apigeePrescriptionsEndpoint: "https://dummy.endpoint",
+    apigeePersonalDemographicsEndpoint: "https://dummy.endpoint",
     authenticationParameters: {} as unknown as AuthenticateRequestOptions,
     axiosInstance: {} as unknown as AxiosInstance
   })
