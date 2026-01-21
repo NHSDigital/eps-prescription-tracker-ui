@@ -215,24 +215,26 @@ export default function SearchPrescriptionPage() {
             </Row>
           </Container>
         </Hero>
-        <Container data-testid="search-tabs-container">
-          <Row>
-            <Col width="full">
-              <TabSet>
-                {PRESCRIPTION_SEARCH_TABS.map((tab, index) => (
-                  <TabSet.Tab
-                    key={tab.link}
-                    active={activeTab === index}
-                    controls={`search-panel-${index}`}
-                    onClick={() => handleTabClick(index)}
-                  >
-                    {tab.title}
-                  </TabSet.Tab>
-                ))}
-              </TabSet>
-            </Col>
-          </Row>
-        </Container>
+        <div className="tabs-full-width-container">
+          <Container data-testid="search-tabs-container">
+            <Row>
+              <Col width="full">
+                <TabSet>
+                  {PRESCRIPTION_SEARCH_TABS.map((tab, index) => (
+                    <TabSet.Tab
+                      key={tab.link}
+                      active={activeTab === index}
+                      controls={`search-panel-${index}`}
+                      onClick={() => handleTabClick(index)}
+                    >
+                      {tab.title}
+                    </TabSet.Tab>
+                  ))}
+                </TabSet>
+              </Col>
+            </Row>
+          </Container>
+        </div>
         <div className="tab-divider"></div>
         <div className="content-wrapper">
           <Container>
