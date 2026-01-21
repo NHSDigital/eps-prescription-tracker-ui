@@ -15,15 +15,35 @@ jest.unstable_mockModule("@cpt-ui-common/doHSClient", () => ({
   doHSClient: mockDoHSClient
 }))
 
+const mockGetPatient = jest.fn()
+jest.unstable_mockModule("../src/services/getPatientDetails", () => ({
+  getPatientDetails: mockGetPatient
+}))
+
 // Mock mergePrescriptionDetails from responseMapper.
 const mockMergePrescriptionDetails = jest.fn()
 jest.unstable_mockModule("../src/utils/responseMapper", () => ({
   mergePrescriptionDetails: mockMergePrescriptionDetails
 }))
 
+// Needed to avoid issues with ESM imports in jest
+jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: jest.fn(),
+  buildApigeeHeaders: jest.fn().mockImplementation(() => ({
+    Authorization: `Bearer someAccessToken`
+  })),
+  authenticationMiddleware: () => ({before: () => {}})
+}))
+
 // Import some mock objects to use in our tests.
 import {Bundle, FhirResource} from "fhir/r4"
 import {PrescriptionOdsCodes} from "../src/utils/extensionUtils"
+import {
+  PatientAddressUse,
+  PatientNameUse,
+  PatientSummary,
+  PatientSummaryGender
+} from "@cpt-ui-common/common-types"
 
 const {
   getDoHSData,
@@ -33,6 +53,18 @@ const {
 const {
   extractOdsCodes
 } = await import("../src/utils/extensionUtils")
+
+const mockPatient: PatientSummary = {
+  nhsNumber: "9999999999",
+  gender: PatientSummaryGender.MALE,
+  dateOfBirth: "1990-01-01",
+  familyName: "Doe",
+  givenName: ["John"],
+  nameUse: PatientNameUse.USUAL,
+  address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
+  postcode: "LS1 6AE",
+  addressUse: PatientAddressUse.HOME
+}
 
 describe("prescriptionService", () => {
   let logger: Logger
@@ -240,7 +272,8 @@ describe("prescriptionService", () => {
   })
 
   describe("processPrescriptionRequest", () => {
-    const apigeePrescriptionsEndpoint = "https://api.example.com/"
+    const prescriptionsEndpoint = "https://api.example.com/"
+    const personalDemographicsEndpoint = "https://api.example.com/"
     // Create a fake Apigee response with necessary fields.
     const participantExtensionUrl =
     "http://hl7.org/fhir/5.0/StructureDefinition/extension-RequestOrchestration.action.participant.typeReference"
@@ -284,6 +317,23 @@ describe("prescriptionService", () => {
               performer: {identifier: {value: "ODS456"}}
             }
           }
+        },
+        {
+          fullUrl: "urn:uuid:PATIENT-123-567-890",
+          search: {
+            mode: "include"
+          },
+          resource: {
+            resourceType: "Patient",
+            identifier: [{
+              system: "https://fhir.nhs.uk/Id/nhs-number",
+              value: "9999999999"
+            }],
+            name: [{
+              given: ["John"],
+              family: "Doe"
+            }]
+          }
         }
       ]
     }
@@ -292,10 +342,10 @@ describe("prescriptionService", () => {
       const prescriptionId = "RX123"
 
       // Set up nock to intercept the HTTP request - note the RequestGroup path
-      nock(apigeePrescriptionsEndpoint)
+      nock(prescriptionsEndpoint)
         .get(`/RequestGroup/${prescriptionId}`)
         .query({issueNumber: "1"})
-        .matchHeader("a-header", `a-value`)
+        .matchHeader("authorization", "Bearer someAccessToken")
         .reply(200, fakeApigeeData, {"content-type": "application/json"})
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
@@ -306,15 +356,22 @@ describe("prescriptionService", () => {
       ]
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
+      mockGetPatient.mockImplementation(() => Promise.resolve(mockPatient))
+
       // Make mergePrescriptionDetails return a merged object.
-      const mergedResponse = {merged: true}
+      const mergedResponse = {merged: true, patientDetails: {nhsNumber: "9999999999"}, patientFallback: true}
       mockMergePrescriptionDetails.mockReturnValue(mergedResponse)
 
       const result = await processPrescriptionRequest(
         prescriptionId,
         "1",
-        apigeePrescriptionsEndpoint,
-        {"a-header": "a-value"},
+        {prescriptionsEndpoint, personalDemographicsEndpoint},
+        {
+          apigeeAccessToken: "someAccessToken",
+          roleId: "someRoleId",
+          orgCode: "someOrgCode",
+          correlationId: "someCorelationId"
+        },
         logger
       )
 
@@ -326,10 +383,10 @@ describe("prescriptionService", () => {
       const prescriptionId = "RX123+"
 
       // Set up nock to intercept the HTTP request - the + should be left as is
-      nock(apigeePrescriptionsEndpoint)
+      nock(prescriptionsEndpoint)
         .get("/RequestGroup/RX123+")
         .query({issueNumber: "1"}) // Add the query parameter that the service includes
-        .matchHeader("a-header", `a-value`)
+        .matchHeader("authorization", "Bearer someAccessToken")
         .reply(200, fakeApigeeData, {"content-type": "application/json"})
 
       // Setup the doHSClient mock so that getDoHSData returns mapped data.
@@ -341,14 +398,19 @@ describe("prescriptionService", () => {
       mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
 
       // Make mergePrescriptionDetails return a merged object.
-      const mergedResponse = {merged: true, prescriptionId}
+      const mergedResponse = {merged: true, prescriptionId, patientDetails: {nhsNumber: "9999999999"}, patientFallback: true}
       mockMergePrescriptionDetails.mockReturnValue(mergedResponse)
 
       const result = await processPrescriptionRequest(
         prescriptionId,
         "1",
-        apigeePrescriptionsEndpoint,
-        {"a-header": "a-value"},
+        {prescriptionsEndpoint, personalDemographicsEndpoint},
+        {
+          apigeeAccessToken: "someAccessToken",
+          roleId: "someRoleId",
+          orgCode: "someOrgCode",
+          correlationId: "someCorelationId"
+        },
         logger
       )
 
@@ -357,6 +419,117 @@ describe("prescriptionService", () => {
 
       // Verify that the prescription ID with + was handled correctly
       expect(logger.info).toHaveBeenCalledWith("Fetching prescription details from Apigee", {prescriptionId: "RX123+", issueNumber: "1"})
+    })
+
+    it("should override patient details when PDS returns details", async () => {
+      const prescriptionId = "RX123+"
+
+      // Set up nock to intercept the HTTP request - the + should be left as is
+      nock(prescriptionsEndpoint)
+        .get("/RequestGroup/RX123+")
+        .query({issueNumber: "1"}) // Add the query parameter that the service includes
+        .matchHeader("authorization", "Bearer someAccessToken")
+        .reply(200, fakeApigeeData, {"content-type": "application/json"})
+
+      // Setup the doHSClient mock so that getDoHSData returns mapped data.
+      const mockDoHSResponse = [
+        {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
+        {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
+        {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
+      ]
+      mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
+
+      mockGetPatient.mockImplementation(() => mockPatient)
+
+      // Make mergePrescriptionDetails return a merged object.
+      const mergedResponse = {
+        merged: true, prescriptionId,
+        patientDetails: {
+          nhsNumber: "9999999999",
+          familyName: "prescriptionFamily",
+          givenName: ["prescriptionGiven"]
+        },
+        patientFallback: true
+      }
+      mockMergePrescriptionDetails.mockReturnValue(mergedResponse)
+
+      const result = await processPrescriptionRequest(
+        prescriptionId,
+        "1",
+        {prescriptionsEndpoint, personalDemographicsEndpoint},
+        {
+          apigeeAccessToken: "someAccessToken",
+          roleId: "someRoleId",
+          orgCode: "someOrgCode",
+          correlationId: "someCorelationId"
+        },
+        logger
+      )
+      const expected = {
+        merged: true, prescriptionId,
+        patientDetails: {
+          nhsNumber: "9999999999",
+          gender: "male",
+          dateOfBirth: "1990-01-01",
+          familyName: "Doe",
+          givenName: ["John"],
+          nameUse: "usual",
+          address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
+          postcode: "LS1 6AE",
+          addressUse: "home"
+        },
+        patientFallback: false
+      }
+      expect(mockMergePrescriptionDetails).toHaveBeenCalled()
+      expect(result).toEqual(expected)
+    })
+
+    it("should not override patient details when PDS call fails", async () => {
+      const prescriptionId = "RX123+"
+
+      // Set up nock to intercept the HTTP request - the + should be left as is
+      nock(prescriptionsEndpoint)
+        .get("/RequestGroup/RX123+")
+        .query({issueNumber: "1"}) // Add the query parameter that the service includes
+        .matchHeader("authorization", "Bearer someAccessToken")
+        .reply(200, fakeApigeeData, {"content-type": "application/json"})
+
+      // Setup the doHSClient mock so that getDoHSData returns mapped data.
+      const mockDoHSResponse = [
+        {ODSCode: "ODS_AUTHOR", OrganisationName: "Org Prescriber"},
+        {ODSCode: "ODS123456", OrganisationName: "Org Performer"},
+        {ODSCode: "ODS_DISPENSE", OrganisationName: "Org Dispenser"}
+      ]
+      mockDoHSClient.mockImplementationOnce(() => Promise.resolve(mockDoHSResponse))
+
+      mockGetPatient.mockImplementation(() => undefined)
+
+      // Make mergePrescriptionDetails return a merged object.
+      const mergedResponse = {
+        merged: true, prescriptionId,
+        patientDetails: {
+          nhsNumber: "9999999999",
+          familyName: "prescriptionFamily",
+          givenName: ["prescriptionGiven"]
+        },
+        patientFallback: true
+      }
+      mockMergePrescriptionDetails.mockReturnValue(mergedResponse)
+
+      const result = await processPrescriptionRequest(
+        prescriptionId,
+        "1",
+        {prescriptionsEndpoint, personalDemographicsEndpoint},
+        {
+          apigeeAccessToken: "someAccessToken",
+          roleId: "someRoleId",
+          orgCode: "someOrgCode",
+          correlationId: "someCorelationId"
+        },
+        logger
+      )
+      expect(mockMergePrescriptionDetails).toHaveBeenCalled()
+      expect(result).toEqual(mergedResponse)
     })
   })
 })
