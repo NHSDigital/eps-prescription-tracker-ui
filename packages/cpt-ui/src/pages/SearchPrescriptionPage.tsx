@@ -204,17 +204,17 @@ export default function SearchPrescriptionPage() {
       <title>{HERO_TEXT}</title>
       <main id="search-for-a-prescription"
         className="search-for-a-prescription" data-testid="search-for-a-prescription">
-        <Container className="hero-container" data-testid="search-hero-container">
-          <Row>
-            <Col width="full">
-              <Hero className="nhsuk-hero-wrapper" data-testid="hero-banner">
+        <Hero className="nhsuk-hero-wrapper hero-full-width" data-testid="hero-banner">
+          <Container>
+            <Row>
+              <Col width="full">
                 <Hero.Heading className="heroHeading" id="hero-heading" data-testid="hero-heading">
                   {HERO_TEXT}
                 </Hero.Heading>
-              </Hero>
-            </Col>
-          </Row>
-        </Container>
+              </Col>
+            </Row>
+          </Container>
+        </Hero>
         <Container data-testid="search-tabs-container">
           <Row>
             <Col width="full">
