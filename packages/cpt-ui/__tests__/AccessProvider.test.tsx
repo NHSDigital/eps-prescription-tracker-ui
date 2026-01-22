@@ -307,7 +307,7 @@ describe("AccessProvider", () => {
 
       renderWithProvider()
 
-      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 300000)
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 60000)
       setIntervalSpy.mockRestore()
     })
 
@@ -477,7 +477,7 @@ describe("AccessProvider", () => {
 
       // First interval execution - should error and navigate
       await act(async () => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
@@ -487,7 +487,7 @@ describe("AccessProvider", () => {
 
       // Second interval execution - should succeed
       await act(async () => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)

@@ -109,7 +109,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   ])
 
   useEffect(() => {
-    // If user is signedIn, every 5 minutes call tracker user info. If it fails, sign the user out.
+    // If user is signedIn, every minute call tracker user info. If it fails, sign the user out.
     const internalId = setInterval(() => {
       const currentPath = location.pathname
 
@@ -127,7 +127,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
           }
         })
       }
-    }, 300000) // 300000 ms = 5 minutes
+    }, 60000) // 60000 ms = 1 minute
 
     return () => clearInterval(internalId)
   }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
