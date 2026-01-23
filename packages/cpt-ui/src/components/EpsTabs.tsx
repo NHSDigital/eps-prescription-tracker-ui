@@ -62,15 +62,6 @@ export default function EpsTabs({
     }
   }, [handleKeyDown])
 
-  // Ensure focus moves to the active tab when the route/tab changes
-  useEffect(() => {
-    const activeId = `tab_${activeTabPath.substring(1)}`
-    const activeEl = document.getElementById(activeId) as HTMLAnchorElement | null
-    if (activeEl) {
-      activeEl.focus()
-    }
-  }, [activeTabPath])
-
   const renderAccessibleTitle = (title: string) => {
     const match = title.match(/^(.*)\s\((\d+)\)$/)
     if (!match) return title
