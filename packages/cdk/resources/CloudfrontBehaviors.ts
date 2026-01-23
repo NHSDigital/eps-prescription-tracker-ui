@@ -4,6 +4,7 @@ import {
   AllowedMethods,
   BehaviorOptions,
   CachePolicy,
+  CfnKeyValueStore,
   FunctionEventType,
   ImportSource,
   IOrigin,
@@ -77,6 +78,9 @@ export class CloudfrontBehaviors extends Construct{
         }
       ]}))
     })
+    // Workaround for CF KVS tag issues in latest cdk/cf, see: https://github.com/aws/aws-cdk/issues/36765
+    const cfnKeyValueStore = keyValueStore.node.defaultChild as CfnKeyValueStore
+    cfnKeyValueStore.addPropertyDeletionOverride("Tags")
 
     const s3404UriRewriteFunction = new CloudfrontFunction(this, "S3404UriRewriteFunction", {
       functionName: `${props.serviceName}-S3404UriRewriteFunction`,
