@@ -67,9 +67,18 @@
         padding-left: 8px;
         padding-right: 8px;
 
-
         &--selected {
             background-color: #ffffff;
         }
+    }
+    
+    // Yellow focus styling for keyboard navigation
+    .nhsuk-tabs__tab:focus,
+    .nhsuk-tabs__tab.keyboard-focused {
+        background-color: #ffeb3b;
+        color: #212b32;
+        outline: none;
+        border-bottom: 4px solid #212b32;
+        box-sizing: border-box;
     }
 }

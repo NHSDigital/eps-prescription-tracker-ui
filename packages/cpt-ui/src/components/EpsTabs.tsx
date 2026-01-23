@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from "react"
+import React, {useEffect, useCallback, useRef} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {Tabs} from "nhsuk-react-components"
 import "../styles/tabs.scss"
@@ -26,6 +26,8 @@ export default function EpsTabs({
   const tabClass = `${baseClass} ${variantClass}`.trim()
 
   const navigate = useNavigate()
+  const keyboardNavigatedRef = useRef(false)
+  const lastKeyboardFocusedTabRef = useRef<string | null>(null)
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const activeElement = document.activeElement
 
@@ -50,6 +52,7 @@ export default function EpsTabs({
 
     if (newTabIndex !== currentTabIndex) {
       const newTab = tabs[newTabIndex]
+      keyboardNavigatedRef.current = true
       navigate(newTab.link)
     }
   }, [navigate, tabHeaderArray, activeTabPath])
@@ -61,6 +64,28 @@ export default function EpsTabs({
       document.removeEventListener("keydown", handleKeyDown)
     }
   }, [handleKeyDown])
+
+  // Focus management for keyboard navigation
+  useEffect(() => {
+    if (keyboardNavigatedRef.current) {
+      // Remove keyboard focus class from previous tab
+      if (lastKeyboardFocusedTabRef.current) {
+        const prevTab = document.getElementById(lastKeyboardFocusedTabRef.current)
+        if (prevTab) {
+          prevTab.classList.remove("keyboard-focused")
+        }
+      }
+
+      const activeId = `tab_${activeTabPath.substring(1)}`
+      const activeEl = document.getElementById(activeId) as HTMLAnchorElement | null
+      if (activeEl) {
+        activeEl.focus()
+        activeEl.classList.add("keyboard-focused")
+        lastKeyboardFocusedTabRef.current = activeId
+      }
+      keyboardNavigatedRef.current = false
+    }
+  }, [activeTabPath])
 
   const renderAccessibleTitle = (title: string) => {
     const match = title.match(/^(.*)\s\((\d+)\)$/)
