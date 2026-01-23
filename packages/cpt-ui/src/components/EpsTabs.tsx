@@ -66,10 +66,8 @@ export default function EpsTabs({
     }
   }, [handleKeyDown])
 
-  // Focus management for keyboard navigation and clicks
   useEffect(() => {
     if (keyboardNavigatedRef.current || clickNavigatedRef.current) {
-      // Remove keyboard focus class from previous tab
       if (lastKeyboardFocusedTabRef.current) {
         const prevTab = document.getElementById(lastKeyboardFocusedTabRef.current)
         if (prevTab) {
@@ -92,7 +90,6 @@ export default function EpsTabs({
   }, [activeTabPath])
 
   const handleTabClick = () => {
-    // Set flag to maintain focus styling after navigation
     clickNavigatedRef.current = true
   }
 
