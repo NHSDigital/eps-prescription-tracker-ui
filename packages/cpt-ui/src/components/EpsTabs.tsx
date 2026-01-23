@@ -27,6 +27,7 @@ export default function EpsTabs({
 
   const navigate = useNavigate()
   const keyboardNavigatedRef = useRef(false)
+  const clickNavigatedRef = useRef(false)
   const lastKeyboardFocusedTabRef = useRef<string | null>(null)
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const activeElement = document.activeElement
@@ -67,7 +68,7 @@ export default function EpsTabs({
 
   // Focus management for keyboard navigation and clicks
   useEffect(() => {
-    if (keyboardNavigatedRef.current) {
+    if (keyboardNavigatedRef.current || clickNavigatedRef.current) {
       // Remove keyboard focus class from previous tab
       if (lastKeyboardFocusedTabRef.current) {
         const prevTab = document.getElementById(lastKeyboardFocusedTabRef.current)
@@ -79,31 +80,21 @@ export default function EpsTabs({
       const activeId = `tab_${activeTabPath.substring(1)}`
       const activeEl = document.getElementById(activeId) as HTMLAnchorElement | null
       if (activeEl) {
-        activeEl.focus()
+        if (keyboardNavigatedRef.current) {
+          activeEl.focus()
+        }
         activeEl.classList.add("keyboard-focused")
         lastKeyboardFocusedTabRef.current = activeId
       }
       keyboardNavigatedRef.current = false
+      clickNavigatedRef.current = false
     }
   }, [activeTabPath])
 
-  // Apply focus styling to active tab on mount and path changes
-  useEffect(() => {
-    tabHeaderArray.forEach(tab => {
-      const tabEl = document.getElementById(`tab_${tab.link.substring(1)}`)
-      if (tabEl) {
-        tabEl.classList.remove("keyboard-focused")
-      }
-    })
-
-    // Add focus class to currently active tab
-    const activeId = `tab_${activeTabPath.substring(1)}`
-    const activeEl = document.getElementById(activeId)
-    if (activeEl) {
-      activeEl.classList.add("keyboard-focused")
-      lastKeyboardFocusedTabRef.current = activeId
-    }
-  }, [activeTabPath, tabHeaderArray])
+  const handleTabClick = () => {
+    // Set flag to maintain focus styling after navigation
+    clickNavigatedRef.current = true
+  }
 
   const renderAccessibleTitle = (title: string) => {
     const match = title.match(/^(.*)\s\((\d+)\)$/)
@@ -147,6 +138,7 @@ export default function EpsTabs({
                 to={tab.link}
                 data-testid={`eps-tab-heading ${tab.link}`}
                 tabIndex={isActive ? 0 : -1}
+                onClick={() => handleTabClick()}
               >
                 {renderAccessibleTitle(tab.title)}
               </Link>
