@@ -65,7 +65,7 @@ export default function EpsTabs({
     }
   }, [handleKeyDown])
 
-  // Focus management for keyboard navigation
+  // Focus management for keyboard navigation and clicks
   useEffect(() => {
     if (keyboardNavigatedRef.current) {
       // Remove keyboard focus class from previous tab
@@ -86,6 +86,24 @@ export default function EpsTabs({
       keyboardNavigatedRef.current = false
     }
   }, [activeTabPath])
+
+  // Apply focus styling to active tab on mount and path changes
+  useEffect(() => {
+    tabHeaderArray.forEach(tab => {
+      const tabEl = document.getElementById(`tab_${tab.link.substring(1)}`)
+      if (tabEl) {
+        tabEl.classList.remove("keyboard-focused")
+      }
+    })
+
+    // Add focus class to currently active tab
+    const activeId = `tab_${activeTabPath.substring(1)}`
+    const activeEl = document.getElementById(activeId)
+    if (activeEl) {
+      activeEl.classList.add("keyboard-focused")
+      lastKeyboardFocusedTabRef.current = activeId
+    }
+  }, [activeTabPath, tabHeaderArray])
 
   const renderAccessibleTitle = (title: string) => {
     const match = title.match(/^(.*)\s\((\d+)\)$/)
