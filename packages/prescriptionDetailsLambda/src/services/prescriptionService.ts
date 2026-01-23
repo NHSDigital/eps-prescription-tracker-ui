@@ -10,7 +10,10 @@ import {mergePrescriptionDetails} from "../utils/responseMapper"
 import {DoHSData} from "../utils/types"
 import path from "path"
 import {extractOdsCodes, PrescriptionOdsCodes} from "../utils/extensionUtils"
-import {PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+import {ApigeeConfig, PrescriptionDetailsResponse} from "@cpt-ui-common/common-types"
+import {getPatientDetails} from "./getPatientDetails"
+
+import {buildApigeeHeaders} from "@cpt-ui-common/authFunctions"
 
 /**
  * Fetch DoHS data and map it to the expected structure.
@@ -78,11 +81,15 @@ export async function getDoHSData(
  * Entry function for the prescription request processing.
  * Returns the complete response for the lambda handler to give back.
  */
+interface ApigeeEndpoints {
+  prescriptionsEndpoint: string,
+  personalDemographicsEndpoint: string
+}
 export async function processPrescriptionRequest(
   prescriptionId: string,
   issueNumber: string,
-  apigeePrescriptionsEndpoint: string,
-  apigeeHeaders: Record<string, string>,
+  {prescriptionsEndpoint, personalDemographicsEndpoint}: ApigeeEndpoints,
+  {apigeeAccessToken, roleId, orgCode, correlationId}: ApigeeConfig,
   logger: Logger
 ): Promise<PrescriptionDetailsResponse> {
   logger.info("Fetching prescription details from Apigee", {
@@ -90,7 +97,8 @@ export async function processPrescriptionRequest(
     issueNumber
   })
 
-  const endpoint = new URL(apigeePrescriptionsEndpoint)
+  const apigeeHeaders = buildApigeeHeaders(apigeeAccessToken, roleId, orgCode, correlationId)
+  const endpoint = new URL(prescriptionsEndpoint)
   endpoint.pathname = path.join(endpoint.pathname, `/RequestGroup/${prescriptionId}`)
 
   // Add issueNumber as a query parameter to the Apigee request
@@ -126,6 +134,22 @@ export async function processPrescriptionRequest(
     prescriptionId,
     issueNumber
   })
+  const prescriptionDetails = mergePrescriptionDetails(apigeeResponse.data, doHSData, odsCodes, logger)
 
-  return mergePrescriptionDetails(apigeeResponse.data, doHSData, odsCodes, logger)
+  const patientDetails = await getPatientDetails(
+    prescriptionDetails.patientDetails.nhsNumber,
+    personalDemographicsEndpoint, {
+      apigeeAccessToken,
+      roleId,
+      orgCode,
+      correlationId
+    }, logger)
+
+  if (patientDetails){
+    logger.info("Overriding patient details with those from PDS")
+    prescriptionDetails.patientDetails = patientDetails
+    prescriptionDetails.patientFallback = false
+  }
+
+  return prescriptionDetails
 }
