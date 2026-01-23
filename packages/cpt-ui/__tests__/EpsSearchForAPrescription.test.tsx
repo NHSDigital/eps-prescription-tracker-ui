@@ -118,9 +118,9 @@ describe("SearchForAPrescription", () => {
 
   it("renders hero container with proper styling", () => {
     renderWithProviders(<SearchForAPrescription />)
-    const heroContainer = screen.getByTestId("search-hero-container")
+    const heroContainer = screen.getByTestId("hero-banner")
     expect(heroContainer).toBeInTheDocument()
-    expect(heroContainer).toHaveClass("hero-container")
+    expect(heroContainer).toHaveClass("nhsuk-hero-wrapper")
   })
 
   it("sets active tab based on pathname - prescription ID", () => {
