@@ -46,7 +46,8 @@ jest.mock("@/helpers/utils", () => ({
 // Mock logger
 jest.mock("@/helpers/logger", () => ({
   logger: {
-    info: jest.fn()
+    info: jest.fn(),
+    debug: jest.fn()
   }
 }))
 
