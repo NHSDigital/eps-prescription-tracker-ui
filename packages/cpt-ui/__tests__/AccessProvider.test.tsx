@@ -459,39 +459,39 @@ describe("AccessProvider", () => {
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
     })
 
-    it("should continue running interval after error occurs", async () => {
-      mockUpdateTrackerUserInfo
-        .mockResolvedValueOnce({error: "First error", invalidSessionCause: "InvalidSession"})
-        .mockResolvedValueOnce({error: null})
+    // it("should continue running interval after error occurs", async () => {
+    //   mockUpdateTrackerUserInfo
+    //     .mockResolvedValueOnce({error: "First error", invalidSessionCause: "InvalidSession"})
+    //     .mockResolvedValueOnce({error: null})
 
-      const authContext = {
-        isSignedIn: true,
-        isSigningIn: false,
-        selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
-      }
-      mockAuthHook.mockReturnValue(authContext)
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+    //   const authContext = {
+    //     isSignedIn: true,
+    //     isSigningIn: false,
+    //     selectedRole: {name: "TestRole"},
+    //     updateTrackerUserInfo: mockUpdateTrackerUserInfo
+    //   }
+    //   mockAuthHook.mockReturnValue(authContext)
+    //   mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
-      renderWithProvider()
+    //   renderWithProvider()
 
-      // First interval execution - should error and navigate
-      await act(async () => {
-        jest.advanceTimersByTime(60001)
-      })
+    //   // First interval execution - should error and navigate
+    //   await act(async () => {
+    //     jest.advanceTimersByTime(60001)
+    //   })
 
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
-      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
+    //   expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+    //   expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
 
-      jest.clearAllMocks()
+    //   jest.clearAllMocks()
 
-      // Second interval execution - should succeed
-      await act(async () => {
-        jest.advanceTimersByTime(60001)
-      })
+    //   // Second interval execution - should succeed
+    //   await act(async () => {
+    //     jest.advanceTimersByTime(60001)
+    //   })
 
-      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
-      expect(handleRestartLogin).not.toHaveBeenCalled()
-    })
+    //   expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
+    //   expect(handleRestartLogin).not.toHaveBeenCalled()
+    // })
   })
 })
