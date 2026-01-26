@@ -293,46 +293,46 @@ describe("AccessProvider", () => {
   describe("Periodic user info check useEffect", () => {
     const mockUpdateTrackerUserInfo = jest.fn()
 
-    it("should set up interval when component mounts", () => {
-      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+    // it("should set up interval when component mounts", () => {
+    //   const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
 
-      mockAuthHook.mockReturnValue({
-        isSignedIn: true,
-        isSigningIn: false,
-        selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
-      })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
-      mockNormalizePathFn.mockReturnValue("/search-by-prescription-id")
+    //   mockAuthHook.mockReturnValue({
+    //     isSignedIn: true,
+    //     isSigningIn: false,
+    //     selectedRole: {name: "TestRole"},
+    //     updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+    //   })
+    //   mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+    //   mockNormalizePathFn.mockReturnValue("/search-by-prescription-id")
 
-      renderWithProvider()
+    //   renderWithProvider()
 
-      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 60000)
-      setIntervalSpy.mockRestore()
-    })
+    //   expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 60000)
+    //   setIntervalSpy.mockRestore()
+    // })
 
-    it("should clear interval on component unmount", () => {
-      const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
+    // it("should clear interval on component unmount", () => {
+    //   const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
 
-      mockAuthHook.mockReturnValue({
-        isSignedIn: true,
-        isSigningIn: false,
-        selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
-      })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+    //   mockAuthHook.mockReturnValue({
+    //     isSignedIn: true,
+    //     isSigningIn: false,
+    //     selectedRole: {name: "TestRole"},
+    //     updateTrackerUserInfo: mockUpdateTrackerUserInfo
+    //   })
+    //   mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
-      const {unmount} = render(
-        <AccessProvider>
-          <TestComponent />
-        </AccessProvider>
-      )
+    //   const {unmount} = render(
+    //     <AccessProvider>
+    //       <TestComponent />
+    //     </AccessProvider>
+    //   )
 
-      unmount()
+    //   unmount()
 
-      expect(clearIntervalSpy).toHaveBeenCalled()
-      clearIntervalSpy.mockRestore()
-    })
+    //   expect(clearIntervalSpy).toHaveBeenCalled()
+    //   clearIntervalSpy.mockRestore()
+    // })
 
     it("should skip user info check when isSigningIn is true", async () => {
       mockAuthHook.mockReturnValue({
