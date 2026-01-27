@@ -204,59 +204,64 @@ export default function SearchPrescriptionPage() {
       <title>{HERO_TEXT}</title>
       <main id="search-for-a-prescription"
         className="search-for-a-prescription" data-testid="search-for-a-prescription">
-        <Container className="hero-container" data-testid="search-hero-container">
-          <Row>
-            <Col width="full">
-              <Hero className="nhsuk-hero-wrapper" data-testid="hero-banner">
-                <Hero.Heading className="heroHeading" id="hero-heading" data-testid="hero-heading">
-                  {HERO_TEXT}
-                </Hero.Heading>
-              </Hero>
-            </Col>
-          </Row>
-        </Container>
-        <Container data-testid="search-tabs-container">
-          <Row>
-            <Col width="full">
-              <TabSet>
-                {PRESCRIPTION_SEARCH_TABS.map((tab, index) => (
-                  <TabSet.Tab
-                    key={tab.link}
-                    active={activeTab === index}
-                    controls={`search-panel-${index}`}
-                    onClick={() => handleTabClick(index)}
+        <div id="main-content">
+          <Hero className="nhsuk-hero-wrapper hero-full-width" data-testid="hero-banner">
+            <Container>
+              <Row>
+                <Col width="full">
+                  <Hero.Heading className="heroHeading" id="hero-heading" data-testid="hero-heading">
+                    {HERO_TEXT}
+                  </Hero.Heading>
+                </Col>
+              </Row>
+            </Container>
+          </Hero>
+          <div className="tabs-full-width-container">
+            <Container data-testid="search-tabs-container">
+              <Row>
+                <Col width="full">
+                  <TabSet>
+                    {PRESCRIPTION_SEARCH_TABS.map((tab, index) => (
+                      <TabSet.Tab
+                        key={tab.link}
+                        id={`tab-${index}`}
+                        active={activeTab === index}
+                        controls={`search-panel-${index}`}
+                        onClick={() => handleTabClick(index)}
+                      >
+                        {tab.title}
+                      </TabSet.Tab>
+                    ))}
+                  </TabSet>
+                </Col>
+              </Row>
+            </Container>
+          </div>
+          <div className="tab-divider"></div>
+          <div className="content-wrapper">
+            <Container>
+              <Row>
+                <Col width="full">
+                  <div
+                    className="content-padding"
+                    role="tabpanel"
+                    id={`search-panel-${activeTab}`}
+                    aria-labelledby={`tab-${activeTab}`}
                   >
-                    {tab.title}
-                  </TabSet.Tab>
-                ))}
-              </TabSet>
-            </Col>
-          </Row>
-        </Container>
-        <div className="tab-divider"></div>
-        <div className="content-wrapper">
-          <Container>
-            <Row>
-              <Col width="full">
-                <div
-                  className="content-padding"
-                  role="tabpanel"
-                  id={`search-panel-${activeTab}`}
-                  aria-labelledby={`tab-${activeTab}`}
-                >
-                  {content}
-                </div>
-              </Col>
-            </Row>
-          </Container>
-        </div>
-        {/* Aria-live region for announcing tab switch events */}
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          className="sr-only"
-        >
-          {ariaLiveMessage}
+                    {content}
+                  </div>
+                </Col>
+              </Row>
+            </Container>
+          </div>
+          {/* Aria-live region for announcing tab switch events */}
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            className="sr-only"
+          >
+            {ariaLiveMessage}
+          </div>
         </div>
       </main>
     </Fragment>

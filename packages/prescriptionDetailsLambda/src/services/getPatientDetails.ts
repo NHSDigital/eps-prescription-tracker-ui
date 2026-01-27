@@ -1,7 +1,8 @@
 import * as pds from "@cpt-ui-common/pdsClient"
 import axios from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
-import {ApigeeConfig, PatientSummary} from "@cpt-ui-common/common-types"
+import type {ApigeeConfig} from "@cpt-ui-common/common-types"
+import {PatientSummary} from "@cpt-ui-common/common-types"
 import {exhaustive_switch_guard} from "@cpt-ui-common/lambdaUtils"
 
 const axiosInstance = axios.create()

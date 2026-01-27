@@ -1,3 +1,3 @@
 export const EpsSpinnerStrings = {
-  loading: "Loading..."
+  loading: "Loading"
 }
