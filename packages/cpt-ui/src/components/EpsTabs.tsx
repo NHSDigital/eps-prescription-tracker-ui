@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from "react"
+import React, {useEffect, useCallback, useRef} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import {Tabs} from "nhsuk-react-components"
 import "../styles/tabs.scss"
@@ -26,6 +26,9 @@ export default function EpsTabs({
   const tabClass = `${baseClass} ${variantClass}`.trim()
 
   const navigate = useNavigate()
+  const keyboardNavigatedRef = useRef(false)
+  const clickNavigatedRef = useRef(false)
+  const lastKeyboardFocusedTabRef = useRef<string | null>(null)
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const activeElement = document.activeElement
 
@@ -50,6 +53,7 @@ export default function EpsTabs({
 
     if (newTabIndex !== currentTabIndex) {
       const newTab = tabs[newTabIndex]
+      keyboardNavigatedRef.current = true
       navigate(newTab.link)
     }
   }, [navigate, tabHeaderArray, activeTabPath])
@@ -62,14 +66,32 @@ export default function EpsTabs({
     }
   }, [handleKeyDown])
 
-  // Ensure focus moves to the active tab when the route/tab changes
   useEffect(() => {
-    const activeId = `tab_${activeTabPath.substring(1)}`
-    const activeEl = document.getElementById(activeId) as HTMLAnchorElement | null
-    if (activeEl) {
-      activeEl.focus()
+    if (keyboardNavigatedRef.current || clickNavigatedRef.current) {
+      if (lastKeyboardFocusedTabRef.current) {
+        const prevTab = document.getElementById(lastKeyboardFocusedTabRef.current)
+        if (prevTab) {
+          prevTab.classList.remove("keyboard-focused")
+        }
+      }
+
+      const activeId = `tab_${activeTabPath.substring(1)}`
+      const activeEl = document.getElementById(activeId) as HTMLAnchorElement | null
+      if (activeEl) {
+        if (keyboardNavigatedRef.current) {
+          activeEl.focus()
+        }
+        activeEl.classList.add("keyboard-focused")
+        lastKeyboardFocusedTabRef.current = activeId
+      }
+      keyboardNavigatedRef.current = false
+      clickNavigatedRef.current = false
     }
   }, [activeTabPath])
+
+  const handleTabClick = () => {
+    clickNavigatedRef.current = true
+  }
 
   const renderAccessibleTitle = (title: string) => {
     const match = title.match(/^(.*)\s\((\d+)\)$/)
@@ -113,6 +135,7 @@ export default function EpsTabs({
                 to={tab.link}
                 data-testid={`eps-tab-heading ${tab.link}`}
                 tabIndex={isActive ? 0 : -1}
+                onClick={() => handleTabClick()}
               >
                 {renderAccessibleTitle(tab.title)}
               </Link>

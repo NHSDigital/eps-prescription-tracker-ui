@@ -119,7 +119,7 @@ describe("LogoutPage", () => {
     )
 
     expect(screen.getByText(/Logging out/i)).toBeInTheDocument()
-    expect(screen.getByRole("progressbar")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toBeInTheDocument()
   })
 
   it("does not call signOut if user is signed in, but we haven't advanced timers yet", () => {
@@ -130,6 +130,6 @@ describe("LogoutPage", () => {
     )
 
     expect(screen.getByText(/Logging out/i)).toBeInTheDocument()
-    expect(screen.getByRole("progressbar")).toBeInTheDocument()
+    expect(screen.getByRole("status")).toBeInTheDocument()
   })
 })
