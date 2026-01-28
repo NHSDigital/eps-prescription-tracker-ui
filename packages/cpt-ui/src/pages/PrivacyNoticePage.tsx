@@ -16,6 +16,7 @@ export default function PrivacyNoticePage() {
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
+      <div id="main-content"/>
       <Breadcrumb>
         <Breadcrumb.Item>
           <Link to={getHomeLink(auth.isSignedIn)}>

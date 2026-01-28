@@ -293,7 +293,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
   it("renders content wrapper and containers with correct test ids", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />)
 
-    expect(container.querySelector('[data-testid="search-hero-container"]')).toBeInTheDocument()
+    expect(container.querySelector('[data-testid="hero-banner"]')).toBeInTheDocument()
     expect(container.querySelector('[data-testid="search-tabs-container"]')).toBeInTheDocument()
     expect(container.querySelector('[data-testid="hero-banner"]')).toBeInTheDocument()
   })
