@@ -334,7 +334,7 @@ describe("AccessProvider", () => {
 
       mockAuthHook.mockReturnValue({
         isSignedIn: true,
-        isSigningIn: true,
+        isSigningIn: false,
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
