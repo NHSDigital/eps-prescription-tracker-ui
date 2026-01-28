@@ -290,8 +290,67 @@ describe("AccessProvider", () => {
     })
   })
 
-  describe("user info check useEffect", () => {
+  describe("Periodic user info check useEffect", () => {
     const mockUpdateTrackerUserInfo = jest.fn()
+
+    it("should set up interval when component mounts", () => {
+      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: {name: "TestRole"},
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockNormalizePathFn.mockReturnValue("/search-by-prescription-id")
+
+      renderWithProvider()
+
+      expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 60000)
+      setIntervalSpy.mockRestore()
+    })
+
+    it("should check user info when component mounts", () => {
+      mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: {name: "TestRole"},
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      expect(logger.debug).toHaveBeenCalledWith("On load user info check")
+      expect(logger.debug).toHaveBeenCalledWith("Refreshing user info")
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
+    })
+
+    it("should clear interval on component unmount", () => {
+      const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
+
+      mockAuthHook.mockReturnValue({
+        isSignedIn: true,
+        isSigningIn: true,
+        selectedRole: {name: "TestRole"},
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      })
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      const {unmount} = render(
+        <AccessProvider>
+          <TestComponent />
+        </AccessProvider>
+      )
+
+      unmount()
+
+      expect(clearIntervalSpy).toHaveBeenCalled()
+      clearIntervalSpy.mockRestore()
+    })
 
     it("should skip user info check when isSigningIn is true", async () => {
       mockAuthHook.mockReturnValue({
@@ -305,7 +364,7 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       act(() => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
@@ -327,7 +386,7 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       act(() => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
@@ -349,11 +408,11 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
-      expect(logger.info).toHaveBeenCalledWith("Periodic user info check")
-      expect(logger.info).toHaveBeenCalledWith("Refreshing user info")
+      expect(logger.debug).toHaveBeenCalledWith("Periodic user info check")
+      expect(logger.debug).toHaveBeenCalledWith("Refreshing user info")
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
     })
 
@@ -372,7 +431,7 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
@@ -392,7 +451,7 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       expect(logger.debug).toHaveBeenCalledWith("Not checking user info")
@@ -411,11 +470,47 @@ describe("AccessProvider", () => {
       renderWithProvider()
 
       await act(async () => {
-        jest.advanceTimersByTime(300001)
+        jest.advanceTimersByTime(60001)
       })
 
       // Should call updateTrackerUserInfo when not on restricted paths
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
+    })
+
+    it("should continue running interval after error occurs", async () => {
+      mockUpdateTrackerUserInfo
+        .mockResolvedValueOnce({error: null}) // on load check
+        .mockResolvedValueOnce({error: "First error", invalidSessionCause: "InvalidSession"}) // first periodic check
+        .mockResolvedValueOnce({error: null}) // second periodic check
+
+      const authContext = {
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: {name: "TestRole"},
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      }
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      // First interval execution - should error and navigate
+      await act(async () => {
+        jest.advanceTimersByTime(60001)
+      })
+
+      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(2)
+
+      jest.clearAllMocks()
+
+      // Second interval execution - should succeed
+      await act(async () => {
+        jest.advanceTimersByTime(60001)
+      })
+
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
+      expect(handleRestartLogin).not.toHaveBeenCalled()
     })
   })
 })

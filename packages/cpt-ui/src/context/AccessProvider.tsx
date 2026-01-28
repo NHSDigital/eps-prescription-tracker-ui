@@ -92,6 +92,26 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
   }
 
+  const checkUserInfo = () => {
+    // Check if a user is signed in, if it fails sign the user out.
+    if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
+      logger.debug("Not checking user info")
+      return
+    }
+
+    if (auth.isSignedIn) {
+      logger.debug("Refreshing user info")
+      auth.updateTrackerUserInfo().then((response) => {
+        if (response.error) {
+          logger.debug("Restarting login")
+          handleRestartLogin(auth, response.invalidSessionCause)
+        }
+      })
+    }
+
+    return
+  }
+
   useEffect(() => {
     const currentPath = location.pathname
     const onSelectYourRole = currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE
@@ -109,25 +129,17 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   ])
 
   useEffect(() => {
-    // If user is signedIn, every minute call tracker user info. If it fails, sign the user out.
-    const currentPath = location.pathname
+    // Check if user is logged in on page load.
+    logger.debug("On load user info check")
+    checkUserInfo()
 
-    if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(currentPath)) {
-      logger.debug("Not checking user info")
-      return
-    }
+    // Then check every minute
+    const interval = setInterval(() => {
+      logger.debug("Periodic user info check")
+      checkUserInfo()
+    }, 60000) // 60000 ms = 1 minute
 
-    logger.info("Periodic user info check")
-    if (auth.isSignedIn) {
-      logger.info("Refreshing user info")
-      auth.updateTrackerUserInfo().then((response) => {
-        if (response.error) {
-          handleRestartLogin(auth, response.invalidSessionCause)
-        }
-      })
-    }
-
-    return
+    return () => clearInterval(interval)
   }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
 
   if (shouldBlockChildren()) {
