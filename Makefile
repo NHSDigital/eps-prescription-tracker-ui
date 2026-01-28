@@ -52,23 +52,62 @@ lint-githubaction-scripts:
 lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
 
 test: compile
+	make -j 4 test-all
+
+test-all: test-cloudfrontFunctions test-cpt-ui test-cdk test-cognito test-prescriptionListLambda test-prescriptionDetailsLambda test-patientSearchLambda test-middyErrorHandler test-pdsClient test-lambdaUtils test-trackerUserInfoLambda test-sessionManagementLambda test-selectedRoleLambda test-CIS2SignOutLambda test-authFunctions test-doHSClient test-dynamoFunctions test-clearActiveSessions
+
+test-cloudfrontFunctions:
 	npm run test --workspace packages/cloudfrontFunctions
+
+test-cdk:
 	npm run test --workspace packages/cdk
+
+test-cpt-ui:
 	npm run test --workspace packages/cpt-ui
+
+test-cognito:
 	npm run test --workspace packages/cognito
+
+test-prescriptionListLambda:
 	npm run test --workspace packages/prescriptionListLambda
+
+test-prescriptionDetailsLambda:
 	npm run test --workspace packages/prescriptionDetailsLambda
+
+test-patientSearchLambda:
 	npm run test --workspace packages/patientSearchLambda
+
+test-middyErrorHandler:
 	npm run test --workspace packages/common/middyErrorHandler
+
+test-pdsClient:
 	npm run test --workspace packages/common/pdsClient
+
+test-lambdaUtils:
 	npm run test --workspace packages/common/lambdaUtils
+
+test-trackerUserInfoLambda:
 	npm run test --workspace packages/trackerUserInfoLambda
+
+test-sessionManagementLambda:
 	npm run test --workspace packages/sessionManagementLambda
+
+test-selectedRoleLambda:
 	npm run test --workspace packages/selectedRoleLambda
+
+test-CIS2SignOutLambda:
 	npm run test --workspace packages/CIS2SignOutLambda
+
+test-authFunctions:
 	npm run test --workspace packages/common/authFunctions
+
+test-doHSClient:
 	npm run test --workspace packages/common/doHSClient
+
+test-dynamoFunctions:
 	npm run test --workspace packages/common/dynamoFunctions
+
+test-clearActiveSessions:
 	npm run test --workspace packages/testingSupport/clearActiveSessions
 
 clean:
