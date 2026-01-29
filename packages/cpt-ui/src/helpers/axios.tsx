@@ -4,6 +4,7 @@ import {logger} from "./logger"
 import {cptAwsRum} from "./awsRum"
 import {Headers} from "@cpt-ui-common/common-types"
 import {readItemGroupFromLocalStorage} from "./useLocalStorageState"
+import {sessionTimeoutManager} from "./sessionTimeoutManager"
 
 const x_retry_header = "x-retry-id"
 
@@ -78,6 +79,9 @@ http.interceptors.request.use(
 // RESPONSE INTERCEPTOR
 http.interceptors.response.use(
   (response) => {
+    // Reset session timeout on successful API calls
+    sessionTimeoutManager.resetSessionTimeout()
+
     // If the response is successful, just return it
     return response
   },
