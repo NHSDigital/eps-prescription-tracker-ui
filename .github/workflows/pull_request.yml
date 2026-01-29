@@ -221,6 +221,44 @@ jobs:
       IS_PULL_REQUEST: true
       FORWARD_CSOC_LOGS: false
     secrets: inherit
+  release_int:
+    needs: [tag_release, package_code, get_commit_id]
+    uses: ./.github/workflows/release_all_stacks.yml
+    with:
+      SERVICE_NAME: cpt-ui
+      TARGET_ENVIRONMENT: int
+      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
+      COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
+      useMockOidc: false
+      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
+      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
+      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
+      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
+      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
+      allowLocalhostAccess: false
+      useCustomCognitoDomain: true
+      APIGEE_CIS2_TOKEN_ENDPOINT: "https://int.api.service.nhs.uk/oauth2/token"
+      APIGEE_MOCK_TOKEN_ENDPOINT: "UNUSED"
+      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
+      APIGEE_PDS_ENDPOINT: "https://int.api.service.nhs.uk/personal-demographics/FHIR/R4/"
+      APIGEE_DOHS_ENDPOINT: "https://int.api.service.nhs.uk/service-search-api/"
+      JWT_KID: "eps-cpt-ui-int"
+      ROLE_ID: "555254242106"
+      LOG_LEVEL: "DEBUG"
+      RUN_REGRESSION_TESTS: false
+      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: false
+      USE_ZONE_APEX: true
+      ROUTE53_EXPORT_NAME: CPT
+      REACT_LOG_LEVEL: "debug" # change this before pilot
+      LOG_RETENTION_IN_DAYS: 30
+      CREATE_INT_RELEASE_NOTES: true
+      CREATE_PROD_RELEASE_NOTES: true
+      MARK_JIRA_RELEASED: false
+      CREATE_INT_RC_RELEASE_NOTES: true
+      IS_PULL_REQUEST: false
+      FORWARD_CSOC_LOGS: false
+    secrets: inherit
+
   report_deployed_url:
     needs: [release_code, get_issue_number]
     if: |
