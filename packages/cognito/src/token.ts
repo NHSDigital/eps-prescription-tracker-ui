@@ -147,7 +147,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger
   )
 
-  const fifteenMinutes = 15 * 60 * 1000
+  const fifteenMinutes = 3 * 60 * 1000
   const sessionManagementTableName = cis2OidcConfig.sessionManagementTableName
 
   if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
