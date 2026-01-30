@@ -23,12 +23,13 @@ const cfnDriftDetectionGroup = app.node.tryGetContext("cfnDriftDetectionGroup")
 // add cdk-nag to everything
 Aspects.of(app).add(new AwsSolutionsChecks({verbose: true}))
 
-Tags.of(app).add("serviceName", serviceName)
-Tags.of(app).add("version", version)
-Tags.of(app).add("commit", commit)
-Tags.of(app).add("cdkApp", "StatelessApp")
-Tags.of(app).add("repo", "eps-prescription-tracker-ui")
-Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup)
+Tags.of(app).add("serviceName", serviceName, {excludeResourceTypes: ["AWS::CloudFront::KeyValueStore"]})
+Tags.of(app).add("version", version, {excludeResourceTypes: ["AWS::CloudFront::KeyValueStore"]})
+Tags.of(app).add("commit", commit, {excludeResourceTypes: ["AWS::CloudFront::KeyValueStore"]})
+Tags.of(app).add("cdkApp", "StatelessApp", {excludeResourceTypes: ["AWS::CloudFront::KeyValueStore"]})
+Tags.of(app).add("repo", "eps-prescription-tracker-ui", {excludeResourceTypes: ["AWS::CloudFront::KeyValueStore"]})
+Tags.of(app).add("cfnDriftDetectionGroup", cfnDriftDetectionGroup, {
+  excludeResourceTypes: ["AWS::CloudFront::KeyValueStore"]})
 
 new StatelessResourcesStack(app, "StatelessStack", {
   env: {
