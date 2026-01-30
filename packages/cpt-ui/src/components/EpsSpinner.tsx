@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useEffect, useRef} from "react"
 
 import {EpsSpinnerStrings} from "@/constants/ui-strings/EpsSpinnerStrings"
 
@@ -8,6 +8,15 @@ function Spinner({
   fraction = 0.2, // The fraction of the hoop that is green
   speed = 1 // The speed (in seconds) for one full rotation
 }) {
+  const statusRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Focus the status element when the spinner mounts to ensure it's announced
+    if (statusRef.current) {
+      statusRef.current.focus()
+    }
+  }, [])
+
   // The portion that should appear green is defined by "fraction"
   // If fraction = 0.25, then 25% of the hoop is green and 75% is grey
   const circumference = 2 * Math.PI * radius
@@ -22,9 +31,19 @@ function Spinner({
         alignItems: "center",
         justifyContent: "center"
       }}
-      role="progressbar"
       data-testid="spinner"
     >
+      {/* Screen reader announcement */}
+      <div
+        ref={statusRef}
+        role="status"
+        aria-live="assertive"
+        aria-atomic="true"
+        tabIndex={-1}
+        className="nhsuk-u-visually-hidden"
+      >
+        {EpsSpinnerStrings.loading}
+      </div>
       <div
         className="spinner-container"
         style={{
