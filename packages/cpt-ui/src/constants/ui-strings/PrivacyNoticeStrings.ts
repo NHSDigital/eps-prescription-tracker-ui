@@ -1,5 +1,5 @@
 export const PrivacyNoticeStrings = {
-  pageTitle: "Privacy notice - Prescription tracker",
+  pageTitle: "Privacy notice – Prescription tracker",
   home: "Home",
   privacyNotice: "Privacy Notice",
   header: "Privacy notice for the Prescription Tracker",
@@ -22,12 +22,12 @@ export const PrivacyNoticeStrings = {
   dataCollected: {
     header: "What data we collect",
     explanation: "We collect a range of your personal data, including:",
-    identifiable: "identifiable data - through signing in using ",
+    identifiable: "identifiable data – through signing in using ",
     cis2Link: "NHS CIS2 Authentication (opens in new tab)",
     stores: ", we store your CIS2 Unique User ID (UUID), name, role and organisation name",
-    usage: "usage data - information about how you interact with the Prescription Tracker, including your IP address,"
+    usage: "usage data – information about how you interact with the Prescription Tracker, including your IP address,"
     + " browser type, operating system and activity logs",
-    device: "device information - information about the device you use to access the Prescription Tracker,"
+    device: "device information – information about the device you use to access the Prescription Tracker,"
     + " such as device type and device identifiers"
   },
   dataSource: {
@@ -38,22 +38,22 @@ export const PrivacyNoticeStrings = {
   usage: {
     header: "How we use your data",
     explanation: "We use your personal data for the following purposes: ",
-    functionality: "to provide core functionality -"
+    functionality: "to provide core functionality –"
     + " we process your data to enable you to use the Prescription Tracker",
-    serviceImprovement: "service improvement - we analyse your usage patterns to understand how you use"
+    serviceImprovement: "service improvement – we analyse your usage patterns to understand how you use"
     + " the Prescription Tracker and improve its functionality."
     + " To do this, we put small files called 'analytic cookies' on your device using software called"
     + " Amazon CloudWatch RUM. These cookies are optional. The information collected includes:"
     + " the type of device you used, your browser type, your operating system, the date and time"
     + " you used the service and how you interacted with the service. For more information, see our ",
     cookie: "cookie policy",
-    audit: "audit and security - we collect activity logs of actions you have taken for monitoring and audit purposes."
+    audit: "audit and security – we collect activity logs of actions you have taken for monitoring and audit purposes."
     + " We process your authentication credentials, usage data and device information to ensure the security"
     + " of the service",
-    answer: "answer enquiries and investigate issues with the service -"
+    answer: "answer enquiries and investigate issues with the service –"
     + " if you contact us about any issues you are having with the service, we need to process your data to investigate"
     + " and resolve the issue you raised",
-    legal:  "to comply with our legal obligations -"
+    legal:  "to comply with our legal obligations –"
     + " we process your data to comply with our legal obligation to operate the service and any"
     + " other applicable laws or regulations"
   },
@@ -74,9 +74,9 @@ export const PrivacyNoticeStrings = {
   sharing: {
     header: "Who we share data with",
     mayShare: "We may share your data with:",
-    share1: "your employing organisation - if misuse is detected or reported,"
+    share1: "your employing organisation – if misuse is detected or reported,"
      + " we may need to share your data with your employing organisation for investigation purposes",
-    share2: "legal authorities - if required by law, we may disclose your personal data"
+    share2: "legal authorities – if required by law, we may disclose your personal data"
      + " to law enforcement or other legal entities"
   },
   retention: {

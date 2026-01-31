@@ -34,17 +34,23 @@ import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 function AppContent() {
   const location = useLocation()
 
-  // this useEffect ensures that focus starts with skip link when using tab navigation
+  // this useEffect ensures that focus starts with skip link when using tab navigation,
+  // unless the user has already interacted with the page
   useEffect(() => {
     let hasTabbed = false
+    let hasUserInteracted = false
 
     const activeElement = document.activeElement as HTMLElement
-    if (activeElement && activeElement !== document.body) {
-      activeElement.blur()
+    if (activeElement && activeElement !== document.body && activeElement.tagName !== "HTML") {
+      hasUserInteracted = true
+    }
+
+    const handleUserInteraction = () => {
+      hasUserInteracted = true
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Tab" && !hasTabbed && !e.shiftKey) {
+      if (e.key === "Tab" && !hasTabbed && !hasUserInteracted && !e.shiftKey) {
         hasTabbed = true
         e.preventDefault()
         const skipLink = document.querySelector(".nhsuk-skip-link") as HTMLElement
@@ -52,13 +58,19 @@ function AppContent() {
           skipLink.focus()
         }
         document.removeEventListener("keydown", handleKeyDown)
+        document.removeEventListener("click", handleUserInteraction)
+        document.removeEventListener("focusin", handleUserInteraction)
       }
     }
 
+    document.addEventListener("click", handleUserInteraction)
+    document.addEventListener("focusin", handleUserInteraction)
     document.addEventListener("keydown", handleKeyDown)
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("click", handleUserInteraction)
+      document.removeEventListener("focusin", handleUserInteraction)
     }
   }, [location.pathname])
 
