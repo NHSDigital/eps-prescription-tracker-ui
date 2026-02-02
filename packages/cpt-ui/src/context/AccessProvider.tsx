@@ -80,7 +80,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
 
     if (!loggingOut && noRole && (!inNoRoleAllowed || atRoot)) {
-      logger.info("CONNOR MARK 1")
       return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
     }
 
