@@ -292,6 +292,7 @@ describe("AccessProvider", () => {
 
   describe("Periodic user info check useEffect", () => {
     const mockUpdateTrackerUserInfo = jest.fn()
+    const mockUpdateSigningOutStatus = jest.fn()
 
     it("should set up interval when component mounts", () => {
       const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
@@ -318,7 +319,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
@@ -336,7 +338,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
@@ -357,7 +360,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: true,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
@@ -379,7 +383,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: true, // This will trigger the skip logic
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.LOGIN})
 
@@ -401,7 +406,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
@@ -423,7 +429,9 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
+
       }
       mockAuthHook.mockReturnValue(authContext)
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
@@ -442,7 +450,8 @@ describe("AccessProvider", () => {
       mockAuthHook.mockReturnValue({
         isSignedIn: false,
         isSigningIn: false,
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       // Put user on an allowed path so redirect doesn't happen
       mockLocationHook.mockReturnValue({pathname: "/login"})
@@ -463,7 +472,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       })
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
@@ -487,7 +497,8 @@ describe("AccessProvider", () => {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
-        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateSigningOutStatus: mockUpdateSigningOutStatus
       }
       mockAuthHook.mockReturnValue(authContext)
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
