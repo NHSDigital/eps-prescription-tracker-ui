@@ -81,6 +81,7 @@ const MockAuthProvider = ({
     updateSelectedRole: jest.fn(),
     updateTrackerUserInfo: jest.fn(),
     updateInvalidSessionCause: jest.fn(),
+    updateSigningOutStatus: jest.fn(),
     isSigningOut: false,
     setIsSigningOut: jest.fn()
   } as AuthContextType
