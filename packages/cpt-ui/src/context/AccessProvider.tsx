@@ -105,6 +105,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       auth.updateTrackerUserInfo().then((response) => {
         if (response.error) {
           logger.debug("Restarting login")
+          auth.setIsSigningOut(true)
           handleRestartLogin(auth, response.invalidSessionCause)
         }
       })
