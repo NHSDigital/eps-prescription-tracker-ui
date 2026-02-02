@@ -39,6 +39,7 @@ export interface AuthContextType {
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
+  updateSigningOutStatus: (status: boolean) => void | undefined
   setIsSigningOut: (value: boolean) => void
 }
 
@@ -217,6 +218,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setInvalidSessionCause(cause)
   }
 
+  const updateSigningOutStatus = (status: boolean) => {
+    setIsSigningOut(status)
+  }
+
   const hasSingleRoleAccess = () => {
     return rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0
   }
@@ -242,6 +247,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,
+      updateSigningOutStatus,
       setIsSigningOut
     }}>
       {children}
