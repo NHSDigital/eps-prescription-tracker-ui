@@ -9,3 +9,8 @@ vulnerabilities:
       - "package-lock.json"
     statement: downstream dependency just used in build stage
     expired_at: 2026-06-01
+  - id: CVE-2026-25128
+    paths:
+      - "package-lock.json"
+    statement: downstream dependency of fast-xml-parser
+    expired_at: 2026-06-01
