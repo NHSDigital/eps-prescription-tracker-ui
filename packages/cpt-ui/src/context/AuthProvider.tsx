@@ -91,14 +91,16 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
-    setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-    setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-    setSelectedRole(trackerUserInfo.selectedRole)
-    setUserDetails(trackerUserInfo.userDetails)
-    setError(trackerUserInfo.error)
+    if (!error) {
+      setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+      setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+      setSelectedRole(trackerUserInfo.selectedRole)
+      setUserDetails(trackerUserInfo.userDetails)
+    }
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     setSessionId(trackerUserInfo.sessionId)
+    setError(trackerUserInfo.error)
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
   }
 

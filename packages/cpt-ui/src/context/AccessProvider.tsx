@@ -61,6 +61,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
 
     const loggedOut = !auth.isSignedIn && !auth.isSigningOut
+    const loggingOut = auth.isSignedIn && auth.isSigningOut
     const concurrent = auth.isSignedIn && auth.isConcurrentSession
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
@@ -78,7 +79,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
     }
 
-    if (noRole && (!inNoRoleAllowed || atRoot)) {
+    if (!loggingOut && noRole && (!inNoRoleAllowed || atRoot)) {
+      logger.info("CONNOR MARK 1")
       return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
     }
 
@@ -104,6 +106,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       auth.updateTrackerUserInfo().then((response) => {
         if (response.error) {
           logger.debug("Restarting login")
+          auth.setIsSigningOut(true)
           handleRestartLogin(auth, response.invalidSessionCause)
         }
       })
