@@ -150,7 +150,6 @@ const signedInAuthState: AuthContextType = {
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
-  updateSigningOutStatus: jest.fn(),
   isSigningOut: false,
   setIsSigningOut: jest.fn()
 }

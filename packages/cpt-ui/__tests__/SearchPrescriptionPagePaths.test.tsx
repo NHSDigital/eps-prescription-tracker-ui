@@ -51,7 +51,6 @@ const defaultAuthContext: AuthContextType = {
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
-  updateSigningOutStatus: jest.fn(),
   setIsSigningOut: jest.fn()
 }
 
