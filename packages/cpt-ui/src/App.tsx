@@ -30,9 +30,18 @@ import NoPatientsFoundPage from "@/pages/NoPatientsFoundPage"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import SessionLoggedOutPage from "./pages/SessionLoggedOut"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
+import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
+import {useSessionTimeout} from "@/hooks/useSessionTimeout"
 
 function AppContent() {
   const location = useLocation()
+  const {
+    showModal,
+    timeLeft,
+    onStayLoggedIn,
+    onLogOut,
+    isExtending
+  } = useSessionTimeout()
 
   // this useEffect ensures that focus starts with skip link when using tab navigation,
   // unless the user has already interacted with the page
@@ -129,6 +138,13 @@ function AppContent() {
             </NavigationProvider>
           </SearchProvider>
         </PrescriptionInformationProvider>
+        <SessionTimeoutModal
+          isOpen={showModal}
+          timeLeft={timeLeft}
+          onStayLoggedIn={onStayLoggedIn}
+          onLogOut={onLogOut}
+          isExtending={isExtending}
+        />
       </PatientDetailsProvider>
     </>
   )
