@@ -10,25 +10,30 @@ import {
 import nock from "nock"
 
 import type {Logger} from "@aws-lambda-powertools/logger"
-import {getDoHSData, processPrescriptionRequest} from "../src/services/prescriptionService"
-import {Bundle, FhirResource} from "fhir/r4"
-import {PrescriptionOdsCodes, extractOdsCodes} from "../src/utils/extensionUtils"
 
 const {
-  mockUuidV4,
+  mockUuid,
   mockDoHSClient,
-  mockMergePrescriptionDetails
-} = vi.hoisted(() => {
-  return {
-    mockUuidV4: vi.fn(() => "test-uuid"),
-    mockDoHSClient: vi.fn(),
-    mockMergePrescriptionDetails: vi.fn()
-  }
-})
+  mockGetPatient,
+  mockMergePrescriptionDetails,
+  mockAuthParametersFromEnv,
+  mockBuildApigeeHeaders,
+  mockAuthenticationMiddleware
+} = vi.hoisted(() => ({
+  mockUuid: vi.fn(() => "test-uuid"),
+  mockDoHSClient: vi.fn(),
+  mockGetPatient: vi.fn(),
+  mockMergePrescriptionDetails: vi.fn(),
+  mockAuthParametersFromEnv: vi.fn(),
+  mockBuildApigeeHeaders: vi.fn().mockImplementation(() => ({
+    Authorization: "Bearer someAccessToken"
+  })),
+  mockAuthenticationMiddleware: vi.fn(() => ({before: () => {}}))
+}))
 
 // Mock uuid so that it is predictable.
 vi.mock("uuid", () => ({
-  v4: mockUuidV4
+  v4: mockUuid
 }))
 
 // Create a mock for the doHSClient function.
@@ -36,8 +41,7 @@ vi.mock("@cpt-ui-common/doHSClient", () => ({
   doHSClient: mockDoHSClient
 }))
 
-const mockGetPatient = jest.fn()
-jest.unstable_mockModule("../src/services/getPatientDetails", () => ({
+vi.mock("../src/services/getPatientDetails", () => ({
   getPatientDetails: mockGetPatient
 }))
 
@@ -46,11 +50,49 @@ vi.mock("../src/utils/responseMapper", () => ({
   mergePrescriptionDetails: mockMergePrescriptionDetails
 }))
 
+// Needed to avoid issues with ESM imports in vitest
+vi.mock("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: mockAuthParametersFromEnv,
+  buildApigeeHeaders: mockBuildApigeeHeaders,
+  authenticationMiddleware: mockAuthenticationMiddleware
+}))
+
+// Import some mock objects to use in our tests.
+import {Bundle, FhirResource} from "fhir/r4"
+import {PrescriptionOdsCodes} from "../src/utils/extensionUtils"
+import {
+  PatientAddressUse,
+  PatientNameUse,
+  PatientSummary,
+  PatientSummaryGender
+} from "@cpt-ui-common/common-types"
+
+const {
+  getDoHSData,
+  processPrescriptionRequest
+} = await import("../src/services/prescriptionService")
+
+const {
+  extractOdsCodes
+} = await import("../src/utils/extensionUtils")
+
+const mockPatient: PatientSummary = {
+  nhsNumber: "9999999999",
+  gender: PatientSummaryGender.MALE,
+  dateOfBirth: "1990-01-01",
+  familyName: "Doe",
+  givenName: ["John"],
+  nameUse: PatientNameUse.USUAL,
+  address: ["1 Trevelyan Square", "Boar Lane", "City Centre", "Leeds", "West Yorkshire"],
+  postcode: "LS1 6AE",
+  addressUse: PatientAddressUse.HOME
+}
+
 describe("prescriptionService", () => {
   let logger: Logger
 
   beforeEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
     // Clean up any pending nock interceptors
     nock.cleanAll()
     logger = {

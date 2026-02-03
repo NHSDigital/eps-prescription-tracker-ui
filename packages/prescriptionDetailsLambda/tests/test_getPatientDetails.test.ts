@@ -1,4 +1,10 @@
-import {jest} from "@jest/globals"
+import {
+  afterAll,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import {PatientSummary} from "@cpt-ui-common/common-types"
@@ -6,19 +12,45 @@ import {PatientSummary} from "@cpt-ui-common/common-types"
 const apigeePersonalDemographicsEndpoint = process.env.apigeePersonalDemographicsEndpoint as string ?? ""
 const logger: Logger = new Logger({serviceName: "getPatientDetails", logLevel: "DEBUG"})
 
-const mockGetPatientDetails = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/pdsClient", () => ({
-  Client: jest.fn().mockImplementation(() => ({
-    with_access_token: jest.fn().mockImplementation(() => ({
-      with_role_id: jest.fn().mockImplementation(() => ({
-        with_org_code: jest.fn().mockImplementation(() => ({
-          with_correlation_id:jest.fn().mockImplementation(() => ({
-            getPatientDetails: mockGetPatientDetails
-          }))
-        }))
-      }))
-    }))
-  })),
+const {
+  mockGetPatientDetails,
+  mockClient,
+  mockWithAccessToken,
+  mockWithRoleId,
+  mockWithOrgCode,
+  mockWithCorrelationId
+} = vi.hoisted(() => {
+  const mockGetPatientDetails = vi.fn()
+  const mockWithCorrelationId = vi.fn().mockImplementation(() => ({
+    getPatientDetails: mockGetPatientDetails
+  }))
+  const mockWithOrgCode = vi.fn().mockImplementation(() => ({
+    with_correlation_id: mockWithCorrelationId
+  }))
+  const mockWithRoleId = vi.fn().mockImplementation(() => ({
+    with_org_code: mockWithOrgCode
+  }))
+  const mockWithAccessToken = vi.fn().mockImplementation(() => ({
+    with_role_id: mockWithRoleId
+  }))
+  const mockClient = vi.fn().mockImplementation(function () {
+    return {
+      with_access_token: mockWithAccessToken
+    }
+  })
+
+  return {
+    mockGetPatientDetails,
+    mockClient,
+    mockWithAccessToken,
+    mockWithRoleId,
+    mockWithOrgCode,
+    mockWithCorrelationId
+  }
+})
+
+vi.mock("@cpt-ui-common/pdsClient", () => ({
+  Client: mockClient,
   patientDetails: {
     OutcomeType: {
       SUCCESS: "SUCCESS",
@@ -48,8 +80,8 @@ const {getPatientDetails} = await import("../src/services/getPatientDetails")
 
 describe("Get Patient Details", () => {
   afterAll(() => {
-    jest.resetModules()
-    jest.resetAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
   })
 
   it("returns patient details when PDS called successfully", async () => {

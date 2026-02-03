@@ -11,6 +11,7 @@ const viteConfig = defineConfig({
       apigeeCIS2TokenEndpoint: `${apigeeHost}/cis2_token`,
       apigeeMockTokenEndpoint: `${apigeeHost}/mock_token`,
       apigeePrescriptionsEndpoint: `${apigeeHost}/prescriptions`,
+      apigeePersonalDemographicsEndpoint: `${apigeeHost}/Patient`,
       TokenMappingTableName: "dummyTable",
       jwtPrivateKeyArn: "dummy_jwtPrivateKeyArn",
       jwtKid: "jwt_kid",
