@@ -2,7 +2,7 @@ import {Construct} from "constructs"
 import {LambdaFunction} from "../LambdaFunction"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
-import {Secret} from "aws-cdk-lib/aws-secretsmanager"
+import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
 
@@ -57,8 +57,8 @@ export interface OAuth2FunctionsProps {
   readonly logRetentionInDays: number
   readonly logLevel: string
   readonly jwtKid: string
-  readonly apigeeApiKey: string
-  readonly apigeeApiSecret: string
+  readonly apigeeApiKey: ISecret
+  readonly apigeeApiSecret: ISecret
 }
 
 /**
@@ -212,7 +212,7 @@ export class OAuth2Functions extends Construct {
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           StateMappingTableName: props.stateMappingTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
-          APIGEE_API_KEY: props.apigeeApiKey
+          APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn
         }
       })
 
@@ -259,8 +259,8 @@ export class OAuth2Functions extends Construct {
           MOCK_OIDC_ISSUER: props.mockOidcIssuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
-          APIGEE_API_KEY: props.apigeeApiKey,
-          APIGEE_API_SECRET: props.apigeeApiSecret
+          APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
+          APIGEE_API_SECRET_ARN: props.apigeeApiSecret.secretArn
         }
       })
 

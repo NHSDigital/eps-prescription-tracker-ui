@@ -50,8 +50,8 @@ const cloudfrontDomain= process.env["FULL_CLOUDFRONT_DOMAIN"] as string
 const jwtPrivateKeyArn= process.env["jwtPrivateKeyArn"] as string
 const jwtKid= process.env["jwtKid"] as string
 const idpTokenPath= process.env["MOCK_IDP_TOKEN_PATH"] as string
-const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
-const apigeeApiSecret = process.env["APIGEE_API_SECRET"] as string
+const apigeeApiKeyArn = process.env["APIGEE_API_KEY_ARN"] as string
+const apigeeApiSecretArn = process.env["APIGEE_API_SECRET_ARN"] as string
 const apigeeMockTokenEndpoint = process.env["MOCK_OIDC_TOKEN_ENDPOINT"] as string
 
 const dynamoClient = new DynamoDBClient()
@@ -73,6 +73,8 @@ async function createSignedJwt(claims: Record<string, unknown>) {
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const apigeeApiKey = await getSecret(apigeeApiKeyArn)
+  const apigeeApiSecret = await getSecret(apigeeApiSecretArn)
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
 
   // we need to use the base domain for the environment so that pull requests go to that callback uri
@@ -93,8 +95,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
   const tokenExchangeBody = {
     grant_type: "authorization_code",
-    client_id: apigeeApiKey,
-    client_secret: apigeeApiSecret,
+    client_id: apigeeApiKey?.toString(),
+    client_secret: apigeeApiSecret?.toString(),
     redirect_uri: callbackUri,
     code
   }
