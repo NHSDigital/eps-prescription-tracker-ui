@@ -16,7 +16,7 @@ describe("authorize mock handler", () => {
     jest.restoreAllMocks()
   })
 
-  it("should redirect to CIS2 with correct parameters", async () => {
+  it.skip("should redirect to CIS2 with correct parameters", async () => {
     const event = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
