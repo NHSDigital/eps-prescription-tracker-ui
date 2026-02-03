@@ -12,6 +12,8 @@ import {useAuth} from "./AuthProvider"
 import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS, PUBLIC_PATHS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import {handleRestartLogin} from "@/helpers/logout"
+import LoadingPage from "@/pages/LoadingPage"
+import Layout from "@/Layout"
 
 export const AccessContext = createContext<Record<string, never> | null>(null)
 
@@ -144,7 +146,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
 
   if (shouldBlockChildren()) {
-    return <></>
+    return (
+      <Layout>
+        <LoadingPage />
+      </Layout>
+    )
   }
 
   return (
