@@ -24,6 +24,10 @@ class Logger {
   }
 
   public debug(message: string, args?: unknown): void {
+    const rumInstance = cptAwsRum.getAwsRum()
+    if (rumInstance !== null) {
+      rumInstance.recordEvent("TEST_LOG", {message})
+    }
     if (args) {
       this.logger.debug(args, message)
     } else {
