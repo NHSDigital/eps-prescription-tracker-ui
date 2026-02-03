@@ -10,6 +10,7 @@ import {validateSearchParams} from "./utils/validation"
 import {getPrescriptions} from "./services/prescriptionsLookupService"
 import {SearchParams} from "./utils/types"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
+import type {ApigeeConfig} from "@cpt-ui-common/common-types"
 import {PatientSummary, SearchResponse} from "@cpt-ui-common/common-types"
 import {mapSearchResponse} from "./utils/responseMapper"
 import * as pds from "@cpt-ui-common/pdsClient"
@@ -238,25 +239,18 @@ const prescriptionIdSearchFlow = async (
   return mapSearchResponse(patientDetails, prescriptions)
 }
 
-interface PdsClientConfig {
-  apigeeAccessToken: string
-  roleId: string
-  orgCode: string
-  correlationId: string
-}
-
 const getPatientDetails = async (
-  nhsNumber: string, pdsClientConfig: PdsClientConfig, logger: Logger): Promise<PatientSummary | undefined> => {
+  nhsNumber: string, apigeeConfig: ApigeeConfig, logger: Logger): Promise<PatientSummary | undefined> => {
   const pdsClient = new pds.Client(
     axiosInstance,
     apigeePersonalDemographicsEndpoint,
     logger
   )
   const outcome = await pdsClient
-    .with_access_token(pdsClientConfig.apigeeAccessToken)
-    .with_role_id(pdsClientConfig.roleId)
-    .with_org_code(pdsClientConfig.orgCode)
-    .with_correlation_id(pdsClientConfig.correlationId)
+    .with_access_token(apigeeConfig.apigeeAccessToken)
+    .with_role_id(apigeeConfig.roleId)
+    .with_org_code(apigeeConfig.orgCode)
+    .with_correlation_id(apigeeConfig.correlationId)
     .getPatientDetails(nhsNumber)
 
   let patientDetails = undefined

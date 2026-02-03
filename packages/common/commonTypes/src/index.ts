@@ -37,3 +37,4 @@ export type {
 } from "./trackerUserInfo"
 
 export {Headers} from "./headers"
+export type {ApigeeConfig} from "./headers"

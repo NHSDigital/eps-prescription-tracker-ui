@@ -379,7 +379,7 @@ describe("PrescriptionListPage", () => {
       }
     )
 
-    expect(screen.getByText("Loading...")).toBeVisible()
+    expect(screen.getByTestId("spinner")).toBeInTheDocument()
   })
 
   it("renders the component with the correct title and heading", async () => {

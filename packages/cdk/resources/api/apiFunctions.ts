@@ -265,6 +265,7 @@ export class ApiFunctions extends Construct {
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
+        apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId,

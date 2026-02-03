@@ -28,7 +28,7 @@ import {AUTH_CONFIG} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionListPage() {
-  const {setPatientDetails} = usePatientDetails()
+  const {setPatientDetails, setPatientFallback} = usePatientDetails()
   const searchContext = useSearchContext()
 
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -86,6 +86,7 @@ export default function PrescriptionListPage() {
             searchResults
           )
           setPatientDetails(searchResults.patient)
+          setPatientFallback(searchResults.patientFallback)
           navigate(FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND)
           return
         }
@@ -94,6 +95,7 @@ export default function PrescriptionListPage() {
         setFuturePrescriptions(searchResults.futurePrescriptions)
         setPastPrescriptions(searchResults.pastPrescriptions)
         setPatientDetails(searchResults.patient)
+        setPatientFallback(searchResults.patientFallback)
         setPrescriptionCount(
           searchResults.pastPrescriptions.length +
           searchResults.futurePrescriptions.length +

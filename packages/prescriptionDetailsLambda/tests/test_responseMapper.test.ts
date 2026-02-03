@@ -300,6 +300,7 @@ describe("mergePrescriptionDetails", () => {
         address: ["123 Main St", "Anytown", "AnyDistrict"],
         postcode: "12345"
       },
+      patientFallback: true,
       prescriptionId: "RX123",
       typeCode: "Acute",
       statusCode: "0006",
