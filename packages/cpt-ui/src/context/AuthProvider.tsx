@@ -92,7 +92,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
-    if (!error) {
+    if (!trackerUserInfo.error) {
       setRolesWithAccess(trackerUserInfo.rolesWithAccess)
       setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
       setSelectedRole(trackerUserInfo.selectedRole)
