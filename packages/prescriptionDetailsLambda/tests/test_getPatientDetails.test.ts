@@ -14,11 +14,7 @@ const logger: Logger = new Logger({serviceName: "getPatientDetails", logLevel: "
 
 const {
   mockGetPatientDetails,
-  mockClient,
-  mockWithAccessToken,
-  mockWithRoleId,
-  mockWithOrgCode,
-  mockWithCorrelationId
+  mockClient
 } = vi.hoisted(() => {
   const mockGetPatientDetails = vi.fn()
   const mockWithCorrelationId = vi.fn().mockImplementation(() => ({
