@@ -103,7 +103,8 @@ export class OAuth2Functions extends Construct {
         props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
         props.sessionManagementTableWritePolicy,
         props.sessionManagementTableReadPolicy,
-        props.useSessionManagementKmsKeyPolicy
+        props.useSessionManagementKmsKeyPolicy,
+        props.sharedSecrets.getApigeeSecretsPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -131,7 +132,8 @@ export class OAuth2Functions extends Construct {
       additionalPolicies: [
         props.stateMappingTableWritePolicy,
         props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy
+        props.useStateMappingKmsKeyPolicy,
+        props.sharedSecrets.getApigeeSecretsPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -154,7 +156,8 @@ export class OAuth2Functions extends Construct {
       additionalPolicies: [
         props.stateMappingTableWritePolicy,
         props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy
+        props.useStateMappingKmsKeyPolicy,
+        props.sharedSecrets.getApigeeSecretsPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
@@ -199,7 +202,8 @@ export class OAuth2Functions extends Construct {
           props.useStateMappingKmsKeyPolicy,
           props.sessionStateMappingTableWritePolicy,
           props.sessionStateMappingTableReadPolicy,
-          props.useSessionStateMappingKmsKeyPolicy
+          props.useSessionStateMappingKmsKeyPolicy,
+          props.sharedSecrets.getApigeeSecretsPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
@@ -238,7 +242,8 @@ export class OAuth2Functions extends Construct {
           props.sessionStateMappingTableWritePolicy,
           props.useSessionStateMappingKmsKeyPolicy,
           props.sharedSecrets.useJwtKmsKeyPolicy,
-          props.sharedSecrets.getMockJwtPrivateKeyPolicy
+          props.sharedSecrets.getMockJwtPrivateKeyPolicy,
+          props.sharedSecrets.getApigeeSecretsPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
@@ -278,7 +283,8 @@ export class OAuth2Functions extends Construct {
           props.useStateMappingKmsKeyPolicy,
           props.sessionStateMappingTableReadPolicy,
           props.sessionStateMappingTableWritePolicy,
-          props.useSessionStateMappingKmsKeyPolicy
+          props.useSessionStateMappingKmsKeyPolicy,
+          props.sharedSecrets.getApigeeSecretsPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
