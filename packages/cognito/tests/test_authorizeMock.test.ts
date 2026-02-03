@@ -7,6 +7,10 @@ process.env.useMock = "true"
 process.env.COGNITO_CLIENT_ID = "userPoolClient123"
 process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
 
+jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => ({
+  getSecret: jest.fn(async () => "apigee_api_key")
+}))
+
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
 const {handler} = await import("../src/authorizeMock")
@@ -16,7 +20,7 @@ describe("authorize mock handler", () => {
     jest.restoreAllMocks()
   })
 
-  it.skip("should redirect to CIS2 with correct parameters", async () => {
+  it("should redirect to CIS2 with correct parameters", async () => {
     const event = {
       ...mockAPIGatewayProxyEvent,
       queryStringParameters: {
