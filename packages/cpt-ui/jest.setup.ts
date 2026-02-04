@@ -7,6 +7,34 @@ jest.mock("*.css", () => ({}), {virtual: true})
 jest.mock("*.scss", () => ({}), {virtual: true})
 jest.mock("@/styles/searchforaprescription.scss", () => ({}), {virtual: true})
 
+// Mock FooterStrings to avoid import.meta issues
+jest.mock("@/constants/ui-strings/FooterStrings", () => ({
+  FOOTER_COPYRIGHT: "© NHS England",
+  COMMIT_ID: "test-commit-id",
+  VERSION_NUMBER: "test-version-number",
+  FOOTER_LINKS: [
+    {
+      text: "Privacy notice",
+      href: "/site/privacy-notice",
+      external: false,
+      testId: "eps_footer-link-privacy-notice"
+    },
+    {
+      text: "Terms and conditions (opens in new tab)",
+      // eslint-disable-next-line max-len
+      href: "https://digital.nhs.uk/services/care-identity-service/registration-authority-users/registration-authority-help/privacy-notice",
+      external: true,
+      testId: "eps_footer-link-terms-and-conditions"
+    },
+    {
+      text: "Cookie policy",
+      href: "/site/cookies",
+      external: false,
+      testId: "eps_footer-link-cookie-policy"
+    }
+  ]
+}))
+
 const cwr_cookie_value_string = JSON.stringify({"sessionId":"my_rum_session_id"})
 const cwr_cookie_value_encoded = Buffer.from(cwr_cookie_value_string, "utf-8").toString("base64")
 
