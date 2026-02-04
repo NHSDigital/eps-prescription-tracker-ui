@@ -13,7 +13,7 @@ export default function LoadingPage() {
       <Container>
         <Row>
           <Col width="full">
-            <h1>Processing an action</h1>
+            <h1>Loading</h1>
             <EpsSpinner />
           </Col>
         </Row>
