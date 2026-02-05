@@ -20,7 +20,7 @@ process.env.apigeeDoHSEndpoint = validEndpoint
 // Now we can safely import the module
 const {doHSClient} = await import("../src/doHSClient")
 
-describe.skip("doHSClient", () => {
+describe("doHSClient", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     // Clean up any pending nock interceptors
