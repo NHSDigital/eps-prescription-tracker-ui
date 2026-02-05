@@ -99,6 +99,8 @@ describe("authenticateRequest", () => {
     error: vi.fn()
   } as unknown as Logger
 
+  const mockApigeeApiKey = "dummy_apigee_api_key"
+  const mockApigeeApiSecret = "dummy_apigee_api_secret"
   const mockOptions = {
     tokenMappingTableName: "test-table",
     sessionManagementTableName: "test-session-table",
@@ -232,8 +234,8 @@ describe("authenticateRequest", () => {
     mockGetSecret
       .mockReturnValueOnce("test-private-key")
       .mockReturnValueOnce("test-private-key")
-      .mockReturnValueOnce("dummy_apigee_api_key_arn")
-      .mockReturnValueOnce("dummy_apigee_api_secret_arn")
+      .mockReturnValueOnce("dummy_apigee_api_key")
+      .mockReturnValueOnce("dummy_apigee_api_secret")
 
     const result = await authenticateRequest(
       "test-user",
@@ -255,8 +257,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
       "expiring-refresh-token",
-      mockOptions.apigeeApiKeyArn,
-      mockOptions.apigeeApiSecretArn, // API secret from env var
+      mockApigeeApiKey,
+      mockApigeeApiSecret, // API secret from env var
       mockLogger
     )
 
@@ -303,8 +305,8 @@ describe("authenticateRequest", () => {
     mockGetSecret
       .mockReturnValueOnce("test-private-key")
       .mockReturnValueOnce("test-private-key")
-      .mockReturnValueOnce("dummy_apigee_api_key_arn")
-      .mockReturnValueOnce("dummy_apigee_api_secret_arn")
+      .mockReturnValueOnce("dummy_apigee_api_key")
+      .mockReturnValueOnce("dummy_apigee_api_secret")
 
     const result = await authenticateRequest(
       "test-user",
@@ -326,8 +328,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
       "expiring-refresh-token",
-      mockOptions.apigeeApiKeyArn,
-      mockOptions.apigeeApiSecretArn, // API secret from env var
+      mockApigeeApiKey,
+      mockApigeeApiSecret, // API secret from env var
       mockLogger
     )
 
