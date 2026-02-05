@@ -1,19 +1,21 @@
-import {jest} from "@jest/globals"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 // Set environment variables before importing the handler.
-process.env.IDP_AUTHORIZE_PATH = "https://example.com/authorize"
-process.env.OIDC_CLIENT_ID = "cis2Client123"
 process.env.useMock = "true"
-process.env.COGNITO_CLIENT_ID = "userPoolClient123"
-process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
 
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/authorizeMock")
+import {handler} from "../src/authorizeMock"
 
 describe("authorize mock handler", () => {
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it("should redirect to CIS2 with correct parameters", async () => {

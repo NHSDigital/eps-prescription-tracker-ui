@@ -6,7 +6,7 @@
   "author": "NHS Digital",
   "license": "MIT",
   "scripts": {
-    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "unit": "POWERTOOLS_DEV=true vitest run --coverage",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "compile": "tsc --build",
     "test": "npm run compile && npm run unit",
@@ -23,8 +23,8 @@
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/common-types": "^1.0.0",
     "@cpt-ui-common/doHSClient": "^1.0.0",
-    "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
+    "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@cpt-ui-common/pdsClient": "^1.0.0",
     "@middy/core": "^7.0.2",
     "@middy/input-output-logger": "^7.0.2",
@@ -37,7 +37,7 @@
     "@types/aws-lambda": "^8.10.159",
     "@types/fhir": "^0.0.41",
     "axios-mock-adapter": "^2.0.0",
-    "mock-jwks": "^3.2.2",
+    "mock-jwks": "^3.3.5",
     "nock": "^14.0.10"
   }
 }

@@ -1,16 +1,37 @@
 /* eslint-disable no-console */
 import {
-  expect,
+  afterEach,
+  beforeEach,
   describe,
+  expect,
   it,
-  jest
-} from "@jest/globals"
+  vi
+} from "vitest"
 
 import createJWKSMock from "mock-jwks"
 import nock from "nock"
 import {generateKeyPairSync} from "crypto"
 import jwksClient from "jwks-rsa"
 import {OidcConfig} from "@cpt-ui-common/authFunctions"
+import {handler} from "../src/token"
+
+const {
+  mockVerifyIdToken,
+  mockInitializeOidcConfig,
+  mockGetSecret,
+  mockInsertTokenMapping,
+  mockGetTokenMapping,
+  mockTryGetTokenMapping
+} = vi.hoisted(() => {
+  return {
+    mockVerifyIdToken: vi.fn(),
+    mockInitializeOidcConfig: vi.fn(),
+    mockGetSecret: vi.fn(),
+    mockInsertTokenMapping: vi.fn(),
+    mockGetTokenMapping: vi.fn(),
+    mockTryGetTokenMapping: vi.fn()
+  }
+})
 
 // redefining readonly property of the performance object
 const dummyContext = {
@@ -32,22 +53,7 @@ const dummyContext = {
 const CIS2_OIDC_ISSUER = process.env.CIS2_OIDC_ISSUER
 const CIS2_OIDC_CLIENT_ID = process.env.CIS2_OIDC_CLIENT_ID
 const CIS2_OIDC_HOST = process.env.CIS2_OIDC_HOST ?? ""
-//const CIS2_OIDCJWKS_ENDPOINT = process.env.CIS2_OIDCJWKS_ENDPOINT
-//const CIS2_USER_INFO_ENDPOINT = process.env.CIS2_USER_INFO_ENDPOINT
 const CIS2_USER_POOL_IDP = process.env.CIS2_USER_POOL_IDP
-//const CIS2_IDP_TOKEN_PATH = process.env.CIS2_IDP_TOKEN_PATH ?? ""
-
-//const MOCK_OIDC_ISSUER = process.env.MOCK_OIDC_ISSUER
-//const MOCK_OIDC_CLIENT_ID = process.env.MOCK_OIDC_CLIENT_ID
-//const MOCK_OIDC_HOST = process.env.MOCK_OIDC_HOST ?? ""
-//const MOCK_OIDCJWKS_ENDPOINT = process.env.MOCK_OIDCJWKS_ENDPOINT
-//const MOCK_USER_INFO_ENDPOINT = process.env.MOCK_USER_INFO_ENDPOINT
-//const MOCK_USER_POOL_IDP = process.env.MOCK_USER_POOL_IDP
-//const MOCK_IDP_TOKEN_PATH = process.env.MOCK_IDP_TOKEN_PATH
-
-const mockVerifyIdToken = jest.fn()
-const mockInitializeOidcConfig = jest.fn()
-const mockGetSecret = jest.fn()
 
 const {
   privateKey
@@ -63,17 +69,14 @@ const {
   }
 })
 
-const mockInsertTokenMapping = jest.fn()
-const mockGetTokenMapping = jest.fn()
-const mockTryGetTokenMapping = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
+vi.mock("@cpt-ui-common/dynamoFunctions", () => {
   return {
     insertTokenMapping: mockInsertTokenMapping,
     getTokenMapping: mockGetTokenMapping,
     tryGetTokenMapping: mockTryGetTokenMapping
   }
 })
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
+vi.mock("@cpt-ui-common/authFunctions", () => {
   const verifyIdToken = mockVerifyIdToken.mockImplementation(async () => {
     return {
       sub: "foo",
@@ -134,7 +137,7 @@ jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => {
   }
 })
 
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
   const getSecret = mockGetSecret.mockImplementation(async () => {
     return privateKey
   })
@@ -144,16 +147,11 @@ jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
   }
 })
 
-process.env.useMock = "false"
-process.env.TokenMappingTableName = "test-token-mapping-table"
-process.env.SessionManagementTableName = "test-session-management-table"
-const {handler} = await import("../src/token")
-
 describe("cis2 token handler", () => {
   const jwks = createJWKSMock("https://dummyauth.com/")
   beforeEach(() => {
-    jest.resetModules()
-    jest.clearAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
     jwks.start()
   })
 
@@ -291,7 +289,7 @@ describe("cis2 token handler", () => {
     // Should insert into token mapping table (not concurrent session)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-token-mapping-table", // token mapping table
+      "dummyTable", // token mapping table
       {
         username: `${CIS2_USER_POOL_IDP}_foo`,
         sessionId: "session-id",
@@ -339,7 +337,7 @@ describe("cis2 token handler", () => {
     // Should insert into token mapping table (new user)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-token-mapping-table", // token mapping table
+      "dummyTable", // token mapping table
       {
         username: `${CIS2_USER_POOL_IDP}_foo`,
         sessionId: "session-id",
@@ -356,7 +354,7 @@ describe("cis2 token handler", () => {
   it("creates concurrent session when user exists and last activity exactly at 15 minute boundary", async () => {
     // Mock Date.now() to ensure consistent timing for boundary test
     const fixedTime = 1000000000000 // Fixed timestamp
-    const dateNowSpy = jest.spyOn(Date, "now").mockReturnValue(fixedTime)
+    const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(fixedTime)
 
     const fifteenMinutes = 15 * 60 * 1000
     mockTryGetTokenMapping.mockImplementationOnce(() => {
