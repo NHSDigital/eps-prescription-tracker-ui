@@ -103,9 +103,9 @@ describe("authenticateRequest", () => {
     tokenMappingTableName: "test-table",
     sessionManagementTableName: "test-session-table",
     jwtPrivateKeyArn: "test-key-arn",
-    apigeeApiKeyArn: "test-api-key",
+    apigeeApiKeyArn: "dummy_apigee_api_key_arn",
     jwtKid: "test-kid",
-    apigeeApiSecretArn: "test-api-secret",
+    apigeeApiSecretArn: "dummy_apigee_api_secret_arn",
     apigeeMockTokenEndpoint: "mock-token-endpoint",
     apigeeCis2TokenEndpoint: "cis2-token-endpoint",
     cloudfrontDomain: "test-cloudfront-domain"
@@ -127,9 +127,6 @@ describe("authenticateRequest", () => {
 
     // Default mock for constructSignedJWTBody
     mockConstructSignedJWTBody.mockReturnValue({param: "value"})
-
-    // Ensure process.env is populated
-    process.env.APIGEE_API_SECRET = "test-api-secret"
   })
 
   it("should use existing valid token when available", async () => {
@@ -232,6 +229,11 @@ describe("authenticateRequest", () => {
       refreshToken: "refreshed-refresh-token",
       expiresIn: 3600
     })
+    mockGetSecret
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("dummy_apigee_api_key_arn")
+      .mockReturnValueOnce("dummy_apigee_api_secret_arn")
 
     const result = await authenticateRequest(
       "test-user",
@@ -298,6 +300,11 @@ describe("authenticateRequest", () => {
       refreshToken: "refreshed-refresh-token",
       expiresIn: 3600
     })
+    mockGetSecret
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("dummy_apigee_api_key_arn")
+      .mockReturnValueOnce("dummy_apigee_api_secret_arn")
 
     const result = await authenticateRequest(
       "test-user",
@@ -427,7 +434,6 @@ describe("authenticateRequest", () => {
     expect(mockConstructSignedJWTBody).not.toHaveBeenCalled()
     expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalled()
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
-    expect(mockGetSecret).not.toHaveBeenCalled()
   })
 
   it("should acquire new token when no token exists for mocked user", async () => {
@@ -470,7 +476,6 @@ describe("authenticateRequest", () => {
     expect(mockConstructSignedJWTBody).not.toHaveBeenCalled()
     expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalled()
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
-    expect(mockGetSecret).not.toHaveBeenCalled()
   })
 
   it("should handle token refresh failure gracefully", async () => {
