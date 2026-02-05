@@ -1,38 +1,60 @@
 /* eslint-disable max-len */
-import {jest} from "@jest/globals"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 import nock from "nock"
 
 import type {Logger} from "@aws-lambda-powertools/logger"
 
+const {
+  mockUuid,
+  mockDoHSClient,
+  mockGetPatient,
+  mockMergePrescriptionDetails,
+  mockAuthParametersFromEnv,
+  mockBuildApigeeHeaders,
+  mockAuthenticationMiddleware
+} = vi.hoisted(() => ({
+  mockUuid: vi.fn(() => "test-uuid"),
+  mockDoHSClient: vi.fn(),
+  mockGetPatient: vi.fn(),
+  mockMergePrescriptionDetails: vi.fn(),
+  mockAuthParametersFromEnv: vi.fn(),
+  mockBuildApigeeHeaders: vi.fn().mockImplementation(() => ({
+    Authorization: "Bearer someAccessToken"
+  })),
+  mockAuthenticationMiddleware: vi.fn(() => ({before: () => {}}))
+}))
+
 // Mock uuid so that it is predictable.
-jest.unstable_mockModule("uuid", () => ({
-  v4: jest.fn(() => "test-uuid")
+vi.mock("uuid", () => ({
+  v4: mockUuid
 }))
 
 // Create a mock for the doHSClient function.
-const mockDoHSClient = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/doHSClient", () => ({
+vi.mock("@cpt-ui-common/doHSClient", () => ({
   doHSClient: mockDoHSClient
 }))
 
-const mockGetPatient = jest.fn()
-jest.unstable_mockModule("../src/services/getPatientDetails", () => ({
+vi.mock("../src/services/getPatientDetails", () => ({
   getPatientDetails: mockGetPatient
 }))
 
 // Mock mergePrescriptionDetails from responseMapper.
-const mockMergePrescriptionDetails = jest.fn()
-jest.unstable_mockModule("../src/utils/responseMapper", () => ({
+vi.mock("../src/utils/responseMapper", () => ({
   mergePrescriptionDetails: mockMergePrescriptionDetails
 }))
 
-// Needed to avoid issues with ESM imports in jest
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
-  authParametersFromEnv: jest.fn(),
-  buildApigeeHeaders: jest.fn().mockImplementation(() => ({
-    Authorization: `Bearer someAccessToken`
-  })),
-  authenticationMiddleware: () => ({before: () => {}})
+// Needed to avoid issues with ESM imports in vitest
+vi.mock("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: mockAuthParametersFromEnv,
+  buildApigeeHeaders: mockBuildApigeeHeaders,
+  authenticationMiddleware: mockAuthenticationMiddleware
 }))
 
 // Import some mock objects to use in our tests.
@@ -70,13 +92,13 @@ describe("prescriptionService", () => {
   let logger: Logger
 
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.clearAllMocks()
     // Clean up any pending nock interceptors
     nock.cleanAll()
     logger = {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn()
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn()
     } as unknown as Logger
   })
 

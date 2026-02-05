@@ -1,60 +1,86 @@
-import {jest} from "@jest/globals"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
+import {authenticateRequest} from "../src/authenticateRequest"
 
-// Mock the jwt module
-jest.mock("jsonwebtoken", () => ({
-  decode: jest.fn().mockReturnValue({
-    header: {kid: "test-kid"},
-    payload: {
-      sub: "test-subject",
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      acr: "AAL3_ANY"
-    }
-  }),
-  verify: jest.fn().mockReturnValue({
+const {
+  mockJwtDecode,
+  mockJwtVerify,
+  mockJwtSign,
+  mockGetSecret,
+  mockGetUsernameFromEvent,
+  mockRefreshApigeeAccessToken,
+  mockExchangeTokenForApigeeAccessToken,
+  mockConstructSignedJWTBody,
+  mockDecodeToken,
+  mockVerifyIdToken,
+  mockUpdateTokenMapping,
+  mockGetTokenMapping,
+  mockDeleteTokenMapping
+} = vi.hoisted(() => {
+  const jwtPayload = {
     sub: "test-subject",
     exp: Math.floor(Date.now() / 1000) + 3600,
     acr: "AAL3_ANY"
-  }),
-  sign: jest.fn().mockReturnValue("signed-jwt-token")
-}))
+  }
 
-const mockGetSecret = jest.fn().mockReturnValue("test-private-key")
-
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => ({
-  getSecret: mockGetSecret
-}))
-
-// Create mocks for the functions from the index module
-const mockGetUsernameFromEvent = jest.fn().mockName("mockGetUsernameFromEvent")
-const mockRefreshApigeeAccessToken = jest.fn().mockName("mockRefreshApigeeAccessToken")
-const mockExchangeTokenForApigeeAccessToken = jest.fn().mockName("mockExchangeTokenForApigeeAccessToken")
-const mockConstructSignedJWTBody = jest.fn().mockName("mockConstructSignedJWTBody")
-const mockDecodeToken = jest.fn().mockName("mockDecodeToken")
-const mockVerifyIdToken = jest.fn().mockName("mockVerifyIdToken")
-const dynamoClient = new DynamoDBClient()
-const documentClient = DynamoDBDocumentClient.from(dynamoClient)
-const axiosInstance = {
-  post: jest.fn().mockReturnValue({data: {}}),
-  get: jest.fn().mockReturnValue({data: {}})
-} as unknown as AxiosInstance
-
-const mockUpdateTokenMapping = jest.fn()
-const mockGetTokenMapping = jest.fn()
-const mockDeleteTokenMapping = jest.fn()
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    updateTokenMapping: mockUpdateTokenMapping,
-    getTokenMapping: mockGetTokenMapping,
-    deleteTokenMapping: mockDeleteTokenMapping
+    mockJwtDecode: vi.fn().mockReturnValue({
+      header: {kid: "test-kid"},
+      payload: jwtPayload
+    }),
+    mockJwtVerify: vi.fn().mockReturnValue(jwtPayload),
+    mockJwtSign: vi.fn().mockReturnValue("signed-jwt-token"),
+    mockGetSecret: vi.fn().mockReturnValue("test-private-key"),
+    mockGetUsernameFromEvent: vi.fn().mockName("mockGetUsernameFromEvent"),
+    mockRefreshApigeeAccessToken: vi.fn().mockName("mockRefreshApigeeAccessToken"),
+    mockExchangeTokenForApigeeAccessToken: vi.fn().mockName("mockExchangeTokenForApigeeAccessToken"),
+    mockConstructSignedJWTBody: vi.fn().mockName("mockConstructSignedJWTBody"),
+    mockDecodeToken: vi.fn().mockName("mockDecodeToken"),
+    mockVerifyIdToken: vi.fn().mockName("mockVerifyIdToken"),
+    mockUpdateTokenMapping: vi.fn(),
+    mockGetTokenMapping: vi.fn(),
+    mockDeleteTokenMapping: vi.fn()
   }
 })
 
-// Mock the index module
-jest.unstable_mockModule("../src/index", () => ({
+vi.mock("jsonwebtoken", () => ({
+  default: {
+    decode: mockJwtDecode,
+    verify: mockJwtVerify,
+    sign: mockJwtSign
+  },
+  decode: mockJwtDecode,
+  verify: mockJwtVerify,
+  sign: mockJwtSign
+}))
+
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => ({
+  getSecret: mockGetSecret
+}))
+
+const dynamoClient = new DynamoDBClient()
+const documentClient = DynamoDBDocumentClient.from(dynamoClient)
+const axiosInstance = {
+  post: vi.fn().mockReturnValue({data: {}}),
+  get: vi.fn().mockReturnValue({data: {}})
+} as unknown as AxiosInstance
+
+vi.mock("@cpt-ui-common/dynamoFunctions", () => ({
+  updateTokenMapping: mockUpdateTokenMapping,
+  getTokenMapping: mockGetTokenMapping,
+  deleteTokenMapping: mockDeleteTokenMapping
+}))
+
+vi.mock("../src/index", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
   refreshApigeeAccessToken: mockRefreshApigeeAccessToken,
   exchangeTokenForApigeeAccessToken: mockExchangeTokenForApigeeAccessToken,
@@ -63,17 +89,14 @@ jest.unstable_mockModule("../src/index", () => ({
   verifyIdToken: mockVerifyIdToken
 }))
 
-const authModule = await import("../src/authenticateRequest")
-const {authenticateRequest} = authModule
-
-describe.skip("authenticateRequest", () => {
+describe("authenticateRequest", () => {
   // Common test setup
 
   const mockLogger = {
-    info: jest.fn(),
-    debug: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn()
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn()
   } as unknown as Logger
 
   const mockOptions = {
@@ -97,7 +120,7 @@ describe.skip("authenticateRequest", () => {
 
   beforeEach(() => {
     // Clear all mock implementations
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Set up default mocks for all tests
     mockGetUsernameFromEvent.mockReturnValue("test-user")

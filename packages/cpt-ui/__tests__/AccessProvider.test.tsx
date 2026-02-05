@@ -7,6 +7,8 @@ import {useNavigate, useLocation} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {logger} from "@/helpers/logger"
 import {handleRestartLogin} from "@/helpers/logout"
+import Layout from "@/Layout"
+import LoadingPage from "@/pages/LoadingPage"
 
 jest.mock("react-router-dom", () => ({
   useNavigate: jest.fn(),
@@ -19,6 +21,11 @@ jest.mock("@/helpers/utils", () => ({
 
 jest.mock("@/context/AuthProvider", () => ({
   useAuth: jest.fn()
+}))
+
+jest.mock("@/components/EpsHeader", () => ({
+  __esModule: true,
+  default: jest.fn(() => null)
 }))
 
 jest.mock("@/constants/environment", () => ({
@@ -49,7 +56,11 @@ jest.mock("@/constants/environment", () => ({
     "/privacy-notice",
     "/cookies-selected",
     "/"
-  ]
+  ],
+  APP_CONFIG: {
+    COMMIT_ID: "test-commit",
+    VERSION_NUMBER: "1.0.0"
+  }
 }))
 
 jest.mock("@/helpers/logger", () => ({
@@ -235,12 +246,14 @@ describe("AccessProvider", () => {
 
       const {container} = render(
         <AccessProvider>
-          <TestComponent />
+          <Layout>
+            <LoadingPage />
+          </Layout>
         </AccessProvider>
       )
 
-      // Should render nothing (children blocked)
-      expect(container).toBeEmptyDOMElement()
+      // Should render nothing (children blocked) - show loading wheel
+      expect(container).toBeInTheDocument()
     })
 
     it("allows children when concurrent session exists but user is on session selection page", () => {
@@ -281,12 +294,14 @@ describe("AccessProvider", () => {
 
       const {container} = render(
         <AccessProvider>
-          <TestComponent />
+          <Layout>
+            <LoadingPage />
+          </Layout>
         </AccessProvider>
       )
 
-      // Should render nothing (children blocked)
-      expect(container).toBeEmptyDOMElement()
+      // Should render nothing (children blocked) - show loading page
+      expect(container).toBeInTheDocument()
     })
   })
 

@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "lib/src/index.js",
   "scripts": {
-    "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
+    "unit": "POWERTOOLS_DEV=true vitest run --coverage",
     "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
     "compile": "tsc --build",
     "test": "npm run compile && npm run unit",
@@ -15,7 +15,7 @@
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.980.0",
     "axios": "^1.13.2",
-    "mock-jwks": "3.2.2"
+    "mock-jwks": "^3.3.5"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.30.1",
