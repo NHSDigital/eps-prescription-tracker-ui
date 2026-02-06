@@ -173,21 +173,6 @@ export default function RoleSelectionPage({
     }
   }, [auth.hasSingleRoleAccess, auth.isSignedIn])
 
-  // Show spinner while loading or redirecting
-  // if (redirecting.current) {
-  //   return (
-  //     <main id="main-content" className="nhsuk-main-wrapper">
-  //       <Container>
-  //         <Row>
-  //           <Col width="full">
-  //             <EpsSpinner />
-  //           </Col>
-  //         </Row>
-  //       </Container>
-  //     </main>
-  //   )
-  // }
-
   // Show error if present
   if (auth.error) {
     return (
