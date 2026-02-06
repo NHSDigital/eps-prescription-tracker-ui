@@ -5,17 +5,30 @@ import {
   it,
   vi
 } from "vitest"
+// Import the handler after setting the env variables and mocks.
+import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
+import {handler} from "../src/authorizeMock"
 
 // Set environment variables before importing the handler.
 process.env.useMock = "true"
 
-jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => ({
-  getSecret: jest.fn(async () => "apigee_api_key")
-}))
+const {
+  mockGetSecret
+} = vi.hoisted(() => {
+  return {
+    mockGetSecret: vi.fn()
+  }
+})
 
-// Import the handler after setting the env variables and mocks.
-import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-import {handler} from "../src/authorizeMock"
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
+  const getSecret = mockGetSecret.mockImplementation(async () => {
+    return "apigee_api_key"
+  })
+
+  return {
+    getSecret
+  }
+})
 
 describe("authorize mock handler", () => {
   beforeEach(() => {
