@@ -258,6 +258,37 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/ApigeeApiKey/Resource",
+      [
+        {
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not rotating secret. This is by design."
+        }
+      ]
+    )
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/ApigeeApiSecret/Resource",
+      [
+        {
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not rotating secret. This is by design."
+        }
+      ]
+    )
+    safeAddNagSuppression(
+      stack,
+      "/StatelessStack/SharedSecrets/ApigeeDoHSApiKey/Resource",
+      [
+        {
+          id: "AwsSolutions-SMG4",
+          reason: "Suppress error for not rotating secret. This is by design."
+        }
+      ]
+    )
+
   }
 
 }
