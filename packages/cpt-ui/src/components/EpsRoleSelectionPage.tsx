@@ -304,50 +304,48 @@ export default function RoleSelectionPage({
             )}
           </Col>
 
-          {(auth.rolesWithAccess.length > 0) && (/*roleCardPropsWithAccess.length*/
-            roleComponentProps.rolesWithAccess.length > 0) && (
+          {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
             <Col width="two-thirds">
               <div className="section">
-                {/*roleCardPropsWithAccess*/
-                  roleComponentProps.rolesWithAccess
-                    .map((roleCardProps: RolesWithAccessProps) => (
-                      <Card
-                        key={roleCardProps.uuid}
-                        data-testid="eps-card"
-                        className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
-                        tabIndex={0}
-                        onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
-                        onClick={(e) => handleCardClick(e, roleCardProps)}
-                        style={{cursor: "pointer"}}
-                      >
-                        <Card.Content>
-                          <div className="eps-card__layout">
-                            <div>
-                              <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                                {roleCardProps.role.org_name || noOrgName}
-                                <br />
+                {roleComponentProps.rolesWithAccess
+                  .map((roleCardProps: RolesWithAccessProps) => (
+                    <Card
+                      key={roleCardProps.uuid}
+                      data-testid="eps-card"
+                      className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
+                      tabIndex={0}
+                      onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
+                      onClick={(e) => handleCardClick(e, roleCardProps)}
+                      style={{cursor: "pointer"}}
+                    >
+                      <Card.Content>
+                        <div className="eps-card__layout">
+                          <div>
+                            <Card.Heading className="nhsuk-heading-s eps-card__org-name">
+                              {roleCardProps.role.org_name || noOrgName}
+                              <br />
                               (ODS: {roleCardProps.role.org_code || noODSCode})
-                              </Card.Heading>
-                              <Card.Description className="nhsuk-u-margin-top-2">
-                                {roleCardProps.role.role_name || noRoleName}
-                              </Card.Description>
-                            </div>
-                            <div className="eps-card__address">
-                              <Card.Description>
-                                {(roleCardProps.role.site_address || contentText.noAddress)
-                                  .split("\n")
-                                  .map((line: string, index: number) => (
-                                    <span key={index}>
-                                      {line}
-                                      <br />
-                                    </span>
-                                  ))}
-                              </Card.Description>
-                            </div>
+                            </Card.Heading>
+                            <Card.Description className="nhsuk-u-margin-top-2">
+                              {roleCardProps.role.role_name || noRoleName}
+                            </Card.Description>
                           </div>
-                        </Card.Content>
-                      </Card>
-                    ))}
+                          <div className="eps-card__address">
+                            <Card.Description>
+                              {(roleCardProps.role.site_address || contentText.noAddress)
+                                .split("\n")
+                                .map((line: string, index: number) => (
+                                  <span key={index}>
+                                    {line}
+                                    <br />
+                                  </span>
+                                ))}
+                            </Card.Description>
+                          </div>
+                        </div>
+                      </Card.Content>
+                    </Card>
+                  ))}
               </div>
             </Col>
           )}
@@ -367,19 +365,18 @@ export default function RoleSelectionPage({
                     </Table.Row>
                   </Table.Head>
                   <Table.Body>
-                    {/*roleCardPropsWithoutAccess*/
-                      roleComponentProps.rolesWithoutAccess.map(
-                        (roleItem: RolesWithoutAccessProps) => (
-                          <Table.Row key={roleItem.uuid}>
-                            <Table.Cell data-testid="change-role-name-cell">
-                              {roleItem.orgName} (ODS: {roleItem.odsCode})
-                            </Table.Cell>
-                            <Table.Cell data-testid="change-role-role-cell">
-                              {roleItem.roleName}
-                            </Table.Cell>
-                          </Table.Row>
-                        )
-                      )}
+                    {roleComponentProps.rolesWithoutAccess.map(
+                      (roleItem: RolesWithoutAccessProps) => (
+                        <Table.Row key={roleItem.uuid}>
+                          <Table.Cell data-testid="change-role-name-cell">
+                            {roleItem.orgName} (ODS: {roleItem.odsCode})
+                          </Table.Cell>
+                          <Table.Cell data-testid="change-role-role-cell">
+                            {roleItem.roleName}
+                          </Table.Cell>
+                        </Table.Row>
+                      )
+                    )}
                   </Table.Body>
                 </Table>
               </Details.Text>
