@@ -153,7 +153,6 @@ export default function RoleSelectionPage({
       odsCode: role.org_code || noODSCode
     }))
 
-    console.log(import.meta.env.MODE)
     if(auth.userDetails?.sub) {
       logger.debug("Role components to be rendered", {
         sessionId: auth.sessionId,
@@ -174,10 +173,10 @@ export default function RoleSelectionPage({
           currentlySelectedRole: auth.selectedRole,
           rolesWithAccess: auth.rolesWithAccess,
           rolesWithoutAccess: auth.rolesWithoutAccess,
-          isConcurrentSession: auth.isConcurrentSession,
           isSignedIn: auth.isSignedIn,
           isSigningIn: auth.isSigningIn,
           isSigningOut: auth.isSigningOut,
+          isConcurrentSession: auth.isConcurrentSession,
           error: auth.error,
           invalidSessionCause: auth.invalidSessionCause
         },
