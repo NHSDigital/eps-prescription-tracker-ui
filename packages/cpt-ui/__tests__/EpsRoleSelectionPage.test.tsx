@@ -104,7 +104,7 @@ describe("RoleSelectionPage", () => {
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
-    expect(screen.getByRole("main")).toHaveTextContent("Loading")
+    expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
   })
 
   it("renders error message if auth.error exists", () => {
@@ -317,7 +317,7 @@ describe("RoleSelectionPage", () => {
     )
 
     rerender(<RoleSelectionPage contentText={defaultContentText} />)
-    expect(screen.getByRole("main")).toHaveTextContent("Loading")
+    expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
 
     // Step 2: Simulate login complete and role assignment
     act(() => {
