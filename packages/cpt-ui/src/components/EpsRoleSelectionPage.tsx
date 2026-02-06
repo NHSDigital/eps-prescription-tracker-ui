@@ -160,8 +160,7 @@ export default function RoleSelectionPage({
         return
       } else {
         // something has gone wrong so go back to login
-        auth.clearAuthState()
-        navigate(FRONTEND_PATHS.LOGIN)
+        handleRestartLogin(auth, "NoSearchParams")
       }
     } else {
       redirecting.current = false
