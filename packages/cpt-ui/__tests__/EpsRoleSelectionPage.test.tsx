@@ -559,4 +559,31 @@ describe("RoleSelectionPage", () => {
       expect(cards).toHaveLength(1)
     })
   })
+  // describe("Loading Page Interactions", () => {
+  //   it("Render loading when user clicks signout", () => {
+  //   // Step 1: isSigningIn = true, so spinner shows
+  //     const authState = {
+  //       isSigningOut: true,
+  //       rolesWithAccess: [] as Array<RoleDetails>,
+  //       rolesWithoutAccess: [],
+  //       selectedRole: undefined as RoleDetails | undefined,
+  //       error: null,
+  //       clearAuthState: jest.fn(),
+  //       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
+  //     }
+
+  //     mockUseAuth.mockReturnValue(authState)
+  //     mockGetSearchParams.mockReturnValue({
+  //       codeParams: "foo",
+  //       stateParams: "bar"
+  //     })
+  //     const {rerender} = render(
+  //       <RoleSelectionPage contentText={defaultContentText} />
+  //     )
+
+  //     rerender(<RoleSelectionPage contentText={defaultContentText} />)
+  //     expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
+  //     expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGOUT)
+  //   })
+  // })
 })

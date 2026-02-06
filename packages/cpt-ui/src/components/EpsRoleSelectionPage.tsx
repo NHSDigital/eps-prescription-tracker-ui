@@ -222,7 +222,8 @@ export default function RoleSelectionPage({
       data-testid="eps_roleSelectionComponent"
     >
       {
-        !redirecting.current && !auth.isSigningOut ?
+        redirecting.current || auth.isSigningOut ?
+          <LoadingPage /> :
           <Container role="contentinfo">
             <Row>
               <Col width="two-thirds">
@@ -341,7 +342,6 @@ export default function RoleSelectionPage({
               </Col>
             </Row>
           </Container>
-          : <LoadingPage />
       }
     </main>
   )
