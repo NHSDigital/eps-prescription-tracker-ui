@@ -1,6 +1,7 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 
@@ -23,7 +24,7 @@ const authorizeEndpoint = process.env["IDP_AUTHORIZE_PATH"] as string
 const cis2ClientId = process.env["OIDC_CLIENT_ID"] as string
 const userPoolClientId = process.env["COGNITO_CLIENT_ID"] as string
 const cloudfrontDomain = process.env["FULL_CLOUDFRONT_DOMAIN"] as string
-const apigeeApiKey = process.env["APIGEE_API_KEY"] as string
+const apigeeApiKeyArn = process.env["APIGEE_API_KEY_ARN"] as string
 
 const logger = new Logger({serviceName: "authorize"})
 const errorResponseBody = {message: "A system error has occurred"}
@@ -32,6 +33,7 @@ const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 const lambdaHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+  const apigeeApiKey = await getSecret(apigeeApiKeyArn)
   logger.appendKeys({"apigw-request-id": event.requestContext?.requestId})
   // we need to use the base domain for the environment so that pull requests go to that callback uri
   // as we can only have one callback uri per apigee application
@@ -43,7 +45,7 @@ const lambdaHandler = async (
     cis2ClientId,
     userPoolClientId,
     cloudfrontDomain,
-    apigeeApiKey
+    apigeeApiKeyArn
   }})
 
   // Validate required environment variables
@@ -82,7 +84,7 @@ const lambdaHandler = async (
   // Build the redirect parameters for CIS2
   const responseParameters = {
     redirect_uri: callbackUri,
-    client_id: apigeeApiKey,
+    client_id: apigeeApiKey.toString(), // Ensure client_id is a string
     response_type: "code",
     state: newState
   }

@@ -17,6 +17,17 @@ const validEndpoint = "https://api.example.com/dohs"
 process.env.apigeeApiKey = validApiKey
 process.env.apigeeDoHSEndpoint = validEndpoint
 
+const mockGetSecret = jest.fn()
+jest.unstable_mockModule("@aws-lambda-powertools/parameters/secrets", () => {
+  const getSecret = mockGetSecret.mockImplementation(async () => {
+    return validApiKey
+  })
+
+  return {
+    getSecret
+  }
+})
+
 // Now we can safely import the module
 const {doHSClient} = await import("../src/doHSClient")
 
@@ -40,8 +51,9 @@ describe("doHSClient", () => {
 
   it("throws an error if apigeeApiKey is not set", async () => {
     // Temporarily unset the API key
-    const originalApiKey = process.env.APIGEE_DOHS_API_KEY
-    delete process.env.APIGEE_DOHS_API_KEY
+    mockGetSecret.mockImplementationOnce(async () => {
+      return null
+    })
 
     // Re-import the module to pick up the changed environment
     jest.resetModules()
@@ -51,8 +63,6 @@ describe("doHSClient", () => {
       "Apigee API Key environment variable is not set"
     )
 
-    // Restore the API key
-    process.env.APIGEE_DOHS_API_KEY = originalApiKey
   })
 
   it("throws an error if apigeeDoHSEndpoint is not set", async () => {
