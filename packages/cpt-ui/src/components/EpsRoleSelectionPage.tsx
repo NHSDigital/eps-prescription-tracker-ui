@@ -173,10 +173,10 @@ export default function RoleSelectionPage({
           currentlySelectedRole: auth.selectedRole,
           rolesWithAccess: auth.rolesWithAccess,
           rolesWithoutAccess: auth.rolesWithoutAccess,
-          isConcurrentSession: auth.isConcurrentSession,
           isSignedIn: auth.isSignedIn,
           isSigningIn: auth.isSigningIn,
           isSigningOut: auth.isSigningOut,
+          isConcurrentSession: auth.isConcurrentSession,
           error: auth.error,
           invalidSessionCause: auth.invalidSessionCause
         },
