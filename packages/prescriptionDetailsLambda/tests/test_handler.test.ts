@@ -1,34 +1,51 @@
-import {jest} from "@jest/globals"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
 import {mockAPIGatewayProxyEvent, mockContext, mockMergedResponse} from "./mockObjects"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {AxiosInstance} from "axios"
 import {AuthenticateRequestOptions} from "@cpt-ui-common/authFunctions"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
+import {newHandler} from "../src/handler"
 
-const mockProcessPrescriptionRequest = jest.fn(() => Promise.resolve(mockMergedResponse))
-jest.unstable_mockModule("../src/services/prescriptionService", () => {
+const {
+  mockProcessPrescriptionRequest,
+  mockAuthParametersFromEnv,
+  mockBuildApigeeHeaders,
+  mockAuthenticationMiddleware
+} = vi.hoisted(() => {
+  return {
+    mockProcessPrescriptionRequest: vi.fn(() => Promise.resolve(mockMergedResponse)),
+    mockAuthParametersFromEnv: vi.fn(),
+    mockBuildApigeeHeaders: vi.fn(),
+    mockAuthenticationMiddleware: vi.fn(() => ({before: () => {}}))
+  }
+})
+
+vi.mock("../src/services/prescriptionService", () => {
   return {
     processPrescriptionRequest: mockProcessPrescriptionRequest
   }
 })
 
-// Needed to avoid issues with ESM imports in jest
-jest.unstable_mockModule("@cpt-ui-common/authFunctions", () => ({
-  authParametersFromEnv: jest.fn(),
-  buildApigeeHeaders: jest.fn(),
-  authenticationMiddleware: () => ({before: () => {}})
+// Needed to avoid issues with ESM imports in vitest
+vi.mock("@cpt-ui-common/authFunctions", () => ({
+  authParametersFromEnv: mockAuthParametersFromEnv,
+  buildApigeeHeaders: mockBuildApigeeHeaders,
+  authenticationMiddleware: mockAuthenticationMiddleware
 }))
-
-// Import the handler after the mocks have been defined.
-const {newHandler} = await import("../src/handler")
 
 describe("Lambda Handler Tests", () => {
   // Create copy of the event for testing.
   let logger = new Logger({serviceName: "prescriptionDetailsLambda"})
-  logger.warn = jest.fn()
-  logger.error = jest.fn()
-  logger.info = jest.fn()
+  logger.warn = vi.fn()
+  logger.error = vi.fn()
+  logger.info = vi.fn()
   const handler = newHandler({
     errorResponseBody: {message: "A system error has occurred"},
     logger: logger,
@@ -43,8 +60,8 @@ describe("Lambda Handler Tests", () => {
 
   beforeEach(() => {
     // Reset mocks before each test.
-    jest.resetModules()
-    jest.clearAllMocks()
+    vi.resetModules()
+    vi.clearAllMocks()
     event.pathParameters = {prescriptionId: "dummy_prescription_id"}
     event.requestContext.authorizer = {roleId: "dummy_role", orgCode: "dummy_org"}
   })

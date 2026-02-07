@@ -1,31 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {jest} from "@jest/globals"
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {AxiosInstance} from "axios"
+import {authenticationConcurrentAwareMiddleware} from "../src/authenticationConcurrentAwareMiddleware"
 
-// Mock dependencies
-const mockGetUsernameFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockGetSessionIdFromEvent = jest.fn() as jest.MockedFunction<any>
-const mockAuthenticateRequest = jest.fn() as jest.MockedFunction<any>
-const mockTryGetTokenMapping = jest.fn() as jest.MockedFunction<any>
+const {
+  mockGetUsernameFromEvent,
+  mockGetSessionIdFromEvent,
+  mockAuthenticateRequest,
+  mockTryGetTokenMapping
+} = vi.hoisted(() => ({
+  mockGetUsernameFromEvent: vi.fn(),
+  mockGetSessionIdFromEvent: vi.fn(),
+  mockAuthenticateRequest: vi.fn(),
+  mockTryGetTokenMapping: vi.fn()
+}))
 
-jest.unstable_mockModule("../src/event", () => ({
+vi.mock("../src/event", () => ({
   getUsernameFromEvent: mockGetUsernameFromEvent,
   getSessionIdFromEvent: mockGetSessionIdFromEvent
 }))
 
-jest.unstable_mockModule("../src/authenticateRequest", () => ({
+vi.mock("../src/authenticateRequest", () => ({
   authenticateRequest: mockAuthenticateRequest
 }))
 
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => ({
+vi.mock("@cpt-ui-common/dynamoFunctions", () => ({
   tryGetTokenMapping: mockTryGetTokenMapping
 }))
-
-// Import the middleware after mocking
-const {authenticationConcurrentAwareMiddleware} = await import("../src/authenticationConcurrentAwareMiddleware")
 
 describe("authenticationConcurrentAwareMiddleware", () => {
   let logger: Logger
@@ -36,7 +46,7 @@ describe("authenticationConcurrentAwareMiddleware", () => {
   let mockRequest: any
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
 
     // Reset all mock implementations and return values
     mockGetUsernameFromEvent.mockReset()
@@ -45,16 +55,16 @@ describe("authenticationConcurrentAwareMiddleware", () => {
     mockTryGetTokenMapping.mockReset()
 
     logger = new Logger({serviceName: "test"})
-    logger.info = jest.fn()
-    logger.debug = jest.fn()
-    logger.error = jest.fn()
+    logger.info = vi.fn()
+    logger.debug = vi.fn()
+    logger.error = vi.fn()
 
     const dynamoClient = new DynamoDBClient({})
     ddbClient = DynamoDBDocumentClient.from(dynamoClient)
 
     axiosInstance = {
-      post: jest.fn(),
-      get: jest.fn()
+      post: vi.fn(),
+      get: vi.fn()
     } as unknown as AxiosInstance
 
     authOptions = {

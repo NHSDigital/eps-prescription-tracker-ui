@@ -1,19 +1,38 @@
-import {jest} from "@jest/globals"
-
-// Set environment variables before importing the handler.
-process.env.IDP_AUTHORIZE_PATH = "https://example.com/authorize"
-process.env.OIDC_CLIENT_ID = "cis2Client123"
-process.env.useMock = "true"
-process.env.COGNITO_CLIENT_ID = "userPoolClient123"
-process.env.FULL_CLOUDFRONT_DOMAIN = "cpt-ui-pr-854.dev.eps.national.nhs.uk"
-
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 // Import the handler after setting the env variables and mocks.
 import {mockAPIGatewayProxyEvent, mockContext} from "./mockObjects"
-const {handler} = await import("../src/authorizeMock")
+import {handler} from "../src/authorizeMock"
+
+// Set environment variables before importing the handler.
+process.env.useMock = "true"
+
+const {
+  mockGetSecret
+} = vi.hoisted(() => {
+  return {
+    mockGetSecret: vi.fn()
+  }
+})
+
+vi.mock("@aws-lambda-powertools/parameters/secrets", () => {
+  const getSecret = mockGetSecret.mockImplementation(async () => {
+    return "apigee_api_key"
+  })
+
+  return {
+    getSecret
+  }
+})
 
 describe("authorize mock handler", () => {
   beforeEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it("should redirect to CIS2 with correct parameters", async () => {

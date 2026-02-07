@@ -1,9 +1,10 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import axios, {AxiosRequestConfig} from "axios"
+import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 
 // Read the DoHS API Key from environment variables
 const apigeeDoHSEndpoint = process.env["apigeeDoHSEndpoint"] as string
-const apigeeDoHSApiKey = process.env["APIGEE_DOHS_API_KEY"] as string
+const apigeeDoHSApiKeyArn = process.env["APIGEE_DOHS_API_KEY_ARN"] as string
 
 interface DoHSContact {
   ContactType: string
@@ -22,6 +23,7 @@ export interface DoHSOrg {
 }
 
 export const doHSClient = async (odsCodes: Array<string>, logger: Logger): Promise<Array<DoHSOrg>> => {
+  const apigeeDoHSApiKey = await getSecret(apigeeDoHSApiKeyArn)
   logger.info("Fetching DoHS API data for ODS codes", {odsCodes})
 
   if (odsCodes.length === 0) {
