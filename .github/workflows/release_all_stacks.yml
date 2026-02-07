@@ -122,7 +122,7 @@ jobs:
           DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
       - name: Configure AWS Credentials
         id: connect_aws_pull_image
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
@@ -153,7 +153,7 @@ jobs:
 
       - name: Configure AWS Credentials
         id: connect_aws_for_deployment
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
