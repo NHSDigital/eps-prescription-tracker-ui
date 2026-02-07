@@ -1,44 +1,39 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
-import {jest} from "@jest/globals"
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest"
 
-import axios from "axios"
+import type {AxiosInstance} from "axios"
 import {Logger} from "@aws-lambda-powertools/logger"
-
-jest.mock("axios")
-jest.mock("jsonwebtoken")
-
-const mockGetTokenMapping = jest.fn()
-const mockUpdateTokenMapping = jest.fn()
-
-jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
-  return {
-    updateTokenMapping: mockUpdateTokenMapping,
-    getTokenMapping: mockGetTokenMapping
-  }
-})
+import {exchangeTokenForApigeeAccessToken, refreshApigeeAccessToken, buildApigeeHeaders} from "../src/apigee"
 
 const mockLogger: Partial<Logger> = {
-  info: jest.fn(),
-  debug: jest.fn(),
-  error: jest.fn()
+  info: vi.fn(),
+  debug: vi.fn(),
+  error: vi.fn()
 }
 
-const {exchangeTokenForApigeeAccessToken,
-  refreshApigeeAccessToken,
-  buildApigeeHeaders} = await import("../src/apigee")
+const mockAxiosPost = vi.fn()
+const axiosInstance = {
+  post: mockAxiosPost
+} as unknown as AxiosInstance
 
 describe("apigeeUtils", () => {
-  const mockAxiosPost = jest.fn();
-  (axios.post as unknown as jest.Mock) = mockAxiosPost
   beforeAll(() => {
-    jest.spyOn(global.crypto, "randomUUID").mockReturnValue("test-uuid-in-uuid-format")
+    vi.spyOn(globalThis.crypto, "randomUUID").mockReturnValue("test-uuid-in-uuid-format")
   })
 
   afterAll(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe("buildApigeeHeaders", () => {
@@ -68,7 +63,7 @@ describe("apigeeUtils", () => {
       mockAxiosPost.mockResolvedValueOnce({data: {access_token: "testToken", expires_in: 3600}} as never)
 
       const result = await exchangeTokenForApigeeAccessToken(
-        axios,
+        axiosInstance,
         "https://mock-endpoint",
         {param: "test"},
         mockLogger as Logger
@@ -86,7 +81,7 @@ describe("apigeeUtils", () => {
       mockAxiosPost.mockResolvedValueOnce({data: {}} as never)
       await expect(
         exchangeTokenForApigeeAccessToken(
-          axios,
+          axiosInstance,
           "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
@@ -104,7 +99,7 @@ describe("apigeeUtils", () => {
 
       await expect(
         exchangeTokenForApigeeAccessToken(
-          axios,
+          axiosInstance,
           "https://mock-endpoint",
           {param: "test"},
           mockLogger as Logger
@@ -130,7 +125,7 @@ describe("apigeeUtils", () => {
       }))
 
       const result = await refreshApigeeAccessToken(
-        axios,
+        axiosInstance,
         "https://mock-endpoint",
         "old-refresh-token",
         "mock-api-key",
@@ -161,7 +156,7 @@ describe("apigeeUtils", () => {
       } as never)
 
       const result = await refreshApigeeAccessToken(
-        axios,
+        axiosInstance,
         "https://mock-endpoint",
         "old-refresh-token",
         "mock-api-key",
@@ -182,7 +177,7 @@ describe("apigeeUtils", () => {
 
       await expect(
         refreshApigeeAccessToken(
-          axios,
+          axiosInstance,
           "https://mock-endpoint",
           "old-refresh-token",
           "mock-api-key",
