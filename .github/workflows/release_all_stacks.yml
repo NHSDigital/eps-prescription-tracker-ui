@@ -162,6 +162,8 @@ jobs:
 
       - name: check redeploy stateful stack
         id: check_redeploy_stateful_stack
+        env:
+          AWS_MAX_ATTEMPTS: 20
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
@@ -249,6 +251,7 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+          AWS_MAX_ATTEMPTS: 20
 
       - name: Show diff for stateful stack
         run: |
@@ -337,6 +340,8 @@ jobs:
           make react-build
 
       - name: deploy website
+        env:
+          AWS_MAX_ATTEMPTS: 20
         run: |
           staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
           aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
@@ -388,6 +393,7 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+          AWS_MAX_ATTEMPTS: 20
 
       - name: Show diff for stateless stack
         run: |
@@ -420,6 +426,8 @@ jobs:
         shell: bash
       - name: update cloudfront kvs
         id: update_cloudfront_kvs
+        env:
+          AWS_MAX_ATTEMPTS: 20
         shell: bash
         run: |
           # shellcheck disable=SC2140
@@ -516,6 +524,7 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+          AWS_MAX_ATTEMPTS: 20
 
       - name: Show diff for stateful stack redeployment
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
