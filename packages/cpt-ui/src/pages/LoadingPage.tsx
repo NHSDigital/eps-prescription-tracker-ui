@@ -9,7 +9,7 @@ export default function LoadingPage() {
   const path = normalizePath(location.pathname)
   logger.info(`Loading requested path: ${path}`)
   return (
-    <main className="nhsuk-main-wrapper">
+    <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
         <Row>
           <Col width="full">

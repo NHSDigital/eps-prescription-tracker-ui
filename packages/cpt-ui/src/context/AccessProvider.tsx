@@ -68,7 +68,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
-    logger.info(path)
+    logger.info(`Requested path: ${path}`)
+    if (loggedOut && (!inNoRoleAllowed || atRoot)) {
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+    }
+
     if (auth.isSignedIn && path === FRONTEND_PATHS.LOGIN) {
       if (!auth.selectedRole) {
         return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, "User already logged in. No role selected.")
@@ -88,10 +92,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     if (authedAtRoot) {
       return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
         "Authenticated user on root path - redirecting to search")
-    }
-
-    if (loggedOut && (!inNoRoleAllowed || atRoot)) {
-      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in at root - redirecting to login page")
     }
   }
 

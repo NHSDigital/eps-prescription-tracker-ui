@@ -8,6 +8,7 @@ import {AUTH_CONFIG} from "@/constants/environment"
 */
 
 export const signOut = async (authParam: AuthContextType, redirectUri?: string) => {
+  authParam.setIsSigningOut(true)
   const location = window.location.pathname
   logger.info(`Called signOut helper from ${location} with redirect of ${redirectUri}`)
   if (redirectUri) {
