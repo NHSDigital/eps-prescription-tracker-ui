@@ -37,8 +37,8 @@ export interface AuthenticateRequestOptions {
   tokenMappingTableName: string
   sessionManagementTableName: string
   jwtPrivateKeyArn: string
-  apigeeApiKey: string
-  apigeeApiSecret: string
+  apigeeApiKeyArn: string
+  apigeeApiSecretArn: string
   jwtKid: string
   apigeeCis2TokenEndpoint: string
   apigeeMockTokenEndpoint: string
@@ -57,8 +57,8 @@ export const authParametersFromEnv = (): AuthenticateRequestOptions => {
     tokenMappingTableName: process.env["TokenMappingTableName"] as string,
     sessionManagementTableName: process.env["SessionManagementTableName"] as string,
     jwtPrivateKeyArn: process.env["jwtPrivateKeyArn"] as string,
-    apigeeApiKey: process.env["APIGEE_API_KEY"] as string,
-    apigeeApiSecret: process.env["APIGEE_API_SECRET"] as string,
+    apigeeApiKeyArn: process.env["APIGEE_API_KEY_ARN"] as string,
+    apigeeApiSecretArn:  process.env["APIGEE_API_SECRET_ARN"] as string,
     jwtKid: process.env["jwtKid"] as string,
     apigeeMockTokenEndpoint: process.env["apigeeMockTokenEndpoint"] as string,
     apigeeCis2TokenEndpoint: process.env["apigeeCIS2TokenEndpoint"] as string,
@@ -82,12 +82,17 @@ const refreshTokenFlow = async (
   if (existingToken.refreshToken === undefined) {
     throw new Error("Missing refresh token")
   }
+  const apigeeApiKey = await getSecret(authOptions.apigeeApiKeyArn)
+  const apigeeApiSecret = await getSecret(authOptions.apigeeApiSecretArn)
+  if (!apigeeApiKey || !apigeeApiSecret) {
+    throw new Error("Missing Apigee API credentials")
+  }
   const refreshResult = await refreshApigeeAccessToken(
     axiosInstance,
     apigeeTokenEndpoint,
     existingToken.refreshToken,
-    authOptions.apigeeApiKey,
-    authOptions.apigeeApiSecret,
+    apigeeApiKey.toString(),
+    apigeeApiSecret.toString(),
     logger
   )
 
@@ -134,13 +139,18 @@ export async function authenticateRequest(
 ): Promise<AuthResult | null> {
   const {
     jwtPrivateKeyArn,
-    apigeeApiKey,
-    apigeeApiSecret,
+    apigeeApiKeyArn,
+    apigeeApiSecretArn,
     jwtKid,
     apigeeMockTokenEndpoint,
     apigeeCis2TokenEndpoint,
     cloudfrontDomain
   } = authOptions
+  const apigeeApiKey = await getSecret(apigeeApiKeyArn)
+  const apigeeApiSecret = await getSecret(apigeeApiSecretArn)
+  if (!apigeeApiKey || !apigeeApiSecret) {
+    throw new Error("Missing Apigee API credentials")
+  }
   logger.info("Starting authentication flow")
 
   // Extract username and determine if this is a mock request
@@ -238,8 +248,8 @@ export async function authenticateRequest(
     const callbackUri = `https://${baseEnvironmentDomain}/oauth2/mock-callback`
     const tokenExchangeBody = {
       grant_type: "authorization_code",
-      client_id: apigeeApiKey,
-      client_secret: apigeeApiSecret,
+      client_id: apigeeApiKey.toString(),
+      client_secret: apigeeApiSecret.toString(),
       redirect_uri: callbackUri,
       code: userRecord.apigeeCode
     }
@@ -268,7 +278,7 @@ export async function authenticateRequest(
       logger,
       apigeeCis2TokenEndpoint,
       jwtPrivateKey,
-      apigeeApiKey,
+      apigeeApiKey.toString(),
       jwtKid,
       userRecord.cis2IdToken
     )

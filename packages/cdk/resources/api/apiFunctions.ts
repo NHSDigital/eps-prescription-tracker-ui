@@ -4,8 +4,7 @@ import {SharedSecrets} from "../SharedSecrets"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
-import {Secret} from "aws-cdk-lib/aws-secretsmanager"
-import {NagSuppressions} from "cdk-nag"
+import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 
 // Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
@@ -39,9 +38,9 @@ export interface ApiFunctionsProps {
   readonly apigeeDoHSEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
-  readonly apigeeApiKey: string
-  readonly apigeeApiSecret: string
-  readonly apigeeDoHSApiKey: string
+  readonly apigeeApiKey: ISecret
+  readonly apigeeApiSecret: ISecret
+  readonly apigeeDoHSApiKey: ISecret
   readonly jwtKid: string
   readonly logLevel: string
   readonly roleId: string
@@ -78,7 +77,8 @@ export class ApiFunctions extends Construct {
       props.sessionManagementTableReadPolicy,
       props.useSessionManagementKmsKeyPolicy,
       props.sharedSecrets.useJwtKmsKeyPolicy,
-      props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy
+      props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
+      props.sharedSecrets.getApigeeSecretsPolicy
     ]
 
     if (props.useMockOidc && props.sharedSecrets.getMockJwtPrivateKeyPolicy) {
@@ -101,10 +101,9 @@ export class ApiFunctions extends Construct {
       // Indicate if mock mode is available
       MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false",
 
-      APIGEE_API_SECRET: props.apigeeApiSecret,
-      APIGEE_API_KEY: props.apigeeApiKey,
+      APIGEE_API_SECRET_ARN: props.apigeeApiSecret.secretArn,
+      APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
       FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain
-
     }
 
     // If mock OIDC is enabled, add mock environment variables
@@ -240,14 +239,6 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(patientSearchLambda.executeLambdaManagedPolicy)
 
-    // Suppress the AwsSolutions-L1 rule for the prescription list Lambda function
-    NagSuppressions.addResourceSuppressions(prescriptionListLambda.lambda, [
-      {
-        id: "AwsSolutions-L1",
-        reason: "The Lambda function uses the latest runtime version supported at the time of implementation."
-      }
-    ])
-
     // Prescription Details Lambda Function
     const prescriptionDetailsLambda = new LambdaFunction(this, "PrescriptionDetails", {
       serviceName: props.serviceName,
@@ -266,10 +257,9 @@ export class ApiFunctions extends Construct {
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
-        apigeeApiKey: props.apigeeApiKey,
         jwtKid: props.jwtKid,
         roleId: props.roleId,
-        APIGEE_DOHS_API_KEY: props.apigeeDoHSApiKey
+        APIGEE_DOHS_API_KEY_ARN: props.apigeeDoHSApiKey.secretArn
       }
     })
 
