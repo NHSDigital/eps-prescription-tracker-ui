@@ -7,14 +7,13 @@ import {
   waitFor
 } from "@testing-library/react"
 import RoleSelectionPage from "@/components/EpsRoleSelectionPage"
-import {useAuth} from "@/context/AuthProvider"
+import {useAuth, AuthContextType} from "@/context/AuthProvider"
 import {useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
-import {AuthContextType} from "@/context/AuthProvider"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
 jest.mock("@/context/AuthProvider")
