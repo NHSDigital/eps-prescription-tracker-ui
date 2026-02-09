@@ -37,6 +37,7 @@ const defaultAuthContext: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: false,
+  authStatus: "signed_out",
   isSigningIn: false,
   isSigningOut: false,
   invalidSessionCause: undefined,
@@ -52,8 +53,7 @@ const defaultAuthContext: AuthContextType = {
   hasSingleRoleAccess: jest.fn().mockReturnValue(false),
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn(),
-  setIsSigningOut: jest.fn()
+  updateInvalidSessionCause: jest.fn()
 }
 
 const defaultSearchContext: SearchProviderContextType = {

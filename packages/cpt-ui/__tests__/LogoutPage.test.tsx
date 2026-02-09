@@ -26,6 +26,14 @@ jest.mock("@/constants/environment", () => ({
     "/",
     "/select-active-session"
   ],
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/"
+  ],
   AUTH_CONFIG: {
     USER_POOL_ID: "mock-pool-id",
     USER_POOL_CLIENT_ID: "mock-client-id",
@@ -65,8 +73,10 @@ const MockAuthProvider = ({
   const authContextValue: AuthContextType = {
     error: null,
     user: defaultIsSignedIn ? {username: "testUser"} : null,
+    authStatus: defaultIsSignedIn ? "signed_in" : "signed_out",
     isSignedIn: defaultIsSignedIn,
     isSigningIn: false,
+    isSigningOut: false,
     invalidSessionCause: undefined,
     rolesWithAccess: [],
     rolesWithoutAccess: [],
@@ -80,9 +90,7 @@ const MockAuthProvider = ({
     hasSingleRoleAccess: jest.fn().mockReturnValue(false),
     updateSelectedRole: jest.fn(),
     updateTrackerUserInfo: jest.fn(),
-    updateInvalidSessionCause: jest.fn(),
-    isSigningOut: false,
-    setIsSigningOut: jest.fn()
+    updateInvalidSessionCause: jest.fn()
   } as AuthContextType
 
   return (

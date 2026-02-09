@@ -16,6 +16,7 @@ const mockUseAuthReturnValue: AuthContextType = {
   error: null,
   user: null,
   isSignedIn: false,
+  authStatus: "signed_out",
   isSigningIn: false,
   invalidSessionCause: undefined,
   sessionId: undefined,
@@ -30,8 +31,7 @@ const mockUseAuthReturnValue: AuthContextType = {
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
-  isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  isSigningOut: false
 }
 
 describe("YourSelectedRolePage", () => {
