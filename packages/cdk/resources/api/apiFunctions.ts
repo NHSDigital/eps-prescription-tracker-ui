@@ -62,6 +62,7 @@ export class ApiFunctions extends Construct {
   public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
   public readonly clearActiveSessionLambda: NodejsFunction
+  public readonly telemetryLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -299,6 +300,21 @@ export class ApiFunctions extends Construct {
       this.clearActiveSessionLambda = clearActiveSessionLambda.lambda
     }
 
+    const telemetryLambda = new LambdaFunction(this, "Telemetry", {
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      lambdaName: `${props.stackName}-telemetry`,
+      additionalPolicies: additionalPolicies,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      packageBasePath: "packages/telemetryLambda",
+      entryPoint: "src/handler.ts",
+      lambdaEnvironmentVariables: {
+        ...commonLambdaEnv
+      }
+    })
+    apiFunctionsPolicies.push(telemetryLambda.executeLambdaManagedPolicy)
+
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
@@ -310,5 +326,6 @@ export class ApiFunctions extends Construct {
     this.sessionManagementLambda = sessionManagementLambda.lambda
     this.selectedRoleLambda = selectedRoleLambda.lambda
     this.patientSearchLambda = patientSearchLambda.lambda
+    this.telemetryLambda = telemetryLambda.lambda
   }
 }
