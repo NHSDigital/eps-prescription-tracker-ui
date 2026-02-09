@@ -396,7 +396,8 @@ export class StatelessResourcesStack extends Stack {
       patientSearchLambda: apiFunctions.patientSearchLambda,
       authorizer: apiGateway.authorizer,
       clearActiveSessionLambda: apiFunctions.clearActiveSessionLambda,
-      useMockOidc: useMockOidc
+      useMockOidc: useMockOidc,
+      telemetryLambda: apiFunctions.telemetryLambda
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

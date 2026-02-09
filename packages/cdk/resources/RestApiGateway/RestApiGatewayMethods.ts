@@ -22,6 +22,7 @@ export interface RestApiGatewayMethodsProps {
   readonly authorizer?: CognitoUserPoolsAuthorizer
   readonly clearActiveSessionLambda: NodejsFunction
   readonly useMockOidc: boolean
+  readonly telemetryLambda: NodejsFunction
 }
 
 /**
@@ -116,6 +117,11 @@ export class RestApiGatewayMethods extends Construct {
         credentialsRole: props.restAPiGatewayRole
       }), {})
     }
+
+    const telemetryLambdaResource = props.restApiGateway.root.addResource("telemetry")
+    telemetryLambdaResource.addMethod("POST", new LambdaIntegration(props.telemetryLambda, {
+      credentialsRole: props.restAPiGatewayRole
+    }), {})
 
     //Outputs
   }
