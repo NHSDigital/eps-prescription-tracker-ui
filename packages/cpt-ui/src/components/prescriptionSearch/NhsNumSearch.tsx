@@ -23,6 +23,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import {validateNhsNumber, normalizeNhsNumber, NhsNumberValidationError} from "@/helpers/validateNhsNumber"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {sendMetrics} from "@/components/Telemetry"
 
 export default function NhsNumSearch() {
   const navigate = useNavigate()
@@ -70,6 +71,10 @@ export default function NhsNumSearch() {
   }
 
   const handleSubmit = (e: React.FormEvent) => {
+    sendMetrics({
+      "metric_name": "nhs_number_search",
+      "dimension": "SUMTOTAL"
+    })
     e.preventDefault()
     const validationError = validateNhsNumber(nhsNumber)
 

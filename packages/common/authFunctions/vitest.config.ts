@@ -35,7 +35,9 @@ const viteConfig = defineConfig({
       MOCK_USER_INFO_ENDPOINT: `${MOCK_OIDC_HOST}/userinfo`,
       MOCK_USER_POOL_IDP: "MockDummyPoolIdentityProvider",
       MOCK_IDP_TOKEN_PATH: `${MOCK_OIDC_HOST}/token`,
-      FULL_CLOUDFRONT_DOMAIN: "cpt-ui-pr-854.dev.eps.national.nhs.uk"
+      FULL_CLOUDFRONT_DOMAIN: "cpt-ui-pr-854.dev.eps.national.nhs.uk",
+      APIGEE_API_KEY_ARN: "dummy_apigee_api_key_arn",
+      APIGEE_API_SECRET_ARN: "dummy_apigee_api_secret_arn"
     }
   }
 })
