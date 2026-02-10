@@ -73,7 +73,7 @@ export default function NhsNumSearch() {
   const handleSubmit = (e: React.FormEvent) => {
     sendMetrics({
       "metric_name": "nhs_number_search",
-      "dimension": "SUMTOTAL"
+      "dimension": {"type": "SUMTOTAL", "value": 1}
     })
     e.preventDefault()
     const validationError = validateNhsNumber(nhsNumber)
