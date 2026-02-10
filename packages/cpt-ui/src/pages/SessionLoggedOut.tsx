@@ -15,7 +15,7 @@ export default function SessionLoggedOutPage() {
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     sendMetrics({
-      "metric_name": "concurrent_session_selection",
+      "metric_name": "concurrent_session_logout",
       "dimension": {"type": "SUMTOTAL", "value": 1}
     })
     return (

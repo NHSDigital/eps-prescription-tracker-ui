@@ -9,6 +9,7 @@ import {signOut} from "@/helpers/logout"
 import {useState} from "react"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import {SESSION_SELECTION_PAGE_STRINGS} from "@/constants/ui-strings/SessionSelectionPage"
+import {sendMetrics} from "@/components/Telemetry"
 
 export default function SessionSelectionPage() {
   const [startNewSessionClicked, setStartNewSessionClicked] = useState<boolean>(false)
@@ -33,9 +34,17 @@ export default function SessionSelectionPage() {
     setStartNewSessionClicked(true)
     const status = await postSessionManagementUpdate(auth)
     if (status === true) {
+      sendMetrics({
+        "metric_name": "concurrent_session_choose_new",
+        "dimension": {"type": "SUMTOTAL", "value": 1}
+      })
       logger.info("Redirecting user to search by prescription ID")
       redirectUser(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     } else {
+      sendMetrics({
+        "metric_name": "concurrent_session_choose_existing",
+        "dimension": {"type": "SUMTOTAL", "value": 1}
+      })
       logger.info("Redirecting user to login")
       signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
     }
