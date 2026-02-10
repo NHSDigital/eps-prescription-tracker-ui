@@ -81,9 +81,9 @@ export class StatelessResourcesStack extends Stack {
     const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
 
     const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
-    const apigeeApiKey = this.node.tryGetContext("apigeeApiKey")
-    const apigeeApiSecret = this.node.tryGetContext("apigeeApiSecret")
-    const apigeeDoHSApiKey = this.node.tryGetContext("apigeeDoHSApiKey")
+    const apigeeApiKey: string = this.node.tryGetContext("apigeeApiKey")
+    const apigeeApiSecret: string = this.node.tryGetContext("apigeeApiSecret")
+    const apigeeDoHSApiKey: string = this.node.tryGetContext("apigeeDoHSApiKey")
     const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
     const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
     const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
@@ -211,7 +211,10 @@ export class StatelessResourcesStack extends Stack {
     const sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
       stackName: props.stackName,
       deploymentRole: deploymentRole,
-      useMockOidc: useMockOidc
+      useMockOidc: useMockOidc,
+      apigeeApiKey: apigeeApiKey,
+      apigeeDoHSApiKey: apigeeDoHSApiKey,
+      apigeeApiSecret: apigeeApiSecret
     })
 
     // Functions for the login OAuth2 proxy lambdas
@@ -266,8 +269,8 @@ export class StatelessResourcesStack extends Stack {
       logRetentionInDays,
       logLevel,
       jwtKid,
-      apigeeApiKey,
-      apigeeApiSecret
+      apigeeApiKey: sharedSecrets.apigeeApiKey,
+      apigeeApiSecret: sharedSecrets.apigeeApiSecret
     })
 
     // -- functions for API
@@ -302,9 +305,9 @@ export class StatelessResourcesStack extends Stack {
       apigeeMockTokenEndpoint: apigeeMockTokenEndpoint,
       apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
       apigeeDoHSEndpoint: apigeeDoHSEndpoint,
-      apigeeApiKey: apigeeApiKey,
-      apigeeDoHSApiKey: apigeeDoHSApiKey,
-      apigeeApiSecret,
+      apigeeApiKey: sharedSecrets.apigeeApiKey,
+      apigeeDoHSApiKey: sharedSecrets.apigeeDoHSApiKey,
+      apigeeApiSecret: sharedSecrets.apigeeApiSecret,
       jwtKid: jwtKid,
       roleId: roleId,
       apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint,

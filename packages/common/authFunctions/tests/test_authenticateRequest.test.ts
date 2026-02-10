@@ -99,13 +99,15 @@ describe("authenticateRequest", () => {
     error: vi.fn()
   } as unknown as Logger
 
+  const mockApigeeApiKey = "dummy_apigee_api_key"
+  const mockApigeeApiSecret = "dummy_apigee_api_secret"
   const mockOptions = {
     tokenMappingTableName: "test-table",
     sessionManagementTableName: "test-session-table",
     jwtPrivateKeyArn: "test-key-arn",
-    apigeeApiKey: "test-api-key",
+    apigeeApiKeyArn: "dummy_apigee_api_key_arn",
     jwtKid: "test-kid",
-    apigeeApiSecret: "test-api-secret",
+    apigeeApiSecretArn: "dummy_apigee_api_secret_arn",
     apigeeMockTokenEndpoint: "mock-token-endpoint",
     apigeeCis2TokenEndpoint: "cis2-token-endpoint",
     cloudfrontDomain: "test-cloudfront-domain"
@@ -127,9 +129,6 @@ describe("authenticateRequest", () => {
 
     // Default mock for constructSignedJWTBody
     mockConstructSignedJWTBody.mockReturnValue({param: "value"})
-
-    // Ensure process.env is populated
-    process.env.APIGEE_API_SECRET = "test-api-secret"
   })
 
   it("should use existing valid token when available", async () => {
@@ -232,6 +231,11 @@ describe("authenticateRequest", () => {
       refreshToken: "refreshed-refresh-token",
       expiresIn: 3600
     })
+    mockGetSecret
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("dummy_apigee_api_key")
+      .mockReturnValueOnce("dummy_apigee_api_secret")
 
     const result = await authenticateRequest(
       "test-user",
@@ -253,8 +257,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
       "expiring-refresh-token",
-      mockOptions.apigeeApiKey,
-      "test-api-secret", // API secret from env var
+      mockApigeeApiKey,
+      mockApigeeApiSecret, // API secret from env var
       mockLogger
     )
 
@@ -298,6 +302,11 @@ describe("authenticateRequest", () => {
       refreshToken: "refreshed-refresh-token",
       expiresIn: 3600
     })
+    mockGetSecret
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("test-private-key")
+      .mockReturnValueOnce("dummy_apigee_api_key")
+      .mockReturnValueOnce("dummy_apigee_api_secret")
 
     const result = await authenticateRequest(
       "test-user",
@@ -319,8 +328,8 @@ describe("authenticateRequest", () => {
       axiosInstance,
       mockOptions.apigeeCis2TokenEndpoint, // Use the one from options
       "expiring-refresh-token",
-      mockOptions.apigeeApiKey,
-      "test-api-secret", // API secret from env var
+      mockApigeeApiKey,
+      mockApigeeApiSecret, // API secret from env var
       mockLogger
     )
 
@@ -427,7 +436,6 @@ describe("authenticateRequest", () => {
     expect(mockConstructSignedJWTBody).not.toHaveBeenCalled()
     expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalled()
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
-    expect(mockGetSecret).not.toHaveBeenCalled()
   })
 
   it("should acquire new token when no token exists for mocked user", async () => {
@@ -470,7 +478,6 @@ describe("authenticateRequest", () => {
     expect(mockConstructSignedJWTBody).not.toHaveBeenCalled()
     expect(mockExchangeTokenForApigeeAccessToken).toHaveBeenCalled()
     expect(mockUpdateTokenMapping).toHaveBeenCalled()
-    expect(mockGetSecret).not.toHaveBeenCalled()
   })
 
   it("should handle token refresh failure gracefully", async () => {
