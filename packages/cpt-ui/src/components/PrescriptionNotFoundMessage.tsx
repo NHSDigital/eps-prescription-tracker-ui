@@ -4,8 +4,13 @@ import {SEARCH_STRINGS, STRINGS} from "@/constants/ui-strings/PrescriptionNotFou
 import {buildAltLink, determineSearchType} from "@/helpers/prescriptionNotFoundLinks"
 import {useSearchContext} from "@/context/SearchProvider"
 import EpsBackLink from "@/components/EpsBackLink"
+import {sendMetrics} from "./Telemetry"
 
 export default function PrescriptionNotFoundMessage() {
+  sendMetrics({
+    "metric_name": "no_prescription_found",
+    "dimension": {"type": "SUMTOTAL", "value": 1}
+  })
   const searchContext = useSearchContext()
   const searchType = determineSearchType(searchContext)
   const content = SEARCH_STRINGS[searchType]

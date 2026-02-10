@@ -4,6 +4,7 @@ import {Container, Col, Row} from "nhsuk-react-components"
 import {Link} from "react-router-dom"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {sendMetrics} from "@/components/Telemetry"
 
 export default function SessionLoggedOutPage() {
   const auth = useAuth()
@@ -13,6 +14,10 @@ export default function SessionLoggedOutPage() {
     : EpsLogoutStrings.PAGE_TITLE)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
+    sendMetrics({
+      "metric_name": "concurrent_session_selection",
+      "dimension": {"type": "SUMTOTAL", "value": 1}
+    })
     return (
       <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-concurrent">
         <Container>

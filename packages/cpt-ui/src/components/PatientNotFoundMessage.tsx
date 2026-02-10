@@ -4,8 +4,13 @@ import {Link} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {STRINGS} from "@/constants/ui-strings/PatientNotFoundMessageStrings"
 import EpsBackLink from "@/components/EpsBackLink"
+import {sendMetrics} from "@/components/Telemetry"
 
 export default function PatientNotFoundMessage() {
+  sendMetrics({
+    "metric_name": "no_patient_found",
+    "dimension": {"type": "SUMTOTAL", "value": 1}
+  })
   return (
     <Container
       className="nhsuk-width-container-fluid patient-not-found-container"
