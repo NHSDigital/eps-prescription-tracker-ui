@@ -1,6 +1,6 @@
 import http from "@/helpers/axios"
-import {ENV_CONFIG} from "@/constants/environment"
-import {useAuth} from "@/context/AuthProvider"
+import {API_ENDPOINTS} from "@/constants/environment"
+// import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
 export type TelemetryLog = {
     log_level: "INFO" | "ERROR"
@@ -29,8 +29,9 @@ interface TelemetryMetricRequired extends TelemetryMetric {
 
 function generateMandatories(props: TelemetryLog | TelemetryMetric) {
   if (!props.sessionId) {
-    const auth = useAuth()
-    props.sessionId = auth.sessionId
+    // const auth = useAuth()
+    // props.sessionId = auth.sessionId
+    props.sessionId = "testID"
   }
   if (!props.timestamp) {
     props.timestamp = Date.now()
@@ -43,7 +44,7 @@ export async function sendLog(props: TelemetryLog) {
     ...props,
     mandatories
   }
-  await http.post(ENV_CONFIG.TELEMETRY_ENDPOINT, payload as TelemetryLogRequired)
+  await http.post(API_ENDPOINTS.TELEMETRY, payload as TelemetryLogRequired)
 }
 
 export async function sendMetrics(props: TelemetryMetric) {
@@ -53,5 +54,5 @@ export async function sendMetrics(props: TelemetryMetric) {
     mandatories
   }
   logger.info("Sending metric")
-  await http.post(ENV_CONFIG.TELEMETRY_ENDPOINT, payload as TelemetryMetricRequired)
+  await http.post(API_ENDPOINTS.TELEMETRY, payload as TelemetryMetricRequired)
 }
