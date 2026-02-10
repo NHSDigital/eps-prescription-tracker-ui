@@ -1,6 +1,6 @@
 import http from "@/helpers/axios"
 import {ENV_CONFIG} from "@/constants/environment"
-import {useAuth} from "@/context/AuthProvider"
+// import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
 export type TelemetryLog = {
     log_level: "INFO" | "ERROR"
@@ -17,7 +17,7 @@ interface TelemetryLogRequired extends TelemetryLog {
 
 export type TelemetryMetric = {
     metric_name: string
-    dimension: "SUMTOTAL"
+    dimension: {type: string, value: number}
     timestamp?: number
     sessionId?: string
 }
@@ -29,8 +29,9 @@ interface TelemetryMetricRequired extends TelemetryMetric {
 
 function generateMandatories(props: TelemetryLog | TelemetryMetric) {
   if (!props.sessionId) {
-    const auth = useAuth()
-    props.sessionId = auth.sessionId
+    // const auth = useAuth()
+    // props.sessionId = auth.sessionId
+    props.sessionId = "mock-session-id"
   }
   if (!props.timestamp) {
     props.timestamp = Date.now()
@@ -48,6 +49,11 @@ export async function sendLog(props: TelemetryLog) {
 
 export async function sendMetrics(props: TelemetryMetric) {
   const mandatories = generateMandatories(props)
+
+  if (props.dimension.type === "SUMTOTAL") {
+    props.dimension.value = 1
+  }
+
   const payload = {
     ...props,
     mandatories
