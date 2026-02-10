@@ -69,6 +69,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
     logger.info(`Requested path: ${path}`)
+    // sendMetrics({
+    //   "metric_name": "user_journey_requested_page",
+    //   "dimension": {"type": "INFO", "value": path}
+    // })
     if (loggedOut && (!inNoRoleAllowed || atRoot)) {
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
     }

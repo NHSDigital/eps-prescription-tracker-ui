@@ -58,6 +58,6 @@ export async function sendMetrics(props: TelemetryMetric) {
     ...props,
     mandatories
   }
-  logger.info("Sending metric")
+  logger.info(`Sending metric ${props.metric_name}`, payload)
   await http.post(API_ENDPOINTS.TELEMETRY, payload as TelemetryMetricRequired)
 }
