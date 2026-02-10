@@ -29,13 +29,13 @@ export type TelemetryLog = {
 
 export type TelemetryMetric = {
     metric_name: string
-    dimension: "SUMTOTAL"
+    dimension: {type: string, value: number}
     timestamp?: number
     sessionId?: number
 }
 
 export const apiGatewayHandler = async (
-  params: HandlerParams, event: APIGatewayEvent): Promise<APIGatewayProxyResult> => {
+  _: HandlerParams, event: APIGatewayEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
     "nhsd-correlation-id": event.headers?.["nhsd-correlation-id"],
     "nhsd-request-id": event.headers?.["nhsd-request-id"],
@@ -63,10 +63,12 @@ export const apiGatewayHandler = async (
     }
   } else {
     const metric: TelemetryMetric = body as TelemetryMetric
-    logger.appendKeys({
-      [metric.metric_name]: metric.dimension
-    })
-    logger.info(`Received metric: ${metric.metric_name}`)
+    logger.info(`Received metric: ${metric.metric_name}`,
+      {
+        metric_name: metric.metric_name,
+        dimension: metric.dimension
+      }
+    )
   }
 
   return {

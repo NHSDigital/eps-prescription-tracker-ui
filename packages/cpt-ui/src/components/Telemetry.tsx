@@ -17,7 +17,7 @@ interface TelemetryLogRequired extends TelemetryLog {
 
 export type TelemetryMetric = {
     metric_name: string
-    dimension: "SUMTOTAL"
+    dimension: {type: string, value: number}
     timestamp?: number
     sessionId?: string
 }
@@ -31,7 +31,7 @@ function generateMandatories(props: TelemetryLog | TelemetryMetric) {
   if (!props.sessionId) {
     // const auth = useAuth()
     // props.sessionId = auth.sessionId
-    props.sessionId = "testID"
+    props.sessionId = "mock-session-id"
   }
   if (!props.timestamp) {
     props.timestamp = Date.now()
@@ -49,6 +49,11 @@ export async function sendLog(props: TelemetryLog) {
 
 export async function sendMetrics(props: TelemetryMetric) {
   const mandatories = generateMandatories(props)
+
+  if (props.dimension.type === "SUMTOTAL") {
+    props.dimension.value = 1
+  }
+
   const payload = {
     ...props,
     mandatories

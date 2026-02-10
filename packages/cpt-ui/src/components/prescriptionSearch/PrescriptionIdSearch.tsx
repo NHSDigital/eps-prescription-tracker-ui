@@ -29,6 +29,7 @@ import {
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {sendMetrics} from "@/components/Telemetry"
 
 export default function PrescriptionIdSearch() {
   const navigate = useNavigate()
@@ -86,6 +87,10 @@ export default function PrescriptionIdSearch() {
 
   // Form submit handler
   const handlePrescriptionDetails = (e: React.FormEvent) => {
+    sendMetrics({
+      "metric_name": "prescription_id_search",
+      "dimension": {"type": "SUMTOTAL", "value": 1}
+    })
     e.preventDefault()
     const validationErrors = validatePrescriptionId(prescriptionId)
     const key = getHighestPriorityError(validationErrors)
