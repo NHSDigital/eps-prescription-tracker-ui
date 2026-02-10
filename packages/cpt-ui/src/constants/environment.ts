@@ -35,7 +35,8 @@ export const API_ENDPOINTS = {
   CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout",
   PRESCRIPTION_DETAILS: "/api/prescription-details",
   PATIENT_SEARCH: "/api/patient-search",
-  SESSION_MANAGEMENT: "/api/session-management"
+  SESSION_MANAGEMENT: "/api/session-management",
+  TELEMETRY: "/api/telemetry"
 } as const
 
 // RUM CONFIG

@@ -1,5 +1,5 @@
 import http from "@/helpers/axios"
-import {ENV_CONFIG} from "@/constants/environment"
+import {API_ENDPOINTS} from "@/constants/environment"
 // import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
 export type TelemetryLog = {
@@ -44,7 +44,7 @@ export async function sendLog(props: TelemetryLog) {
     ...props,
     mandatories
   }
-  await http.post(ENV_CONFIG.TELEMETRY_ENDPOINT, payload as TelemetryLogRequired)
+  await http.post(API_ENDPOINTS.TELEMETRY, payload as TelemetryLogRequired)
 }
 
 export async function sendMetrics(props: TelemetryMetric) {
@@ -59,5 +59,5 @@ export async function sendMetrics(props: TelemetryMetric) {
     mandatories
   }
   logger.info("Sending metric")
-  await http.post(ENV_CONFIG.TELEMETRY_ENDPOINT, payload as TelemetryMetricRequired)
+  await http.post(API_ENDPOINTS.TELEMETRY, payload as TelemetryMetricRequired)
 }
