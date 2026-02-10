@@ -1,7 +1,7 @@
 import http from "@/helpers/axios"
 import {ENV_CONFIG} from "@/constants/environment"
 import {useAuth} from "@/context/AuthProvider"
-
+import {logger} from "@/helpers/logger"
 export type TelemetryLog = {
     log_level: "INFO" | "ERROR"
     message: string
@@ -52,5 +52,6 @@ export async function sendMetrics(props: TelemetryMetric) {
     ...props,
     mandatories
   }
+  logger.info("Sending metric")
   await http.post(ENV_CONFIG.TELEMETRY_ENDPOINT, payload as TelemetryMetricRequired)
 }

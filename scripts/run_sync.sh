@@ -78,6 +78,7 @@ VITE_RUM_TELEMETRIES=$(echo "$CF_LONDON_EXPORTS" | \
 LOCAL_DEV=true
 BASE_PATH="/site"
 API_DOMAIN_OVERRIDE=https://${SERVICE_NAME}.dev.eps.national.nhs.uk/ 
+TELEMETRY_ENDPOINT=${API_DOMAIN_OVERRIDE}/telemetry
 VITE_hostedLoginDomain=${SERVICE_NAME}.auth.eu-west-2.amazoncognito.com
 VITE_redirectSignIn=http://localhost:3000/site/select-your-role
 VITE_redirectSignOut=http://localhost:3000/site/logout
@@ -261,6 +262,7 @@ export VITE_TARGET_ENVIRONMENT
 export LOCAL_DEV
 export BASE_PATH
 export API_DOMAIN_OVERRIDE
+export TELEMETRY_ENDPOINT
 export VITE_hostedLoginDomain
 export VITE_redirectSignIn
 export VITE_redirectSignOut
