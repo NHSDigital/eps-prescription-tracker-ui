@@ -6,11 +6,19 @@ import App from "@/App"
 
 // Mock all the context providers
 jest.mock("@/context/AuthProvider", () => ({
-  AuthProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>
+  AuthProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>,
+  useAuth: () => ({
+    remainingSessionTime: undefined
+  })
 }))
 
 jest.mock("@/context/AccessProvider", () => ({
-  AccessProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>
+  AccessProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>,
+  useAccess: () => ({
+    sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+    onStayLoggedIn: jest.fn(),
+    onLogOut: jest.fn()
+  })
 }))
 
 jest.mock("@/context/SearchProvider", () => ({
@@ -27,6 +35,17 @@ jest.mock("@/context/PatientDetailsProvider", () => ({
 
 jest.mock("@/context/PrescriptionInformationProvider", () => ({
   PrescriptionInformationProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>
+}))
+
+// Mock useSessionTimeout hook
+jest.mock("@/hooks/useSessionTimeout", () => ({
+  useSessionTimeout: () => ({
+    showModal: false,
+    timeLeft: 0,
+    onStayLoggedIn: jest.fn(),
+    onLogOut: jest.fn(),
+    isExtending: false
+  })
 }))
 
 // Mock Layout component

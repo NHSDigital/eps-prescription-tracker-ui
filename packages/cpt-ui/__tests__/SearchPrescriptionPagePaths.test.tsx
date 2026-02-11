@@ -94,9 +94,6 @@ const renderWithProviders = (
       <AuthContext.Provider value={authContext}>
         <AccessContext.Provider value={{
           sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-          remainingTime: undefined,
-          lastApiCall: undefined,
-          nextApiCall: undefined,
           onStayLoggedIn: jest.fn(),
           onLogOut: jest.fn()
         }}>
@@ -180,9 +177,6 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
         <AuthContext.Provider value={defaultAuthContext}>
           <AccessContext.Provider value={{
             sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-            remainingTime: undefined,
-            lastApiCall: undefined,
-            nextApiCall: undefined,
             onStayLoggedIn: jest.fn(),
             onLogOut: jest.fn()
           }}>
@@ -200,9 +194,6 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
         <AuthContext.Provider value={defaultAuthContext}>
           <AccessContext.Provider value={{
             sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-            remainingTime: undefined,
-            lastApiCall: undefined,
-            nextApiCall: undefined,
             onStayLoggedIn: jest.fn(),
             onLogOut: jest.fn()
           }}>

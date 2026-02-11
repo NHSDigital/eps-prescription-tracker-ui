@@ -237,10 +237,10 @@ describe("cis2 token handler", () => {
       access_token: "access_token_reply"
     }))
 
-    // Should insert into session management table (concurrent session)
+    // Should insert into token mapping table (concurrent session)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-session-management-table", // session management table
+      "test-token-mapping-table", // token mapping table
       {
         username: `${CIS2_USER_POOL_IDP}_foo`,
         sessionId: "session-id",
@@ -391,10 +391,10 @@ describe("cis2 token handler", () => {
       access_token: "access_token_reply"
     }))
 
-    // Should insert into session management table (concurrent session)
+    // Should insert into token mapping table (concurrent session)
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(),
-      "test-session-management-table", // session management table
+      "test-token-mapping-table", // token mapping table
       expect.anything(),
       expect.anything()
     )

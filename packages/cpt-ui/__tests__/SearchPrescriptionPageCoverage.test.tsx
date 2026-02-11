@@ -59,9 +59,6 @@ const defaultAuthContext: AuthContextType = {
 
 const defaultAccessContext = {
   sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-  remainingTime: undefined,
-  lastApiCall: undefined,
-  nextApiCall: undefined,
   onStayLoggedIn: jest.fn(),
   onLogOut: jest.fn()
 }
