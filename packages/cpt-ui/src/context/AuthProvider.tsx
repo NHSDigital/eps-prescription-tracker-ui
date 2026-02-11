@@ -146,6 +146,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
+          setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
@@ -189,7 +190,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await signOut({global: true})
       }
 
-      setIsSigningOut(true)
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
