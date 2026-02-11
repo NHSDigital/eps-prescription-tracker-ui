@@ -98,15 +98,17 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
-    setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-    setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-    setSelectedRole(trackerUserInfo.selectedRole)
-    setUserDetails(trackerUserInfo.userDetails)
-    setError(trackerUserInfo.error)
+    if (!trackerUserInfo.error) {
+      setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+      setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+      setSelectedRole(trackerUserInfo.selectedRole)
+      setUserDetails(trackerUserInfo.userDetails)
+    }
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
-    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     setSessionId(trackerUserInfo.sessionId)
     setRemainingSessionTime(trackerUserInfo.remainingSessionTime)
+    setError(trackerUserInfo.error)
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
   }
 
@@ -152,6 +154,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
+          setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
@@ -195,7 +198,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await signOut({global: true})
       }
 
-      setIsSigningOut(true)
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {

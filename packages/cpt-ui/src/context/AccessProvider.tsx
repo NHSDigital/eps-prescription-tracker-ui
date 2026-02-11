@@ -21,6 +21,8 @@ import {
   from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import {handleRestartLogin} from "@/helpers/logout"
+import LoadingPage from "@/pages/LoadingPage"
+import Layout from "@/Layout"
 
 export const AccessContext = createContext<{
   sessionTimeoutInfo: { showModal: boolean; timeLeft: number }
@@ -79,11 +81,16 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
 
     const loggedOut = !auth.isSignedIn && !auth.isSigningOut
+    const loggingOut = auth.isSignedIn && auth.isSigningOut
     const concurrent = auth.isSignedIn && auth.isConcurrentSession
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
-    logger.info(path)
+    logger.info(`Requested path: ${path}`)
+    if (loggedOut && (!inNoRoleAllowed || atRoot)) {
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+    }
+
     if (auth.isSignedIn && path === FRONTEND_PATHS.LOGIN) {
       if (!auth.selectedRole) {
         return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, "User already logged in. No role selected.")
@@ -96,17 +103,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
     }
 
-    if (noRole && (!inNoRoleAllowed || atRoot)) {
+    if (!loggingOut && noRole && (!inNoRoleAllowed || atRoot)) {
       return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
     }
 
     if (authedAtRoot) {
       return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
         "Authenticated user on root path - redirecting to search")
-    }
-
-    if (loggedOut && (!inNoRoleAllowed || atRoot)) {
-      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in at root - redirecting to login page")
     }
   }
 
@@ -231,7 +234,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
 
   if (shouldBlockChildren()) {
-    return <></>
+    return (
+      <Layout>
+        <LoadingPage />
+      </Layout>
+    )
   }
 
   return (
