@@ -5,11 +5,10 @@ import {
   useRef
 } from "react"
 import {useAuth} from "@/context/AuthProvider"
-import {extendUserSession} from "@/helpers/sessionManagement"
+import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {signOut} from "@/helpers/logout"
 import {AUTH_CONFIG} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
-import {sessionTimeoutManager} from "@/helpers/sessionTimeoutManager"
 
 export interface SessionTimeoutState {
   isActive: boolean
@@ -18,7 +17,14 @@ export interface SessionTimeoutState {
   isExtending: boolean
 }
 
-export const useSessionTimeout = () => {
+export interface SessionTimeoutProps {
+  showModal: boolean
+  timeLeft: number
+  onStayLoggedIn: () => Promise<void>
+  onLogOut: () => Promise<void>
+}
+
+export const useSessionTimeout = (props?: SessionTimeoutProps) => {
   const [sessionState, setSessionState] = useState<SessionTimeoutState>({
     isActive: false,
     showModal: false,
@@ -27,26 +33,13 @@ export const useSessionTimeout = () => {
   })
 
   const auth = useAuth()
-  const warningTimerRef = useRef<number | null>(null)
-  const logoutTimerRef = useRef<number | null>(null)
   const countdownTimerRef = useRef<number | null>(null)
 
-  //TODO: change back
-  const THIRTEEN_MINUTES = 1 * 30 * 1000
-  //TODO: change back
-  const FIFTEEN_MINUTES = 2 * 30 * 1000
-  //TODO: change back
-  const WARNING_DURATION = 1 * 60 * 1000
+  // Use props if provided (for AccessProvider integration), otherwise use legacy behavior
+  const showModal = props?.showModal ?? sessionState.showModal
+  const timeLeft = props?.timeLeft ?? sessionState.timeLeft * 1000
 
-  const clearAllTimers = useCallback(() => {
-    if (warningTimerRef.current) {
-      clearTimeout(warningTimerRef.current)
-      warningTimerRef.current = null
-    }
-    if (logoutTimerRef.current) {
-      clearTimeout(logoutTimerRef.current)
-      logoutTimerRef.current = null
-    }
+  const clearCountdownTimer = useCallback(() => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current)
       countdownTimerRef.current = null
@@ -56,62 +49,11 @@ export const useSessionTimeout = () => {
   const handleTimeoutLogout = useCallback(async () => {
     logger.warn("Session expired - automatically logging out user")
     setSessionState(prev => ({...prev, isActive: false}))
-    clearAllTimers()
+    clearCountdownTimer()
 
-    // find out invalidsessioncause here, timeout? fixed variable?
     auth.updateInvalidSessionCause("Timeout")
     await signOut(auth, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
-  }, [auth, clearAllTimers])
-
-  const startCountdown = useCallback(() => {
-    let secondsLeft = Math.floor(WARNING_DURATION / 1000)
-
-    setSessionState(prev => ({
-      ...prev,
-      showModal: true,
-      timeLeft: secondsLeft
-    }))
-
-    countdownTimerRef.current = setInterval(() => {
-      secondsLeft -= 1
-      setSessionState(prev => ({
-        ...prev,
-        timeLeft: secondsLeft
-      }))
-
-      if (secondsLeft <= 0) {
-        if (countdownTimerRef.current) {
-          clearInterval(countdownTimerRef.current)
-          countdownTimerRef.current = null
-        }
-      }
-    }, 1000) as unknown as number
-  }, [])
-
-  const resetTimers = useCallback(() => {
-    clearAllTimers()
-    setSessionState({
-      isActive: false,
-      showModal: false,
-      timeLeft: 60,
-      isExtending: false
-    })
-
-    warningTimerRef.current = setTimeout(() => {
-      logger.info("1 minute of inactivity reached, showing session timeout warning")
-      startCountdown()
-    }, THIRTEEN_MINUTES) as unknown as number
-
-    // Set automatic logout timer for 2 minutes
-    logoutTimerRef.current = setTimeout(() => {
-      handleTimeoutLogout()
-    }, FIFTEEN_MINUTES) as unknown as number
-
-    logger.debug("Session timeout timers reset", {
-      warningTimeMs: THIRTEEN_MINUTES,
-      logoutTimeMs: FIFTEEN_MINUTES
-    })
-  }, [clearAllTimers, startCountdown, handleTimeoutLogout, THIRTEEN_MINUTES, FIFTEEN_MINUTES])
+  }, [auth, clearCountdownTimer])
 
   const handleStayLoggedIn = useCallback(async () => {
     setSessionState(prev => ({
@@ -122,61 +64,93 @@ export const useSessionTimeout = () => {
     try {
       logger.info("User chose to extend session")
 
-      const userExtendsSession = await extendUserSession()
+      // Call the selectedRole API with current role to refresh session
+      if (auth.selectedRole) {
+        await updateRemoteSelectedRole(auth.selectedRole)
+        logger.info("Session extended successfully via selectedRole API")
 
-      if (userExtendsSession) {
-        logger.info("Session extended successfully")
-        clearAllTimers()
+        clearCountdownTimer()
         setSessionState({
           isActive: false,
           showModal: false,
-          timeLeft: 120,
+          timeLeft: 60,
           isExtending: false
         })
-        resetTimers()
+
+        // Refresh user info to get updated session time
+        await auth.updateTrackerUserInfo()
       } else {
-        logger.error("Failed to extend session")
+        logger.error("No selected role available to extend session")
         await handleLogOut()
       }
     } catch (error) {
       logger.error("Error extending session:", error)
       await handleLogOut()
     }
-  }, [clearAllTimers, resetTimers])
+  }, [auth, clearCountdownTimer])
 
   const handleLogOut = useCallback(async () => {
     logger.info("User chose to log out from session timeout modal")
-    clearAllTimers()
+    clearCountdownTimer()
     setSessionState(prev => ({...prev, isActive: false}))
 
     await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
-  }, [auth, clearAllTimers])
+  }, [auth, clearCountdownTimer])
 
-  const handleUserActivity = useCallback(() => {
-    resetTimers()
-  }, [resetTimers])
-
-  // Set up initial timers when user signs in
+  // Handle countdown when modal should be shown
   useEffect(() => {
-    if (!sessionState.showModal && auth.isSignedIn) {
-      resetTimers()
+    if (showModal && timeLeft > 0) {
+      // Start with the server-provided time
+      let secondsLeft = Math.floor(timeLeft / 1000)
+
+      setSessionState(prev => ({
+        ...prev,
+        showModal: true,
+        timeLeft: secondsLeft
+      }))
+
+      // Start countdown that decrements every second
+      countdownTimerRef.current = setInterval(() => {
+        secondsLeft -= 1
+        setSessionState(prev => ({
+          ...prev,
+          timeLeft: secondsLeft
+        }))
+
+        // Auto-logout when countdown reaches 0
+        if (secondsLeft <= 0) {
+          if (countdownTimerRef.current) {
+            clearInterval(countdownTimerRef.current)
+            countdownTimerRef.current = null
+          }
+          handleTimeoutLogout()
+        }
+      }, 1000) as unknown as number
+
+    } else if (!showModal) {
+      clearCountdownTimer()
+      setSessionState(prev => ({...prev, showModal: false}))
     }
-  }, [sessionState.showModal, auth.isSignedIn, resetTimers])
 
-  // Register the reset function with the session timeout manager
-  useEffect(() => {
-    sessionTimeoutManager.setResetFunction(handleUserActivity)
+    // Cleanup timer when effect runs again or component unmounts
     return () => {
-      sessionTimeoutManager.clearResetFunction()
+      if (countdownTimerRef.current) {
+        clearInterval(countdownTimerRef.current)
+        countdownTimerRef.current = null
+      }
     }
-  }, [handleUserActivity])
+  }, [showModal, timeLeft, clearCountdownTimer, handleTimeoutLogout])
+
+  // Use props handlers if provided, otherwise use internal handlers
+  const stayLoggedInHandler = props?.onStayLoggedIn ?? handleStayLoggedIn
+  const logOutHandler = props?.onLogOut ?? handleLogOut
 
   return {
-    showModal: sessionState.showModal,
+    showModal,
     timeLeft: sessionState.timeLeft,
-    onStayLoggedIn: handleStayLoggedIn,
-    onLogOut: handleLogOut,
+    onStayLoggedIn: stayLoggedInHandler,
+    onLogOut: logOutHandler,
     isExtending: sessionState.isExtending,
-    resetSessionTimeout: handleUserActivity
+    resetSessionTimeout: () => {} // No longer needed with server-side approach
   }
 }

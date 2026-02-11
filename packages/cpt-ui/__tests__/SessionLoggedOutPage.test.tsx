@@ -56,7 +56,8 @@ export const defaultAuthState: AuthContextType = {
   updateTrackerUserInfo: mockUpdateTrackerUserInfo,
   updateInvalidSessionCause: jest.fn(),
   isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 const MockAuthProvider = ({

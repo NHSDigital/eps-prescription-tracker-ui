@@ -32,16 +32,26 @@ import SessionLoggedOutPage from "./pages/SessionLoggedOut"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
 import {useSessionTimeout} from "@/hooks/useSessionTimeout"
+import {useAccess} from "@/context/AccessProvider"
 
 function AppContent() {
   const location = useLocation()
+  const accessContext = useAccess()
+
+  const sessionTimeoutProps = accessContext ? {
+    showModal: accessContext.sessionTimeoutInfo.showModal,
+    timeLeft: accessContext.sessionTimeoutInfo.timeLeft,
+    onStayLoggedIn: accessContext.onStayLoggedIn,
+    onLogOut: accessContext.onLogOut
+  } : undefined
+
   const {
     showModal,
     timeLeft,
     onStayLoggedIn,
     onLogOut,
     isExtending
-  } = useSessionTimeout()
+  } = useSessionTimeout(sessionTimeoutProps)
 
   // this useEffect ensures that focus starts with skip link when using tab navigation
   useEffect(() => {

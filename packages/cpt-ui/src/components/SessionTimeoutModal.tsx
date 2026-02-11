@@ -35,6 +35,8 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     if (event.key === "Escape") {
       event.preventDefault()
       event.stopPropagation()
+      onStayLoggedIn()
+      return
     }
 
     if (event.key === "Tab") {
@@ -62,9 +64,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     <EpsModal
       isOpen={isOpen}
       ariaLabelledBy="session-timeout-title"
-      onClose={() => {
-        // Prevent closing the modal with outside click or escape key
-      }}
+      onClose={onStayLoggedIn}
     >
       <Container>
         <h2
