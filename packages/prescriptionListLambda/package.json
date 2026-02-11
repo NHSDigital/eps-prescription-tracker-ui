@@ -24,7 +24,7 @@
     "@middy/http-header-normalizer": "^7.0.2",
     "@middy/input-output-logger": "^7.0.2",
     "aws-lambda": "^1.0.7",
-    "axios": "^1.13.2"
+    "axios": "^1.13.5"
   },
   "devDependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",
