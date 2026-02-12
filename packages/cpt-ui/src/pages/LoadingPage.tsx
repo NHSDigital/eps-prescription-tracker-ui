@@ -4,6 +4,7 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 import {logger} from "@/helpers/logger"
 import {normalizePath} from "@/helpers/utils"
 import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
+import {Link} from "react-router-dom"
 
 export default function LoadingPage() {
   usePageTitle("Loading information")
@@ -15,7 +16,11 @@ export default function LoadingPage() {
         <Row>
           <Col width="full">
             <h1>{LOADING_STRINGS.HEADER}</h1>
-            <p>{LOADING_STRINGS.PARAGRAPH}</p>
+            <p>
+              If you have not been redirected after 1 minute,{" "}
+              <Link to="/logout" data-testid="logout-link">log out</Link>
+              {" "}to reset your session and then log in again.
+            </p>
             <EpsSpinner />
           </Col>
         </Row>
