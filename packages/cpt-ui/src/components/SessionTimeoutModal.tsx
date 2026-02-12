@@ -38,26 +38,6 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
       onStayLoggedIn()
       return
     }
-
-    if (event.key === "Tab") {
-      const focusableElements = [
-        document.querySelector('[data-testid="stay-logged-in-button"]') as HTMLElement,
-        document.querySelector('[data-testid="logout-button"]') as HTMLElement
-      ].filter(Boolean) as Array<HTMLElement>
-
-      if (focusableElements.length > 0) {
-        const firstElement = focusableElements[0]
-        const lastElement = focusableElements[focusableElements.length - 1]
-
-        if (event.shiftKey && document.activeElement === firstElement) {
-          event.preventDefault()
-          lastElement?.focus()
-        } else if (!event.shiftKey && document.activeElement === lastElement) {
-          event.preventDefault()
-          firstElement?.focus()
-        }
-      }
-    }
   }
 
   return (

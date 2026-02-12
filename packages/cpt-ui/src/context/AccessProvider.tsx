@@ -158,7 +158,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         } else {
           const remainingTime = response.remainingSessionTime
           if (remainingTime !== undefined) {
-            const twoMinutes = 2 * 60 * 1000
+            const twoMinutes = 14 * 60 * 1000
 
             logger.debug("Session time check", {
               remainingTime,

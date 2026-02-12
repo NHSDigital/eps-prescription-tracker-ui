@@ -123,7 +123,12 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
             clearInterval(countdownTimerRef.current)
             countdownTimerRef.current = null
           }
-          handleTimeoutLogout()
+          // Use props onLogOut if provided, otherwise internal handler
+          if (props?.onLogOut) {
+            props.onLogOut()
+          } else {
+            handleTimeoutLogout()
+          }
         }
       }, 1000) as unknown as number
 
@@ -141,15 +146,31 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
     }
   }, [showModal, timeLeft, clearCountdownTimer, handleTimeoutLogout])
 
-  // Use props handlers if provided, otherwise use internal handlers
-  const stayLoggedInHandler = props?.onStayLoggedIn ?? handleStayLoggedIn
-  const logOutHandler = props?.onLogOut ?? handleLogOut
+  // Create wrapper functions that handle state updates in props mode
+  const wrappedStayLoggedIn = useCallback(async () => {
+    if (props?.onStayLoggedIn) {
+      setSessionState(prev => ({...prev, isExtending: true}))
+      try {
+        await props.onStayLoggedIn()
+        setSessionState(prev => ({...prev, isExtending: false}))
+      } catch {
+        setSessionState(prev => ({...prev, isExtending: false}))
+        if (props?.onLogOut) {
+          await props.onLogOut()
+        } else {
+          await handleLogOut()
+        }
+      }
+    } else {
+      await handleStayLoggedIn()
+    }
+  }, [props, handleStayLoggedIn, handleLogOut])
 
   return {
     showModal,
     timeLeft: sessionState.timeLeft,
-    onStayLoggedIn: stayLoggedInHandler,
-    onLogOut: logOutHandler,
+    onStayLoggedIn: props?.onStayLoggedIn ? wrappedStayLoggedIn : handleStayLoggedIn,
+    onLogOut: props?.onLogOut || handleLogOut,
     isExtending: sessionState.isExtending,
     resetSessionTimeout: () => {} // No longer needed with server-side approach
   }
