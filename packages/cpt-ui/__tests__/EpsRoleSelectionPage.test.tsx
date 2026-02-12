@@ -15,6 +15,7 @@ import {handleRestartLogin, signOut} from "@/helpers/logout"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {mockAuthState} from "./mocks/AuthStateMock"
+import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 
 jest.mock("@/context/AuthProvider")
 jest.mock("@/helpers/getSearchParams")
@@ -110,7 +111,7 @@ describe("RoleSelectionPage", () => {
     })
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
-    expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
+    expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
   })
 
   it("renders error message if auth.error exists", () => {
@@ -171,7 +172,7 @@ describe("RoleSelectionPage", () => {
     // Rerender to pick up the new auth state
     rerender(<RoleSelectionPage contentText={defaultContentText} />)
 
-    expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
+    expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
   })
 
   it("redirects if user has single roleWithAccess", () => {
@@ -332,7 +333,7 @@ describe("RoleSelectionPage", () => {
     )
 
     rerender(<RoleSelectionPage contentText={defaultContentText} />)
-    expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
+    expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
 
     // Step 2: Simulate login complete and role assignment
     act(() => {
@@ -598,7 +599,7 @@ describe("RoleSelectionPage", () => {
       // Rerender to pick up the new auth state
       rerender(<RoleSelectionPage contentText={defaultContentText} />)
 
-      expect(screen.getByRole("heading", {name: "Loading"})).toBeInTheDocument()
+      expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
     })
   })
 })

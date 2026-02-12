@@ -3,6 +3,7 @@ import EpsSpinner from "@/components/EpsSpinner"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import {logger} from "@/helpers/logger"
 import {normalizePath} from "@/helpers/utils"
+import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 
 export default function LoadingPage() {
   usePageTitle("Loading information")
@@ -13,9 +14,8 @@ export default function LoadingPage() {
       <Container>
         <Row>
           <Col width="full">
-            <h1>You're being redirected</h1>
-            <p>If you have not been redirected after 1 minute,
-              <a href="/logout">log out</a> to reset your session and then log in again.</p>
+            <h1>{LOADING_STRINGS.HEADER}</h1>
+            <p>{LOADING_STRINGS.PARAGRAPH}</p>
             <EpsSpinner />
           </Col>
         </Row>
