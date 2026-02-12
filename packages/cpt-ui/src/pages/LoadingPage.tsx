@@ -13,7 +13,9 @@ export default function LoadingPage() {
       <Container>
         <Row>
           <Col width="full">
-            <h1>Loading</h1>
+            <h1>You're being redirected</h1>
+            <p>If you have not been redirected after 1 minute,
+              <a href="/logout">log out</a> to reset your session and then log in again.</p>
             <EpsSpinner />
           </Col>
         </Row>
