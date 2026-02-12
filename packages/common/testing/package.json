@@ -18,6 +18,6 @@
   },
   "devDependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",
-    "axios": "^1.13.2"
+    "axios": "^1.13.5"
   }
 }
