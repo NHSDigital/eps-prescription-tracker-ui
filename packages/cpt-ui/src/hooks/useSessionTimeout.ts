@@ -132,10 +132,8 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
         }
       }, 1000) as unknown as number
 
-    } else if (!showModal) {
-      clearCountdownTimer()
-      setSessionState(prev => ({...prev, showModal: false}))
     }
+    // Removed the problematic else if (!showModal) branch
 
     // Cleanup timer when effect runs again or component unmounts
     return () => {
@@ -144,7 +142,7 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
         countdownTimerRef.current = null
       }
     }
-  }, [showModal, timeLeft, clearCountdownTimer, handleTimeoutLogout])
+  }, [showModal, timeLeft, clearCountdownTimer]) // Removed handleTimeoutLogout
 
   // Create wrapper functions that handle state updates in props mode
   const wrappedStayLoggedIn = useCallback(async () => {

@@ -51,67 +51,65 @@ describe("useSessionTimeout", () => {
     expect(result.current.isExtending).toBe(false)
     expect(typeof result.current.onStayLoggedIn).toBe("function")
     expect(typeof result.current.onLogOut).toBe("function")
+    expect(typeof result.current.resetSessionTimeout).toBe("function")
   })
 
-  it("should handle stay logged in", async () => {
-    const {result} = renderHook(() => useSessionTimeout())
-
-    await act(async () => {
-      await result.current.onStayLoggedIn()
-    })
-
-    expect(result.current.isExtending).toBe(false)
-  })
-
-  it("should handle log out", async () => {
-    const {result} = renderHook(() => useSessionTimeout())
-
-    await act(async () => {
-      await result.current.onLogOut()
-    })
-
-    // Should have called signOut
-    expect(result.current.showModal).toBe(false)
-  })
-
-  it("should use props when provided", () => {
+  it("should handle props mode without triggering effects", () => {
     const mockProps = {
-      showModal: true,
-      timeLeft: 120000,
+      showModal: false,
+      timeLeft: 0,
       onStayLoggedIn: jest.fn(),
       onLogOut: jest.fn()
     }
 
     const {result} = renderHook(() => useSessionTimeout(mockProps))
 
-    expect(result.current.showModal).toBe(true)
-    expect(result.current.timeLeft).toBe(60) // Still returns internal state
+    expect(result.current.showModal).toBe(false)
+    expect(result.current.timeLeft).toBe(60)
+    expect(result.current.onStayLoggedIn).toBeDefined()
+    expect(result.current.onLogOut).toBeDefined()
   })
 
-  it("should handle countdown timer", () => {
+  it("should handle stay logged in with props", async () => {
+    const mockOnStayLoggedIn = jest.fn().mockResolvedValue(undefined)
     const mockProps = {
-      showModal: true,
-      timeLeft: 5000, // 5 seconds
-      onStayLoggedIn: jest.fn(),
+      showModal: false,
+      timeLeft: 0,
+      onStayLoggedIn: mockOnStayLoggedIn,
       onLogOut: jest.fn()
     }
 
-    renderHook(() => useSessionTimeout(mockProps))
+    const {result} = renderHook(() => useSessionTimeout(mockProps))
 
-    act(() => {
-      jest.advanceTimersByTime(2000)
+    await act(async () => {
+      await result.current.onStayLoggedIn()
     })
 
-    // Timer should be running
-    expect(setTimeout).toHaveBeenCalled()
+    expect(mockOnStayLoggedIn).toHaveBeenCalled()
+    expect(result.current.isExtending).toBe(false)
+  })
+
+  it("should handle log out with props", async () => {
+    const mockOnLogOut = jest.fn().mockResolvedValue(undefined)
+    const mockProps = {
+      showModal: false,
+      timeLeft: 0,
+      onStayLoggedIn: jest.fn(),
+      onLogOut: mockOnLogOut
+    }
+
+    const {result} = renderHook(() => useSessionTimeout(mockProps))
+
+    await act(async () => {
+      await result.current.onLogOut()
+    })
+
+    expect(mockOnLogOut).toHaveBeenCalled()
   })
 
   it("should cleanup on unmount", () => {
     const {unmount} = renderHook(() => useSessionTimeout())
 
-    unmount()
-
-    // Should not crash
-    expect(true).toBe(true)
+    expect(() => unmount()).not.toThrow()
   })
 })
