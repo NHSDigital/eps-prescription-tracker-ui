@@ -600,8 +600,8 @@ describe("AccessProvider", () => {
         remainingTime: twoMinutes - 1000,
         remainingSeconds: Math.floor((twoMinutes - 1000) / 1000)
       })
-      expect(accessContext.sessionTimeoutInfo.showModal).toBe(true)
-      expect(accessContext.sessionTimeoutInfo.timeLeft).toBe(twoMinutes - 1000)
+      expect(accessContext!.sessionTimeoutInfo.showModal).toBe(true)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(twoMinutes - 1000)
     })
 
     it("should automatically log out when session time is expired", async () => {
@@ -654,8 +654,8 @@ describe("AccessProvider", () => {
         "Session still valid - hiding modal if shown",
         {remainingTime: fiveMinutes}
       )
-      expect(accessContext.sessionTimeoutInfo.showModal).toBe(false)
-      expect(accessContext.sessionTimeoutInfo.timeLeft).toBe(fiveMinutes)
+      expect(accessContext!.sessionTimeoutInfo.showModal).toBe(false)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(fiveMinutes)
     })
 
     it("should hide modal when no remaining session time provided", async () => {
@@ -684,8 +684,8 @@ describe("AccessProvider", () => {
       })
 
       expect(logger.debug).toHaveBeenCalledWith("No remainingSessionTime in response - hiding modal")
-      expect(accessContext.sessionTimeoutInfo.showModal).toBe(false)
-      expect(accessContext.sessionTimeoutInfo.timeLeft).toBe(0)
+      expect(accessContext!.sessionTimeoutInfo.showModal).toBe(false)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(0)
     })
 
     it("should call handleLogOut when onLogOut is triggered", async () => {
@@ -723,7 +723,7 @@ describe("AccessProvider", () => {
     it("should handle session extension through handleStayLoggedIn", async () => {
       const mockUpdateRemoteSelectedRole =
        updateRemoteSelectedRole as jest.MockedFunction<typeof updateRemoteSelectedRole>
-      mockUpdateRemoteSelectedRole.mockResolvedValue({})
+      mockUpdateRemoteSelectedRole.mockResolvedValue({currentlySelectedRole: {}})
       const mockUpdateTrackerUserInfo = jest.fn().mockResolvedValue({error: null})
 
       const authContext = {
