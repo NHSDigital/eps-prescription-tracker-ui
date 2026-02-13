@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react"
 import RoleSelectionPage from "@/components/EpsRoleSelectionPage"
 import {useAuth, AuthContextType} from "@/context/AuthProvider"
-import {useNavigate} from "react-router-dom"
+import {MemoryRouter, useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
@@ -110,8 +110,10 @@ describe("RoleSelectionPage", () => {
       stateParams: "bar"
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
-    expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
+    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
   })
 
   it("renders error message if auth.error exists", () => {
@@ -123,7 +125,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
     expect(screen.getByText("There was an error selecting your role")).toBeInTheDocument()
     expect(screen.getByText("Something went wrong")).toBeInTheDocument()
   })
@@ -137,7 +141,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
     expect(screen.getByText("You do not have access")).toBeInTheDocument()
     expect(screen.getByText("Please contact support.")).toBeInTheDocument()
   })
@@ -156,7 +162,9 @@ describe("RoleSelectionPage", () => {
     })
 
     const {rerender} = render(
-      <RoleSelectionPage contentText={defaultContentText} />
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
     )
 
     // Mock signOut to update the authState AND refresh the mock
@@ -170,9 +178,13 @@ describe("RoleSelectionPage", () => {
     })
 
     // Rerender to pick up the new auth state
-    rerender(<RoleSelectionPage contentText={defaultContentText} />)
+    rerender(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
-    expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
+    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
   })
 
   it("redirects if user has single roleWithAccess", () => {
@@ -196,7 +208,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(true)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
 
     expect(navigateMock).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
   })
@@ -216,7 +230,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
 
     expect(screen.getByText(/You are currently logged in at/)).toBeInTheDocument()
     expect(screen.getByTestId("confirm-and-continue")).toBeInTheDocument()
@@ -237,7 +253,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
     expect(screen.getByText("You can't access these roles")).toBeInTheDocument()
     expect(screen.getByText("Roles without access")).toBeInTheDocument()
     expect(screen.getByText("No Access Org (ODS: NO123)")).toBeInTheDocument()
@@ -275,7 +293,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
 
     // Should only render 2 EpsCards (excluding selectedRole)
     const cards = screen.getAllByTestId("eps-card")
@@ -300,7 +320,9 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
 
     const button = screen.getByTestId("confirm-and-continue")
     expect(button).toBeInTheDocument()
@@ -329,11 +351,17 @@ describe("RoleSelectionPage", () => {
       stateParams: "bar"
     })
     const {rerender} = render(
-      <RoleSelectionPage contentText={defaultContentText} />
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
     )
 
-    rerender(<RoleSelectionPage contentText={defaultContentText} />)
-    expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
+    rerender(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
+    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
 
     // Step 2: Simulate login complete and role assignment
     act(() => {
@@ -351,7 +379,11 @@ describe("RoleSelectionPage", () => {
       authState.hasSingleRoleAccess = jest.fn().mockReturnValue(true)
     })
 
-    rerender(<RoleSelectionPage contentText={defaultContentText} />)
+    rerender(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
     expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
   })
 
@@ -380,7 +412,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("renders card with correct organization name and ODS code", () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       expect(screen.getByText(/Test Pharmacy/)).toBeInTheDocument()
       expect(screen.getByText(/ABC123/)).toBeInTheDocument()
@@ -388,7 +424,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("renders address information correctly", () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       expect(screen.getByText("123 Test Street")).toBeInTheDocument()
       expect(screen.getByText("Test City")).toBeInTheDocument()
@@ -396,7 +436,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("handles click on role card", async () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
       expect(card).toBeInTheDocument()
@@ -412,7 +456,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("handles Enter key press on role card", async () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
       expect(card).toBeInTheDocument()
@@ -428,7 +476,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("handles Space key press on role card", async () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
       expect(card).toBeInTheDocument()
@@ -444,7 +496,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("ignores other key presses on role card", async () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
       expect(card).toBeInTheDocument()
@@ -472,7 +528,11 @@ describe("RoleSelectionPage", () => {
 
       mockUpdateSelectedRole.mockRejectedValue(mockAxiosError)
 
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
 
@@ -495,7 +555,11 @@ describe("RoleSelectionPage", () => {
 
       mockUpdateSelectedRole.mockRejectedValue(mockError)
 
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
 
@@ -509,7 +573,11 @@ describe("RoleSelectionPage", () => {
     })
 
     it("applies correct CSS classes to card elements", () => {
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       const card = screen.getByTestId("eps-card")
       expect(card).toHaveClass("nhsuk-card", "nhsuk-card--primary", "nhsuk-u-margin-bottom-4")
@@ -539,7 +607,11 @@ describe("RoleSelectionPage", () => {
         hasSingleRoleAccess: jest.fn().mockReturnValue(false)
       })
 
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       expect(screen.getByText(/No Org/)).toBeInTheDocument()
       expect(screen.getByText(/No ODS/)).toBeInTheDocument()
@@ -566,7 +638,11 @@ describe("RoleSelectionPage", () => {
         hasSingleRoleAccess: jest.fn().mockReturnValue(false)
       })
 
-      render(<RoleSelectionPage contentText={defaultContentText} />)
+      render(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
       expect(screen.getByText(/Test Pharmacy/)).toBeInTheDocument()
       expect(screen.queryByText("Admin Org")).not.toBeInTheDocument()
@@ -583,7 +659,9 @@ describe("RoleSelectionPage", () => {
       }
       mockUseAuth.mockReturnValue(authState)
       const {rerender} = render(
-        <RoleSelectionPage contentText={defaultContentText} />
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
       )
 
       // Mock signOut to update the authState AND refresh the mock
@@ -597,9 +675,13 @@ describe("RoleSelectionPage", () => {
       })
 
       // Rerender to pick up the new auth state
-      rerender(<RoleSelectionPage contentText={defaultContentText} />)
+      rerender(
+        <MemoryRouter>
+          <RoleSelectionPage contentText={defaultContentText} />
+        </MemoryRouter>
+      )
 
-      expect(screen.getByRole("heading", {name: LOADING_STRINGS.HEADER})).toBeInTheDocument()
+      expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
     })
   })
 })
