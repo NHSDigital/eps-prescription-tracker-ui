@@ -8,9 +8,29 @@ import {Link} from "react-router-dom"
 import {Fragment} from "react"
 
 export default function LoadingPage() {
+  const auth = useAuth()
+
+  const nonPIDStateValues = {
+    error: auth.error,
+    user: auth.user,
+    isSignedIn: auth.isSignedIn,
+    isSigningIn: auth.isSigningIn,
+    isSigningOut: auth.isSigningOut,
+    isConcurrentSession: auth.isConcurrentSession,
+    invalidSessionCause: auth.invalidSessionCause,
+    sessionId: auth.sessionId,
+    rolesWithAccess: auth.rolesWithAccess,
+    rolesWithoutAccess: auth.rolesWithoutAccess,
+    selectedRole: auth.selectedRole,
+    userDetails: auth.userDetails
+  }
+
   usePageTitle("Loading information")
   const path = normalizePath(location.pathname)
-  logger.info(`Loading requested path: ${path}`)
+
+  // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
+  logger.info(`Redirection page hit: ${path}`, nonPIDStateValues, true)
+
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
