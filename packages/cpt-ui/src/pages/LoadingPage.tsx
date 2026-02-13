@@ -6,6 +6,8 @@ import {normalizePath} from "@/helpers/utils"
 import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 import {Link} from "react-router-dom"
 import {Fragment} from "react"
+import {useAuth} from "@/context/AuthProvider"
+import {useEffect} from "react"
 
 export default function LoadingPage() {
   const auth = useAuth()
@@ -28,8 +30,13 @@ export default function LoadingPage() {
   usePageTitle("Loading information")
   const path = normalizePath(location.pathname)
 
-  // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
-  logger.info(`Redirection page hit: ${path}`, nonPIDStateValues, true)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
+      logger.error(`Redirection page error timer: ${path}`, nonPIDStateValues)
+    }, 10000) // 10000 ms = 10 seconds
+    return () => clearInterval(interval)
+  }, [path])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
