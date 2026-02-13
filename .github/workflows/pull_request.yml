@@ -50,7 +50,7 @@ jobs:
   quality_checks:
     # always run, but only block in the non-skip case
     needs: [get_commit_message, get_asdf_version]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@5ccebbf821beef2de6abdce9e392b3cbeb4999e3
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@997a1946c83bb2a9eda418847ed640738af949ff
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
     secrets:
