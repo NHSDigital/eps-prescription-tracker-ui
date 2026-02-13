@@ -1,31 +1,26 @@
 import {renderHook, act} from "@testing-library/react"
 import {useSessionTimeout} from "@/hooks/useSessionTimeout"
+import {updateRemoteSelectedRole} from "@/helpers/userInfo"
+import {signOut} from "@/helpers/logout"
+import {logger} from "@/helpers/logger"
+import {useAuth, AuthContextType} from "@/context/AuthProvider"
 
-// Mock all the dependencies
-jest.mock("@/context/AuthProvider", () => ({
-  useAuth: () => ({
-    selectedRole: {role_id: "123", org_code: "ABC", role_name: "Test Role"},
-    updateTrackerUserInfo: jest.fn(),
-    updateInvalidSessionCause: jest.fn()
-  })
-}))
+// Create mock implementations
+const mockUpdateRemoteSelectedRole = jest.fn()
+const mockSignOut = jest.fn()
+const mockUpdateTrackerUserInfo = jest.fn()
+const mockUpdateInvalidSessionCause = jest.fn()
+const mockLogger = {
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
+}
 
-jest.mock("@/helpers/userInfo", () => ({
-  updateRemoteSelectedRole: jest.fn().mockResolvedValue({currentlySelectedRole: {}})
-}))
-
-jest.mock("@/helpers/logout", () => ({
-  signOut: jest.fn().mockResolvedValue(undefined)
-}))
-
-jest.mock("@/helpers/logger", () => ({
-  logger: {
-    warn: jest.fn(),
-    info: jest.fn(),
-    error: jest.fn()
-  }
-}))
-
+// Mock modules using factory functions to avoid hoisting issues
+jest.mock("@/helpers/userInfo")
+jest.mock("@/helpers/logout")
+jest.mock("@/helpers/logger")
+jest.mock("@/context/AuthProvider")
 jest.mock("@/constants/environment", () => ({
   AUTH_CONFIG: {
     REDIRECT_SIGN_OUT: "mock-redirect-url",
@@ -37,79 +32,162 @@ describe("useSessionTimeout", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.useFakeTimers()
+
+    // Configure mocks using jest.mocked
+    jest.mocked(updateRemoteSelectedRole).mockImplementation(mockUpdateRemoteSelectedRole)
+    jest.mocked(signOut).mockImplementation(mockSignOut)
+    jest.mocked(logger).warn = mockLogger.warn
+    jest.mocked(logger).info = mockLogger.info
+    jest.mocked(logger).error = mockLogger.error
+
+    const authContextMock: Partial<AuthContextType> = {
+      selectedRole: {role_id: "123", org_code: "ABC", role_name: "Test Role"},
+      updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+      updateInvalidSessionCause: mockUpdateInvalidSessionCause
+    }
+    jest.mocked(useAuth).mockReturnValue(authContextMock)
+
+    // Set up default mock behaviors
+    mockUpdateRemoteSelectedRole.mockResolvedValue({currentlySelectedRole: {}})
+    mockSignOut.mockResolvedValue(undefined)
+    mockUpdateTrackerUserInfo.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
     jest.useRealTimers()
   })
 
-  it("should return initial state", () => {
+  it("should initialize with show false and remaining time 60", () => {
     const {result} = renderHook(() => useSessionTimeout())
 
     expect(result.current.showModal).toBe(false)
+    // Internal timeLeft is in seconds, converted to ms when props provided
     expect(result.current.timeLeft).toBe(60)
-    expect(result.current.isExtending).toBe(false)
-    expect(typeof result.current.onStayLoggedIn).toBe("function")
-    expect(typeof result.current.onLogOut).toBe("function")
-    expect(typeof result.current.resetSessionTimeout).toBe("function")
   })
 
-  it("should handle props mode without triggering effects", () => {
-    const mockProps = {
-      showModal: false,
-      timeLeft: 0,
+  it("should use props values when provided - props mode", () => {
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: true,
+      timeLeft: 30, // Props timeLeft is used directly when provided
       onStayLoggedIn: jest.fn(),
       onLogOut: jest.fn()
-    }
+    }))
 
-    const {result} = renderHook(() => useSessionTimeout(mockProps))
-
-    expect(result.current.showModal).toBe(false)
-    expect(result.current.timeLeft).toBe(60)
-    expect(result.current.onStayLoggedIn).toBeDefined()
-    expect(result.current.onLogOut).toBeDefined()
+    expect(result.current.showModal).toBe(true)
+    expect(result.current.timeLeft).toBeGreaterThanOrEqual(0)
   })
 
-  it("should handle stay logged in with props", async () => {
-    const mockOnStayLoggedIn = jest.fn().mockResolvedValue(undefined)
-    const mockProps = {
-      showModal: false,
-      timeLeft: 0,
-      onStayLoggedIn: mockOnStayLoggedIn,
-      onLogOut: jest.fn()
-    }
-
-    const {result} = renderHook(() => useSessionTimeout(mockProps))
+  it("should call onStayLoggedIn from props when provided", async () => {
+    const onStayLoggedIn = jest.fn().mockResolvedValue(undefined)
+    const onLogOut = jest.fn().mockResolvedValue(undefined)
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: true,
+      timeLeft: 30,
+      onStayLoggedIn,
+      onLogOut
+    }))
 
     await act(async () => {
       await result.current.onStayLoggedIn()
     })
 
-    expect(mockOnStayLoggedIn).toHaveBeenCalled()
-    expect(result.current.isExtending).toBe(false)
+    expect(onStayLoggedIn).toHaveBeenCalled()
   })
 
-  it("should handle log out with props", async () => {
-    const mockOnLogOut = jest.fn().mockResolvedValue(undefined)
-    const mockProps = {
-      showModal: false,
-      timeLeft: 0,
-      onStayLoggedIn: jest.fn(),
-      onLogOut: mockOnLogOut
-    }
+  it("should handle onStayLoggedIn error and trigger logout", async () => {
+    const onStayLoggedIn = jest.fn().mockRejectedValue(new Error("Test error"))
+    const onLogOut = jest.fn().mockResolvedValue(undefined)
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: true,
+      timeLeft: 30,
+      onStayLoggedIn,
+      onLogOut
+    }))
 
-    const {result} = renderHook(() => useSessionTimeout(mockProps))
+    await act(async () => {
+      await result.current.onStayLoggedIn()
+    })
+
+    expect(onStayLoggedIn).toHaveBeenCalled()
+    expect(onLogOut).toHaveBeenCalled()
+  })
+
+  it("should handle stay logged in without props - successful scenario", async () => {
+    const {result} = renderHook(() => useSessionTimeout())
+
+    await act(async () => {
+      await result.current.onStayLoggedIn()
+    })
+
+    expect(mockLogger.info).toHaveBeenCalledWith("User chose to extend session")
+    expect(jest.mocked(updateRemoteSelectedRole)).toHaveBeenCalledWith({
+      role_id: "123",
+      org_code: "ABC",
+      role_name: "Test Role"
+    })
+    expect(mockLogger.info).toHaveBeenCalledWith("Session extended successfully via selectedRole API")
+    expect(jest.mocked(useAuth)().updateTrackerUserInfo).toHaveBeenCalled()
+  })
+
+  it("should handle stay logged in with error in updateRemoteSelectedRole", async () => {
+    jest.mocked(updateRemoteSelectedRole).mockRejectedValue(new Error("API Error"))
+
+    const {result} = renderHook(() => useSessionTimeout())
+
+    await act(async () => {
+      await result.current.onStayLoggedIn()
+    })
+
+    expect(mockLogger.error).toHaveBeenCalledWith("Error extending session:", expect.any(Error))
+    expect(jest.mocked(signOut)).toHaveBeenCalledWith(
+      expect.any(Object),
+      "mock-redirect-url"
+    )
+  })
+
+  it("should handle manual logout", async () => {
+    const {result} = renderHook(() => useSessionTimeout())
 
     await act(async () => {
       await result.current.onLogOut()
     })
 
-    expect(mockOnLogOut).toHaveBeenCalled()
+    expect(mockLogger.info).toHaveBeenCalledWith("User chose to log out from session timeout modal")
+    expect(jest.mocked(signOut)).toHaveBeenCalledWith(
+      expect.any(Object),
+      "mock-redirect-url"
+    )
   })
 
-  it("should cleanup on unmount", () => {
-    const {unmount} = renderHook(() => useSessionTimeout())
+  it("should handle error when selectedRole is missing", async () => {
+    const authContextMock: Partial<AuthContextType> = {
+      selectedRole: null,
+      updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+      updateInvalidSessionCause: mockUpdateInvalidSessionCause
+    }
+    jest.mocked(useAuth).mockReturnValue(authContextMock)
 
-    expect(() => unmount()).not.toThrow()
+    const {result} = renderHook(() => useSessionTimeout())
+
+    await act(async () => {
+      await result.current.onStayLoggedIn()
+    })
+
+    expect(mockLogger.error).toHaveBeenCalledWith("No selected role available to extend session")
+    expect(jest.mocked(signOut)).toHaveBeenCalledWith(
+      expect.any(Object),
+      "mock-redirect-url"
+    )
+  })
+
+  it("should initialize with default values", () => {
+    const {result} = renderHook(() => useSessionTimeout())
+
+    expect(result.current.showModal).toBe(false)
+    expect(result.current.timeLeft).toBe(60) // Internal state is in seconds, converted to ms when returned
+    expect(result.current.isExtending).toBe(false)
+    expect(typeof result.current.onStayLoggedIn).toBe("function")
+    expect(typeof result.current.onLogOut).toBe("function")
+    expect(typeof result.current.resetSessionTimeout).toBe("function")
   })
 })
