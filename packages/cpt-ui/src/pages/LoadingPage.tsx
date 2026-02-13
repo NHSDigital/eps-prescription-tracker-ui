@@ -18,9 +18,10 @@ export default function LoadingPage() {
           <h1>{LOADING_STRINGS.HEADER}</h1>
           <p>
             If you have not been redirected after 1 minute,{" "}
-            <Link to="/logout" data-testid="logout-link">log out</Link>
+            <Link to="/logout">log out</Link>
             {" "}to reset your session and then log in again.
           </p>
+          <br />
           <EpsSpinner />
         </Fragment>
       </Container>
