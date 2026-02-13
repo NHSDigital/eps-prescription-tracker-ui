@@ -34,7 +34,7 @@ export default function LoadingPage() {
     const interval = setInterval(() => {
       // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
       logger.error(`Redirection page error timer: ${path}`, nonPIDStateValues)
-    }, 10000) // 10000 ms = 10 seconds
+    }, 1000) // set to 1 second for testing
     return () => clearInterval(interval)
   }, [path])
 
