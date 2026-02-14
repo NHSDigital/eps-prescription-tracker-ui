@@ -38,6 +38,6 @@
     "@types/fhir": "^0.0.41",
     "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.3.5",
-    "nock": "^14.0.10"
+    "nock": "^14.0.11"
   }
 }
