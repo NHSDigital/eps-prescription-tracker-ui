@@ -61,6 +61,9 @@ jest.mock("@/constants/environment", () => ({
   APP_CONFIG: {
     COMMIT_ID: "test-commit",
     VERSION_NUMBER: "1.0.0"
+  },
+  ENV_CONFIG: {
+    RUM_ERROR_TIMER_INTERVAL: 10000
   }
 }))
 

@@ -29,6 +29,7 @@ interface ImportMetaEnv {
   readonly VITE_RUM_TELEMETRIES: string;
 
   readonly VITE_REACT_LOG_LEVEL: string;
+  readonly VITE_RUM_ERROR_TIMER_INTERVAL: number;
 }
 
 interface ImportMeta {

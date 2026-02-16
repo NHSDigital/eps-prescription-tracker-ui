@@ -8,6 +8,8 @@ import {Link} from "react-router-dom"
 import {Fragment} from "react"
 import {useAuth} from "@/context/AuthProvider"
 import {useEffect} from "react"
+import {ENV_CONFIG} from "@/constants/environment"
+import {returnLocalState} from "@/helpers/appLocalStateOutput"
 
 export default function LoadingPage() {
   const auth = useAuth()
@@ -16,25 +18,11 @@ export default function LoadingPage() {
   const path = normalizePath(location.pathname)
 
   useEffect(() => {
-    const nonPIDStateValues = {
-      error: auth.error,
-      user: auth.user,
-      isSignedIn: auth.isSignedIn,
-      isSigningIn: auth.isSigningIn,
-      isSigningOut: auth.isSigningOut,
-      isConcurrentSession: auth.isConcurrentSession,
-      invalidSessionCause: auth.invalidSessionCause,
-      sessionId: auth.sessionId,
-      rolesWithAccess: auth.rolesWithAccess,
-      rolesWithoutAccess: auth.rolesWithoutAccess,
-      selectedRole: auth.selectedRole,
-      userDetails: auth.userDetails
-    }
-
+    const stateValues = returnLocalState(auth)
     const interval = setInterval(() => {
       // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
-      logger.debug(`Redirection page error timer: ${path}`, nonPIDStateValues, true)
-    }, 10000) // set to 10 seconds to allow for slow connections
+      logger.debug(`Redirection page error timer: ${path}`, stateValues, true)
+    }, ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL) // set to 10 seconds to allow for slow connections
     return () => clearInterval(interval)
   }, [])
 

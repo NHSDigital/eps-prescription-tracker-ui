@@ -60,7 +60,7 @@ jest.mock("@/helpers/logger", () => ({
 const mockUseAuth = useAuth as jest.Mock
 const mockGetSearchParams = getSearchParams as jest.Mock
 
-const defaultContentText = {
+export const defaultContentText = {
   pageTitle: "Test Page Title",
   title: "Select your role",
   caption: "Choose a role to continue",
