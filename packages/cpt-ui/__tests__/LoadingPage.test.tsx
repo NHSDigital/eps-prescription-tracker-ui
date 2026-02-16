@@ -95,7 +95,8 @@ describe("LoadingPage", () => {
 
     // Verify
     const localState = returnLocalState(mockReturnAdjusted)
-    expect(logger.debug).toHaveBeenCalledWith(`Redirection page error timer: ${path}`, localState, true)
+    expect(logger.debug)
+      .toHaveBeenCalledWith("Redirection page error timer", {...localState, path}, true)
   })
 
   it("renders if should block children true and doesnt send rum log before timeout", () => {
