@@ -21,10 +21,40 @@ jest.mock("@/helpers/userInfo")
 jest.mock("@/helpers/logout")
 jest.mock("@/helpers/logger")
 jest.mock("@/context/AuthProvider")
+jest.mock("aws-rum-web", () => ({
+  AwsRum: jest.fn().mockImplementation(() => ({
+    allowCookies: jest.fn()
+  }))
+}))
+jest.mock("@/helpers/awsRum", () => ({
+  cptAwsRum: {
+    recordPageView: jest.fn(),
+    recordError: jest.fn()
+  }
+}))
 jest.mock("@/constants/environment", () => ({
   AUTH_CONFIG: {
     REDIRECT_SIGN_OUT: "mock-redirect-url",
     REDIRECT_SESSION_SIGN_OUT: "mock-session-redirect-url"
+  },
+  APP_CONFIG: {
+    REACT_LOG_LEVEL: "info"
+  },
+  RUM_CONFIG: {
+    SESSION_SAMPLE_RATE: 1,
+    GUEST_ROLE_ARN: "test-role-arn",
+    IDENTITY_POOL_ID: "test-pool-id",
+    ENDPOINT: "test-endpoint",
+    TELEMETRIES: ["performance", "errors"],
+    ALLOW_COOKIES: true,
+    ENABLE_XRAY: false,
+    APPLICATION_ID: "test-app-id",
+    VERSION: "1.0.0",
+    REGION: "us-west-2",
+    RELEASE_ID: "dummy_release_id"
+  },
+  API_ENDPOINTS: {
+    CIS2_SIGNOUT_ENDPOINT: "/api/cis2-signout"
   }
 }))
 
