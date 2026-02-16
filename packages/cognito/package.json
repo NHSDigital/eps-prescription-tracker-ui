@@ -13,11 +13,11 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.30.1",
-    "@aws-lambda-powertools/parameters": "^2.30.1",
-    "@aws-sdk/client-dynamodb": "^3.980.0",
-    "@aws-sdk/client-secrets-manager": "^3.985.0",
-    "@aws-sdk/lib-dynamodb": "^3.985.0",
+    "@aws-lambda-powertools/logger": "^2.31.0",
+    "@aws-lambda-powertools/parameters": "^2.31.0",
+    "@aws-sdk/client-dynamodb": "^3.990.0",
+    "@aws-sdk/client-secrets-manager": "^3.990.0",
+    "@aws-sdk/lib-dynamodb": "^3.990.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
@@ -33,7 +33,7 @@
     "@types/aws-lambda": "^8.10.159",
     "@vitest/coverage-v8": "^4.0.18",
     "mock-jwks": "^3.3.5",
-    "nock": "^14.0.10",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "nock": "^14.0.11"
   }
 }

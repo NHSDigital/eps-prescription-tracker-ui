@@ -3,7 +3,7 @@ import {render, act} from "@testing-library/react"
 import {AccessProvider, useAccess} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useAuth as mockUseAuth} from "@/context/AuthProvider"
-import {useNavigate, useLocation} from "react-router-dom"
+import {useNavigate, useLocation, MemoryRouter} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {logger} from "@/helpers/logger"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
@@ -12,6 +12,7 @@ import Layout from "@/Layout"
 import LoadingPage from "@/pages/LoadingPage"
 
 jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn(),
   useLocation: jest.fn()
 }))
@@ -128,9 +129,11 @@ describe("AccessProvider", () => {
 
   const renderWithProvider = () => {
     render(
-      <AccessProvider>
-        <TestComponent />
-      </AccessProvider>
+      <MemoryRouter>
+        <AccessProvider>
+          <TestComponent />
+        </AccessProvider>
+      </MemoryRouter>
     )
   }
 
@@ -271,11 +274,13 @@ describe("AccessProvider", () => {
       (mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
 
       const {container} = render(
-        <AccessProvider>
-          <Layout>
-            <LoadingPage />
-          </Layout>
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <Layout>
+              <LoadingPage />
+            </Layout>
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       // Should render nothing (children blocked) - show loading wheel
@@ -296,9 +301,11 @@ describe("AccessProvider", () => {
       )
 
       const {container} = render(
-        <AccessProvider>
-          <TestComponent />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <TestComponent />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       // Should render children (not blocked on allowed path)
@@ -319,11 +326,13 @@ describe("AccessProvider", () => {
       (mockNormalizePath as jest.Mock).mockReturnValue("/some-protected-path")
 
       const {container} = render(
-        <AccessProvider>
-          <Layout>
-            <LoadingPage />
-          </Layout>
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <Layout>
+              <LoadingPage />
+            </Layout>
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       // Should render nothing (children blocked) - show loading page
@@ -382,9 +391,11 @@ describe("AccessProvider", () => {
       mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
 
       const {unmount} = render(
-        <AccessProvider>
-          <TestComponent />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <TestComponent />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       unmount()
