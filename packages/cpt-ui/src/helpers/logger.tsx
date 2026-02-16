@@ -2,6 +2,15 @@ import {APP_CONFIG} from "@/constants/environment"
 import pino from "pino"
 import {cptAwsRum} from "./awsRum"
 const REACT_LOG_LEVEL = APP_CONFIG.REACT_LOG_LEVEL || "debug"
+
+enum LogLevel {
+  TRACE = "trace",
+  DEBUG = "debug",
+  INFO = "info",
+  WARN = "warn",
+  ERROR = "error"
+}
+
 class Logger {
 
   logger: pino.Logger
@@ -10,12 +19,34 @@ class Logger {
     this.logger = pino({
       level: REACT_LOG_LEVEL,
       browser: {
-        asObject: true
+        asObject: true,
+        formatters: {
+          level: (label) => {
+            return {
+              level: label
+            }
+          }
+        }
       }
     })
   }
 
-  public trace(message: string, args?: unknown): void {
+  private sendToRum(logLevel: LogLevel, message: string, additionalFields?: unknown, error?: Error): void {
+    const rumInstance = cptAwsRum.getAwsRum()
+    if (rumInstance !== null) {
+      rumInstance.recordEvent(`logger_${logLevel}`, {message, ...(additionalFields ? {...additionalFields}: {})})
+
+      if(error){
+        rumInstance.recordError(error)
+      }
+    }
+  }
+
+  public trace(message: string, args?: unknown, sendToRum: boolean = false): void {
+    if (sendToRum){
+      this.sendToRum(LogLevel.TRACE, message, args)
+    }
+
     if (args) {
       this.logger.trace(args, message)
     } else {
@@ -23,7 +54,11 @@ class Logger {
     }
   }
 
-  public debug(message: string, args?: unknown): void {
+  public debug(message: string, args?: unknown, sendToRum: boolean = false): void {
+    if (sendToRum){
+      this.sendToRum(LogLevel.DEBUG, message, args)
+    }
+
     if (args) {
       this.logger.debug(args, message)
     } else {
@@ -31,7 +66,11 @@ class Logger {
     }
   }
 
-  public info(message: string, args?: unknown): void {
+  public info(message: string, args?: unknown, sendToRum: boolean = false): void {
+    if (sendToRum){
+      this.sendToRum(LogLevel.INFO, message, args)
+    }
+
     if (args) {
       this.logger.info(args, message)
     } else {
@@ -39,7 +78,11 @@ class Logger {
     }
   }
 
-  public warn(message: string, args?: unknown): void {
+  public warn(message: string, args?: unknown, sendToRum: boolean = false): void {
+    if (sendToRum){
+      this.sendToRum(LogLevel.WARN, message, args)
+    }
+
     if (args) {
       this.logger.warn(args, message)
     } else {
@@ -48,14 +91,8 @@ class Logger {
   }
 
   public error(message: string, args?: unknown): void {
-    const rumInstance = cptAwsRum.getAwsRum()
-    if (rumInstance !== null) {
-      // get a stack trace so we get line numbers
-      const messageAsError = new Error(message)
-      rumInstance.recordEvent("logger_error", {message: message, stack: messageAsError.stack, details: args})
-      // also use recordError to try and get source maps back to real line numbers
-      rumInstance.recordError(messageAsError)
-    }
+    const messageAsError = new Error(message)
+    this.sendToRum(LogLevel.ERROR, message, {stack: messageAsError.stack, details: args}, messageAsError)
     if (args) {
       this.logger.error(args, message)
     } else {

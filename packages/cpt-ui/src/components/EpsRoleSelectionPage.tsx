@@ -37,6 +37,11 @@ export type RolesWithoutAccessProps = {
   roleName: string
 }
 
+interface RoleComponentProps {
+  rolesWithAccess: Array<RolesWithAccessProps>
+  rolesWithoutAccess: Array<RolesWithoutAccessProps>
+}
+
 interface RoleSelectionPageProps {
   contentText: {
     pageTitle: string
@@ -92,8 +97,10 @@ export default function RoleSelectionPage({
   const navigate = useNavigate()
   const redirecting = useRef(false)
 
-  const [roleCardPropsWithAccess, setRoleCardPropsWithAccess] = useState<Array<RolesWithAccessProps>>([])
-  const [roleCardPropsWithoutAccess, setRoleCardPropsWithoutAccess] = useState<Array<RolesWithoutAccessProps>>([])
+  const [roleComponentProps, setRoleComponentProps] = useState<RoleComponentProps>({
+    rolesWithAccess: [],
+    rolesWithoutAccess: []
+  })
 
   usePageTitle(auth.rolesWithAccess.length === 0
     ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle
@@ -131,23 +138,60 @@ export default function RoleSelectionPage({
 
   useEffect(() => {
     // Transform roles data for display
-    setRoleCardPropsWithAccess(auth.rolesWithAccess.length === 0
+    const rolesWithAccessComponentProps = auth.rolesWithAccess.length === 0
       ? []
       : auth.rolesWithAccess.map((role: RoleDetails, index) => ({
         uuid: `role_with_access_${index}`,
         role,
         link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
-      }))
-    )
+      })).filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
 
-    setRoleCardPropsWithoutAccess(auth.rolesWithoutAccess.map((role, index) => ({
+    const rolesWithoutAccessComponentProps = auth.rolesWithoutAccess.map((role, index) => ({
       uuid: `role_without_access_${index}`,
       roleName: role.role_name || noRoleName,
       orgName: role.org_name || noOrgName,
       odsCode: role.org_code || noODSCode
-    })))
+    }))
 
-    logger.warn("RoleCardPropsWithAccess length: ", {roleCardPropsWithAccess, error: auth.error})
+    if(auth.userDetails?.sub) {
+      logger.debug("Role components to be rendered", {
+        sessionId: auth.sessionId,
+        userId: auth.userDetails.sub,
+        pageName: location.pathname,
+        /* Note: If there is a selected role, the list of roles with access in the auth context
+        and the list to be rendered will be out by 1 */
+        currentlySelectedRole: !!auth.selectedRole,
+        returnedRolesWithAccessCount: auth.rolesWithAccess.length,
+        returnedRolesWithoutAccessCount: auth.rolesWithoutAccess.length,
+        renderedRolesWithAccessCount: rolesWithAccessComponentProps.length,
+        renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length,
+        /* only pick out the specific additional values we care about to reduce unnecessary noise
+        in logs from function props of the auth context object */
+        authContext: {
+          cognitoUsername: auth.user,
+          name: auth.userDetails.name,
+          currentlySelectedRole: auth.selectedRole,
+          rolesWithAccess: auth.rolesWithAccess,
+          rolesWithoutAccess: auth.rolesWithoutAccess,
+          isSignedIn: auth.isSignedIn,
+          isSigningIn: auth.isSigningIn,
+          isSigningOut: auth.isSigningOut,
+          isConcurrentSession: auth.isConcurrentSession,
+          error: auth.error,
+          invalidSessionCause: auth.invalidSessionCause
+        },
+        roleComponentProps:{
+          rolesWithAccess: rolesWithAccessComponentProps,
+          rolesWithoutAccess: rolesWithoutAccessComponentProps
+        }
+      }, true)
+    }
+
+    setRoleComponentProps({
+      rolesWithAccess: rolesWithAccessComponentProps,
+      rolesWithoutAccess: rolesWithoutAccessComponentProps
+    })
+
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   // Handle auto-redirect for single role
@@ -245,11 +289,10 @@ export default function RoleSelectionPage({
                 )}
               </Col>
 
-              {(auth.rolesWithAccess.length > 0) && (roleCardPropsWithAccess.length > 0) && (
+              {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
                 <Col width="two-thirds">
                   <div className="section">
-                    {roleCardPropsWithAccess
-                      .filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
+                    {roleComponentProps.rolesWithAccess
                       .map((roleCardProps: RolesWithAccessProps) => (
                         <Card
                           key={roleCardProps.uuid}
@@ -307,7 +350,7 @@ export default function RoleSelectionPage({
                         </Table.Row>
                       </Table.Head>
                       <Table.Body>
-                        {roleCardPropsWithoutAccess.map(
+                        {roleComponentProps.rolesWithoutAccess.map(
                           (roleItem: RolesWithoutAccessProps) => (
                             <Table.Row key={roleItem.uuid}>
                               <Table.Cell data-testid="change-role-name-cell">

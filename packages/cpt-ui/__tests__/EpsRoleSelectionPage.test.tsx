@@ -14,6 +14,7 @@ import {getSearchParams} from "@/helpers/getSearchParams"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
+import {logger} from "@/helpers/logger"
 import {mockAuthState} from "./mocks/AuthStateMock"
 import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 
@@ -46,6 +47,14 @@ jest.mock("axios", () => ({
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn()
+}))
+
+jest.mock("@/helpers/logger", () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    error: jest.fn()
+  }
 }))
 
 const mockUseAuth = useAuth as jest.Mock
@@ -303,6 +312,111 @@ describe("RoleSelectionPage", () => {
     expect(screen.queryByText("Pharmacist")).toBeInTheDocument()
     expect(screen.queryByText("Technician")).toBeInTheDocument()
     expect(screen.queryByText("Admin")).not.toBeInTheDocument()
+  })
+
+  it("logs rendered role information", async () => {
+    mockUseAuth.mockReturnValue({
+      sessionId: "session-1234",
+      user: "cognito-user",
+      userDetails: {
+        sub: "12345",
+        name: "Test User"
+      },
+      isSignedIn: true,
+      isSigningIn: false,
+      isSigningOut: false,
+      isConcurrentSession: false,
+      selectedRole: {
+        role_id: "1"
+      },
+      rolesWithAccess: [
+        {
+          role_id: "2",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "1", // this one should be filtered out
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }
+      ],
+      rolesWithoutAccess: [
+        {
+          role_id: "3",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        }
+      ],
+      error: null,
+      invalidSessionCause: undefined,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
+    })
+
+    render(<RoleSelectionPage contentText={defaultContentText} />)
+
+    expect(logger.debug).toHaveBeenCalledWith("Role components to be rendered", {
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      currentlySelectedRole: true,
+      returnedRolesWithAccessCount:2,
+      returnedRolesWithoutAccessCount: 1,
+      renderedRolesWithAccessCount: 1,
+      renderedRolesWithoutAccessCount: 1,
+      authContext: {
+        cognitoUsername: "cognito-user",
+        name:"Test User",
+        currentlySelectedRole: {
+          role_id: "1"
+        },
+        rolesWithAccess: [{
+          role_id: "2",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "1",
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }],
+        rolesWithoutAccess: [{
+          role_id: "3",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        }],
+        isSignedIn: true,
+        isSigningIn: false,
+        isSigningOut: false,
+        isConcurrentSession: false,
+        error: null,
+        invalidSessionCause: undefined
+      },
+      roleComponentProps:{
+        rolesWithAccess: [{
+          link: "/your-selected-role",
+          role: {
+            role_id: "2",
+            role_name: "Pharmacist",
+            org_code: "ABC",
+            org_name: "Pharmacy Org"
+          },
+          uuid: "role_with_access_0"
+        }],
+        rolesWithoutAccess: [{
+          uuid: "role_without_access_0",
+          roleName: "Technician",
+          odsCode: "XYZ",
+          orgName: "Tech Org"
+        }]
+      }
+    }, true)
   })
 
   it("navigates on confirm and continue button click", async () => {
