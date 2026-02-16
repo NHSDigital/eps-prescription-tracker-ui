@@ -19,11 +19,10 @@ export default function LoadingPage() {
 
   useEffect(() => {
     const stateValues = returnLocalState(auth)
-    const interval = setInterval(() => {
+    setTimeout(() => {
       // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
-      logger.debug(`Redirection page error timer: ${path}`, stateValues, true)
+      logger.debug("Redirection page error timer", {...stateValues, path}, true)
     }, ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL) // set to 10 seconds to allow for slow connections
-    return () => clearInterval(interval)
   }, [])
 
   return (
