@@ -12,31 +12,31 @@ import {useEffect} from "react"
 export default function LoadingPage() {
   const auth = useAuth()
 
-  const nonPIDStateValues = {
-    error: auth.error,
-    user: auth.user,
-    isSignedIn: auth.isSignedIn,
-    isSigningIn: auth.isSigningIn,
-    isSigningOut: auth.isSigningOut,
-    isConcurrentSession: auth.isConcurrentSession,
-    invalidSessionCause: auth.invalidSessionCause,
-    sessionId: auth.sessionId,
-    rolesWithAccess: auth.rolesWithAccess,
-    rolesWithoutAccess: auth.rolesWithoutAccess,
-    selectedRole: auth.selectedRole,
-    userDetails: auth.userDetails
-  }
-
   usePageTitle("Loading information")
   const path = normalizePath(location.pathname)
 
   useEffect(() => {
+    const nonPIDStateValues = {
+      error: auth.error,
+      user: auth.user,
+      isSignedIn: auth.isSignedIn,
+      isSigningIn: auth.isSigningIn,
+      isSigningOut: auth.isSigningOut,
+      isConcurrentSession: auth.isConcurrentSession,
+      invalidSessionCause: auth.invalidSessionCause,
+      sessionId: auth.sessionId,
+      rolesWithAccess: auth.rolesWithAccess,
+      rolesWithoutAccess: auth.rolesWithoutAccess,
+      selectedRole: auth.selectedRole,
+      userDetails: auth.userDetails
+    }
+
     const interval = setInterval(() => {
       // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
-      logger.error(`Redirection page error timer: ${path}`, nonPIDStateValues)
-    }, 1000) // set to 1 second for testing
+      logger.debug(`Redirection page error timer: ${path}`, nonPIDStateValues, true)
+    }, 10000) // set to 10 seconds to allow for slow connections
     return () => clearInterval(interval)
-  }, [path])
+  }, [])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
