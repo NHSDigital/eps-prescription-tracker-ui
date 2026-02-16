@@ -41,11 +41,12 @@ describe("useSessionTimeout", () => {
     jest.mocked(logger).error = mockLogger.error
 
     const authContextMock: Partial<AuthContextType> = {
+      error: null,
       selectedRole: {role_id: "123", org_code: "ABC", role_name: "Test Role"},
       updateTrackerUserInfo: mockUpdateTrackerUserInfo,
       updateInvalidSessionCause: mockUpdateInvalidSessionCause
     }
-    jest.mocked(useAuth).mockReturnValue(authContextMock)
+    jest.mocked(useAuth).mockReturnValue(authContextMock as AuthContextType)
 
     // Set up default mock behaviors
     mockUpdateRemoteSelectedRole.mockResolvedValue({currentlySelectedRole: {}})
@@ -161,11 +162,12 @@ describe("useSessionTimeout", () => {
 
   it("should handle error when selectedRole is missing", async () => {
     const authContextMock: Partial<AuthContextType> = {
-      selectedRole: null,
+      error: null,
+      selectedRole: undefined,
       updateTrackerUserInfo: mockUpdateTrackerUserInfo,
       updateInvalidSessionCause: mockUpdateInvalidSessionCause
     }
-    jest.mocked(useAuth).mockReturnValue(authContextMock)
+    jest.mocked(useAuth).mockReturnValue(authContextMock as AuthContextType)
 
     const {result} = renderHook(() => useSessionTimeout())
 
