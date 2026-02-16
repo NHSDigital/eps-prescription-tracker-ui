@@ -292,7 +292,7 @@ export class ApiFunctions extends Construct {
       const clearActiveSessionTimeoutLambda = new LambdaFunction(this, "ClearActiveSessionsTimeout", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-clr-active-timeout`,
+        lambdaName: `${props.stackName}-clr-timeout`,
         additionalPolicies: additionalPolicies,
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
