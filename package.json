@@ -37,6 +37,7 @@
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda",
         "packages/testingSupport/clearActiveSessions",
+        "packages/testingSupport/clearActiveSessionsTimeout",
         "packages/sessionManagementLambda"
     ],
     "devDependencies": {

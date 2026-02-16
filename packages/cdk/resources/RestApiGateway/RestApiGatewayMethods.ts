@@ -21,6 +21,7 @@ export interface RestApiGatewayMethodsProps {
   readonly patientSearchLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
   readonly clearActiveSessionLambda: NodejsFunction
+  readonly clearActiveSessionTimeoutLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
@@ -113,6 +114,13 @@ export class RestApiGatewayMethods extends Construct {
       // testing-support-clear-active-sessions
       const clearActiveSessionResource = props.restApiGateway.root.addResource("test-support-clear-active-session")
       clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
+        credentialsRole: props.restAPiGatewayRole
+      }), {})
+
+      // testing-support-clear-active-sessions-timeout
+      const clearActiveSessionTimeoutResource =
+       props.restApiGateway.root.addResource("test-support-clear-active-session-timeout")
+      clearActiveSessionTimeoutResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionTimeoutLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {})
     }
