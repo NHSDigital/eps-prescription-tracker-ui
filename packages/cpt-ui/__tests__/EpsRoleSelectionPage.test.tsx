@@ -92,7 +92,6 @@ describe("RoleSelectionPage", () => {
   beforeAll(() => {
     jest.spyOn(console, "log").mockImplementation(() => {})
     jest.spyOn(console, "warn").mockImplementation(() => {})
-
   })
 
   beforeEach(() => {
@@ -315,6 +314,8 @@ describe("RoleSelectionPage", () => {
   })
 
   it("logs rendered role information", async () => {
+    // eslint-disable-next-line no-undef
+    jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
     mockUseAuth.mockReturnValue({
       sessionId: "session-1234",
       user: "cognito-user",
@@ -358,7 +359,8 @@ describe("RoleSelectionPage", () => {
 
     render(<RoleSelectionPage contentText={defaultContentText} />)
 
-    expect(logger.debug).toHaveBeenCalledWith("Role components to be rendered", {
+    expect(logger.debug).toHaveBeenCalledWith("Counts of roles returned vs rendered", {
+      logId: "some-log-id-uuid-value",
       sessionId: "session-1234",
       userId: "12345",
       pageName: "/",
@@ -366,7 +368,14 @@ describe("RoleSelectionPage", () => {
       returnedRolesWithAccessCount:2,
       returnedRolesWithoutAccessCount: 1,
       renderedRolesWithAccessCount: 1,
-      renderedRolesWithoutAccessCount: 1,
+      renderedRolesWithoutAccessCount: 1
+    }, true)
+
+    expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
       authContext: {
         cognitoUsername: "cognito-user",
         name:"Test User",
@@ -397,7 +406,14 @@ describe("RoleSelectionPage", () => {
         isConcurrentSession: false,
         error: null,
         invalidSessionCause: undefined
-      },
+      }
+    }, true)
+
+    expect(logger.debug).toHaveBeenCalledWith("Component props for rendered roles", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
       roleComponentProps:{
         rolesWithAccess: [{
           link: "/your-selected-role",

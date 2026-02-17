@@ -154,7 +154,9 @@ export default function RoleSelectionPage({
     }))
 
     if(auth.userDetails?.sub) {
-      logger.debug("Role components to be rendered", {
+      const logId = crypto.randomUUID()
+      logger.debug("Counts of roles returned vs rendered", {
+        logId,
         sessionId: auth.sessionId,
         userId: auth.userDetails.sub,
         pageName: location.pathname,
@@ -164,7 +166,14 @@ export default function RoleSelectionPage({
         returnedRolesWithAccessCount: auth.rolesWithAccess.length,
         returnedRolesWithoutAccessCount: auth.rolesWithoutAccess.length,
         renderedRolesWithAccessCount: rolesWithAccessComponentProps.length,
-        renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length,
+        renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length
+      }, true)
+
+      logger.debug("Auth context for rendered roles", {
+        logId,
+        sessionId: auth.sessionId,
+        userId: auth.userDetails.sub,
+        pageName: location.pathname,
         /* only pick out the specific additional values we care about to reduce unnecessary noise
         in logs from function props of the auth context object */
         authContext: {
@@ -179,7 +188,14 @@ export default function RoleSelectionPage({
           isConcurrentSession: auth.isConcurrentSession,
           error: auth.error,
           invalidSessionCause: auth.invalidSessionCause
-        },
+        }
+      }, true)
+
+      logger.debug("Component props for rendered roles", {
+        logId,
+        sessionId: auth.sessionId,
+        userId: auth.userDetails.sub,
+        pageName: location.pathname,
         roleComponentProps:{
           rolesWithAccess: rolesWithAccessComponentProps,
           rolesWithoutAccess: rolesWithoutAccessComponentProps
