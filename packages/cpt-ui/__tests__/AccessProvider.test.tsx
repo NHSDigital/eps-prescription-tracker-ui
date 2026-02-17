@@ -113,6 +113,7 @@ describe("AccessProvider", () => {
 
   it("redirects to login if not signed in and not on allowed path", () => {
     mockAuthHook.mockReturnValue({
+      authStatus: "signed_out",
       isSignedIn: false,
       isSigningIn: false,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -130,6 +131,7 @@ describe("AccessProvider", () => {
 
   it("redirects to session selection if signed in and concurrent session", () => {
     mockAuthHook.mockReturnValue({
+      authStatus: "signed_in",
       isSignedIn: true,
       isConcurrentSession: true,
       isSigningIn: false,
@@ -145,6 +147,7 @@ describe("AccessProvider", () => {
 
   it("redirects to select role if signed in but no role is selected", () => {
     mockAuthHook.mockReturnValue({
+      authStatus: "signed_in",
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: null,
@@ -161,6 +164,7 @@ describe("AccessProvider", () => {
 
   it("does not redirect if signed in and role is selected", () => {
     mockAuthHook.mockReturnValue({
+      authStatus: "signed_in",
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "someRole"},
@@ -177,6 +181,7 @@ describe("AccessProvider", () => {
 
   it("skips redirection logic when signing in and on select-your-role path", () => {
     mockAuthHook.mockReturnValue({
+      authStatus: "signing_in",
       isSignedIn: false,
       isSigningIn: true,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -206,6 +211,39 @@ describe("AccessProvider", () => {
     (window as any).location = originalLocation
   })
 
+  it("does not redirect during signing_out transition (prevents race condition)", () => {
+    mockAuthHook.mockReturnValue({
+      authStatus: "signing_out",
+      isSignedIn: false,
+      isSigningIn: false,
+      isSigningOut: true,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
+    })
+    mockLocationHook.mockReturnValue({pathname: "/some-protected-path"})
+    mockNormalizePathFn.mockReturnValue("/some-protected-path")
+
+    renderWithProvider()
+
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
+  it("does not redirect during signing_in transition", () => {
+    mockAuthHook.mockReturnValue({
+      authStatus: "signing_in",
+      isSignedIn: false,
+      isSigningIn: true,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      clearAuthState: jest.fn()
+    })
+    mockLocationHook.mockReturnValue({pathname: "/some-protected-path"})
+    mockNormalizePathFn.mockReturnValue("/some-protected-path")
+
+    renderWithProvider()
+
+    expect(navigate).not.toHaveBeenCalled()
+  })
+
   it("throws error if useAccess is used outside provider", () => {
     const BrokenComponent = () => {
       useAccess()
@@ -219,6 +257,7 @@ describe("AccessProvider", () => {
 
   it("redirects authenticated user with role from root path to search page", () => {
     mockAuthHook.mockReturnValue({
+      authStatus: "signed_in",
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "TestRole"},
@@ -237,6 +276,7 @@ describe("AccessProvider", () => {
   describe("shouldBlockChildren", () => {
     it("blocks children when concurrent session exists and user is on protected path", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isConcurrentSession: true,
         isSigningIn: false,
@@ -263,6 +303,7 @@ describe("AccessProvider", () => {
 
     it("allows children when concurrent session exists but user is on session selection page", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isConcurrentSession: true,
         isSigningIn: false
@@ -289,6 +330,7 @@ describe("AccessProvider", () => {
 
     it("blocks children when no role selected and user is on protected path", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: null,
@@ -321,6 +363,7 @@ describe("AccessProvider", () => {
       const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
 
       mockAuthHook.mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -339,6 +382,7 @@ describe("AccessProvider", () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
 
       mockAuthHook.mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -357,6 +401,7 @@ describe("AccessProvider", () => {
       const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
 
       mockAuthHook.mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -380,7 +425,8 @@ describe("AccessProvider", () => {
 
     it("should skip user info check when isSigningIn is true", async () => {
       mockAuthHook.mockReturnValue({
-        isSignedIn: true,
+        authStatus: "signing_in",
+        isSignedIn: false,
         isSigningIn: true,
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
@@ -402,7 +448,8 @@ describe("AccessProvider", () => {
     it("should skip user info check when on allowed no-role paths", async () => {
       // This test focuses on the isSigningIn logic since we can't easily mock window.location
       mockAuthHook.mockReturnValue({
-        isSignedIn: true,
+        authStatus: "signing_in",
+        isSignedIn: false,
         isSigningIn: true, // This will trigger the skip logic
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
@@ -424,6 +471,7 @@ describe("AccessProvider", () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
 
       mockAuthHook.mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -446,6 +494,7 @@ describe("AccessProvider", () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: "Session expired", invalidSessionCause: "InvalidSession"})
 
       const authContext = {
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -466,6 +515,7 @@ describe("AccessProvider", () => {
 
     it("should not call updateTrackerUserInfo when user is not signed in", async () => {
       mockAuthHook.mockReturnValue({
+        authStatus: "signed_out",
         isSignedIn: false,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
@@ -486,6 +536,7 @@ describe("AccessProvider", () => {
 
     it("should handle multiple allowed no-role paths correctly", async () => {
       mockAuthHook.mockReturnValue({
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -510,6 +561,7 @@ describe("AccessProvider", () => {
         .mockResolvedValueOnce({error: null}) // second periodic check
 
       const authContext = {
+        authStatus: "signed_in",
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},

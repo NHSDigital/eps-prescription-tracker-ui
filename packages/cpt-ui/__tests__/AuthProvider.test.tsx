@@ -136,6 +136,7 @@ const TestConsumer = () => {
     <div>
       <div data-testid="error">{auth.error}</div>
       <div data-testid="user">{auth.user}</div>
+      <div data-testid="authStatus">{auth.authStatus}</div>
       <div data-testid="isSignedIn">{auth.isSignedIn.toString()}</div>
       <div data-testid="isSigningIn">{auth.isSigningIn.toString()}</div>
       <div data-testid="rolesWithAccess">{JSON.stringify(auth.rolesWithAccess, null, 2)}</div>

@@ -21,6 +21,7 @@ import {AxiosError, AxiosHeaders} from "axios"
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
+  authStatus: "signed_out",
   isSigningIn: false,
   invalidSessionCause: undefined,
   user: null,
@@ -38,13 +39,13 @@ const defaultAuthState: AuthContextType = {
   updateSelectedRole: jest.fn().mockName("updateSelectedRole"),
   updateTrackerUserInfo: jest.fn().mockName("updateTrackerUserInfo"),
   updateInvalidSessionCause: jest.fn().mockName("updateInvalidSessionCause"),
-  isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  isSigningOut: false
 }
 
 const signedInAuthState: AuthContextType = {
   ...defaultAuthState,
   isSignedIn: true,
+  authStatus: "signed_in",
   user: "testUser"
 }
 

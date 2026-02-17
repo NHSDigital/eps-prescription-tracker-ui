@@ -19,9 +19,19 @@ import {logger} from "@/helpers/logger"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
+export type AuthStatus = "signed_out" | "signing_in" | "signed_in" | "signing_out"
+
+const VALID_TRANSITIONS: Record<AuthStatus, Array<AuthStatus>> = {
+  signed_out: ["signing_in"],
+  signing_in: ["signed_in", "signed_out"],
+  signed_in: ["signing_out"],
+  signing_out: ["signed_out"]
+}
+
 export interface AuthContextType {
   error: string | null
   user: string | null
+  authStatus: AuthStatus
   isSignedIn: boolean
   isSigningIn: boolean
   isSigningOut: boolean
@@ -39,7 +49,6 @@ export interface AuthContextType {
   updateSelectedRole: (value: RoleDetails) => Promise<void>
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
-  setIsSigningOut: (value: boolean) => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -48,9 +57,20 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   Amplify.configure(authConfig, {ssr: false})
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
-  const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
-  const [isSigningIn, setIsSigningIn] = useLocalStorageState<boolean>("isSigningIn", "isSigningIn", false)
-  const [isSigningOut, setIsSigningOut] = useLocalStorageState<boolean>("isSigningOut", "isSigningOut", false)
+  const [authStatus, setAuthStatusRaw] = useLocalStorageState<AuthStatus>("authStatus", "authStatus", "signed_out")
+
+  const setAuthStatus = (next: AuthStatus) => {
+    if (VALID_TRANSITIONS[authStatus].includes(next)) {
+      setAuthStatusRaw(next)
+    } else {
+      logger.warn(`Invalid auth transition: ${authStatus} → ${next}, ignoring`)
+    }
+  }
+
+  // Force-set status without transition validation (for error recovery and clearAuthState)
+  const forceAuthStatus = (next: AuthStatus) => {
+    setAuthStatusRaw(next)
+  }
   const [isConcurrentSession, setIsConcurrentSession] = useLocalStorageState<boolean>(
     "isConcurrentSession", "isConcurrentSession", false)
   const [sessionId, setSessionId] = useLocalStorageState<string | undefined>(
@@ -83,8 +103,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRolesWithAccess([])
     setRolesWithoutAccess([])
     setUser(null)
-    setIsSignedIn(false)
-    setIsSigningIn(false)
+    forceAuthStatus("signed_out")
     setIsConcurrentSession(false)
     // updateTrackerUserInfo will set InvalidSessionCause to undefined
   }
@@ -117,8 +136,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           logger.info("User %s logged in", payload.data.username)
           await updateTrackerUserInfo()
 
-          setIsSignedIn(true)
-          setIsSigningIn(false)
+          forceAuthStatus("signed_in")
           setUser(payload.data.username)
           logger.info("Finished the signedIn event ")
           break
@@ -146,7 +164,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
-          setIsSigningOut(true)
+          setAuthStatus("signing_out")
           clearAuthState()
           setError(null)
           break
@@ -190,6 +208,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await signOut({global: true})
       }
 
+      setAuthStatus("signing_out")
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
@@ -205,7 +224,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
     await signInWithRedirect(input)
-    setIsSigningIn(true)
+    setAuthStatus("signing_in")
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {
@@ -225,9 +244,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     <AuthContext.Provider value={{
       error,
       user,
-      isSignedIn,
-      isSigningIn,
-      isSigningOut,
+      authStatus,
+      isSignedIn: authStatus === "signed_in",
+      isSigningIn: authStatus === "signing_in",
+      isSigningOut: authStatus === "signing_out",
       rolesWithAccess,
       rolesWithoutAccess,
       selectedRole,
@@ -241,8 +261,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       hasSingleRoleAccess,
       updateSelectedRole,
       updateTrackerUserInfo,
-      updateInvalidSessionCause,
-      setIsSigningOut
+      updateInvalidSessionCause
     }}>
       {children}
     </AuthContext.Provider>
