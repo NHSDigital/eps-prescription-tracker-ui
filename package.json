@@ -42,11 +42,15 @@
         "packages/sessionManagementLambda"
     ],
     "overrides": {
-        "fast-xml-parser": "^5.3.6", 
-        "lodash": "^4.17.23",
-        "@aws-sdk/core": "^3.994.0",
-        "@aws-sdk/xml-builder": "^3.994.0",
-        "aws-amplify": "^6.16.3"
+        "fast-xml-parser": ">=5.3.6",
+        "lodash": ">=4.17.23",
+        "aws-sdk": ">=2.1691.0",
+        "@aws-sdk/core": ">=3.994.0",
+        "@aws-sdk/xml-builder": ">=3.994.0",
+        "aws-amplify": ">=6.16.3",
+        "fhir": {
+            "lodash": ">=4.17.23"
+        }
     },
     "devDependencies": {
         "@eslint/js": "^9.38.0",

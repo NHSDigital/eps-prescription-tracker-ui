@@ -1,0 +1,885 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@aws-amplify/analytics": {
+      "name": "@aws-amplify/analytics",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/client-firehose",
+        "@aws-sdk/client-kinesis",
+        "@aws-sdk/client-personalize-events"
+      ],
+      "effects": [
+        "aws-amplify"
+      ],
+      "range": ">=7.0.93-coolfeature-28752fd-20260202121056",
+      "nodes": [
+        "node_modules/@aws-amplify/analytics"
+      ],
+      "fixAvailable": {
+        "name": "aws-amplify",
+        "version": "6.16.1",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/client-dynamodb": {
+      "name": "@aws-sdk/client-dynamodb",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/dynamodb-codec",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [
+        "@aws-sdk/util-dynamodb"
+      ],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-dynamodb"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-dynamodb",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/client-firehose": {
+      "name": "@aws-sdk/client-firehose",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [
+        "@aws-amplify/analytics"
+      ],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-firehose"
+      ],
+      "fixAvailable": {
+        "name": "aws-amplify",
+        "version": "6.16.1",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/client-kinesis": {
+      "name": "@aws-sdk/client-kinesis",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-kinesis"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/client-lambda": {
+      "name": "@aws-sdk/client-lambda",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-lambda"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-lambda",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/client-personalize-events": {
+      "name": "@aws-sdk/client-personalize-events",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-personalize-events"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/client-secrets-manager": {
+      "name": "@aws-sdk/client-secrets-manager",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-node",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-secrets-manager"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-secrets-manager",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/client-sso": {
+      "name": "@aws-sdk/client-sso",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/client-sso"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/core": {
+      "name": "@aws-sdk/core",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/xml-builder"
+      ],
+      "effects": [
+        "@aws-sdk/client-dynamodb",
+        "@aws-sdk/client-firehose",
+        "@aws-sdk/client-kinesis",
+        "@aws-sdk/client-lambda",
+        "@aws-sdk/client-personalize-events",
+        "@aws-sdk/client-secrets-manager",
+        "@aws-sdk/client-sso",
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-ini",
+        "@aws-sdk/credential-provider-login",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity",
+        "@aws-sdk/dynamodb-codec",
+        "@aws-sdk/lib-dynamodb",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/nested-clients",
+        "@aws-sdk/token-providers"
+      ],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/core"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-dynamodb",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/credential-provider-env": {
+      "name": "@aws-sdk/credential-provider-env",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-env"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-http": {
+      "name": "@aws-sdk/credential-provider-http",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [
+        "@aws-sdk/credential-provider-node"
+      ],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-http"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-ini": {
+      "name": "@aws-sdk/credential-provider-ini",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-login",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-ini"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-login": {
+      "name": "@aws-sdk/credential-provider-login",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [
+        "@aws-sdk/credential-provider-ini"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-login"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-node": {
+      "name": "@aws-sdk/credential-provider-node",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/credential-provider-env",
+        "@aws-sdk/credential-provider-http",
+        "@aws-sdk/credential-provider-ini",
+        "@aws-sdk/credential-provider-process",
+        "@aws-sdk/credential-provider-sso",
+        "@aws-sdk/credential-provider-web-identity"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-node"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-process": {
+      "name": "@aws-sdk/credential-provider-process",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-process"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-sso": {
+      "name": "@aws-sdk/credential-provider-sso",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/client-sso",
+        "@aws-sdk/core",
+        "@aws-sdk/token-providers"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-sso"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/credential-provider-web-identity": {
+      "name": "@aws-sdk/credential-provider-web-identity",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/credential-provider-web-identity"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/dynamodb-codec": {
+      "name": "@aws-sdk/dynamodb-codec",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [
+        "@aws-sdk/client-dynamodb"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@aws-sdk/dynamodb-codec"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-dynamodb",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/lib-dynamodb": {
+      "name": "@aws-sdk/lib-dynamodb",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@aws-sdk/client-dynamodb",
+        "@aws-sdk/core",
+        "@aws-sdk/util-dynamodb"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/lib-dynamodb"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/lib-dynamodb",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@aws-sdk/middleware-user-agent": {
+      "name": "@aws-sdk/middleware-user-agent",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core"
+      ],
+      "effects": [
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/middleware-user-agent"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/nested-clients": {
+      "name": "@aws-sdk/nested-clients",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/middleware-user-agent",
+        "@aws-sdk/util-user-agent-node"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/nested-clients"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/token-providers": {
+      "name": "@aws-sdk/token-providers",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/core",
+        "@aws-sdk/nested-clients"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/token-providers"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/util-dynamodb": {
+      "name": "@aws-sdk/util-dynamodb",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/client-dynamodb"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/util-dynamodb"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/util-user-agent-node": {
+      "name": "@aws-sdk/util-user-agent-node",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "@aws-sdk/middleware-user-agent"
+      ],
+      "effects": [],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/util-user-agent-node"
+      ],
+      "fixAvailable": true
+    },
+    "@aws-sdk/xml-builder": {
+      "name": "@aws-sdk/xml-builder",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "fast-xml-parser"
+      ],
+      "effects": [
+        "@aws-sdk/core"
+      ],
+      "range": ">=3.894.0",
+      "nodes": [
+        "node_modules/@aws-sdk/xml-builder"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-dynamodb",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "@eslint-community/eslint-utils": {
+      "name": "@eslint-community/eslint-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@eslint-community/eslint-utils"
+      ],
+      "fixAvailable": false
+    },
+    "@eslint/eslintrc": {
+      "name": "@eslint/eslintrc",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "ajv"
+      ],
+      "effects": [
+        "eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@eslint/eslintrc"
+      ],
+      "fixAvailable": false
+    },
+    "@typescript-eslint/eslint-plugin": {
+      "name": "@typescript-eslint/eslint-plugin",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/parser",
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/@typescript-eslint/eslint-plugin"
+      ],
+      "fixAvailable": false
+    },
+    "@typescript-eslint/parser": {
+      "name": "@typescript-eslint/parser",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin",
+        "typescript-eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@typescript-eslint/parser"
+      ],
+      "fixAvailable": false
+    },
+    "@typescript-eslint/type-utils": {
+      "name": "@typescript-eslint/type-utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin"
+      ],
+      "range": ">=5.9.2-alpha.0",
+      "nodes": [
+        "node_modules/@typescript-eslint/type-utils"
+      ],
+      "fixAvailable": false
+    },
+    "@typescript-eslint/utils": {
+      "name": "@typescript-eslint/utils",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "eslint"
+      ],
+      "effects": [
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/type-utils",
+        "typescript-eslint"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/@typescript-eslint/utils"
+      ],
+      "fixAvailable": false
+    },
+    "ajv": {
+      "name": "ajv",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113214,
+          "name": "ajv",
+          "dependency": "ajv",
+          "title": "ajv has ReDoS when using `$data` option",
+          "url": "https://github.com/advisories/GHSA-2g4f-4pwh-qvx6",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<8.18.0"
+        }
+      ],
+      "effects": [
+        "@eslint/eslintrc",
+        "eslint"
+      ],
+      "range": "<8.18.0",
+      "nodes": [
+        "node_modules/@eslint/eslintrc/node_modules/ajv",
+        "node_modules/aws-cdk-lib/node_modules/ajv",
+        "node_modules/eslint/node_modules/ajv"
+      ],
+      "fixAvailable": false
+    },
+    "aws-amplify": {
+      "name": "aws-amplify",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "@aws-amplify/analytics"
+      ],
+      "effects": [],
+      "range": "6.0.31-unstable.40e6b7c.0 - 6.1.3 || >=6.16.2-unstable.7976008.0",
+      "nodes": [
+        "node_modules/aws-amplify"
+      ],
+      "fixAvailable": {
+        "name": "aws-amplify",
+        "version": "6.16.1",
+        "isSemVerMajor": true
+      }
+    },
+    "aws-lambda": {
+      "name": "aws-lambda",
+      "severity": "low",
+      "isDirect": true,
+      "via": [
+        "aws-sdk"
+      ],
+      "effects": [],
+      "range": "<=0.0.14 || >=1.0.7",
+      "nodes": [
+        "node_modules/aws-lambda"
+      ],
+      "fixAvailable": {
+        "name": "aws-lambda",
+        "version": "1.0.6",
+        "isSemVerMajor": true
+      }
+    },
+    "aws-sdk": {
+      "name": "aws-sdk",
+      "severity": "low",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1111997,
+          "name": "aws-sdk",
+          "dependency": "aws-sdk",
+          "title": "JavaScript SDK v2 users should add validation to the region parameter value in or migrate to v3",
+          "url": "https://github.com/advisories/GHSA-j965-2qgj-vjmq",
+          "severity": "low",
+          "cwe": [
+            "CWE-20"
+          ],
+          "cvss": {
+            "score": 3.7,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N"
+          },
+          "range": ">=2.0.0 <=3.0.0"
+        }
+      ],
+      "effects": [
+        "aws-lambda"
+      ],
+      "range": ">=2.0.1",
+      "nodes": [
+        "node_modules/aws-sdk"
+      ],
+      "fixAvailable": {
+        "name": "aws-lambda",
+        "version": "1.0.6",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint": {
+      "name": "eslint",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@eslint-community/eslint-utils",
+        "@eslint/eslintrc",
+        "ajv"
+      ],
+      "effects": [
+        "@eslint-community/eslint-utils",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "@typescript-eslint/type-utils",
+        "@typescript-eslint/utils",
+        "eslint-config-prettier",
+        "eslint-plugin-import-newlines",
+        "eslint-plugin-prettier",
+        "typescript-eslint"
+      ],
+      "range": ">=4.2.0",
+      "nodes": [
+        "node_modules/eslint"
+      ],
+      "fixAvailable": false
+    },
+    "eslint-config-prettier": {
+      "name": "eslint-config-prettier",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [
+        "eslint-plugin-prettier"
+      ],
+      "range": ">=7.0.0",
+      "nodes": [
+        "node_modules/eslint-config-prettier"
+      ],
+      "fixAvailable": {
+        "name": "eslint-config-prettier",
+        "version": "6.15.0",
+        "isSemVerMajor": true
+      }
+    },
+    "eslint-plugin-import-newlines": {
+      "name": "eslint-plugin-import-newlines",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/eslint-plugin-import-newlines"
+      ],
+      "fixAvailable": false
+    },
+    "eslint-plugin-prettier": {
+      "name": "eslint-plugin-prettier",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "eslint",
+        "eslint-config-prettier"
+      ],
+      "effects": [],
+      "range": ">=3.0.0",
+      "nodes": [
+        "node_modules/eslint-plugin-prettier"
+      ],
+      "fixAvailable": {
+        "name": "eslint-plugin-prettier",
+        "version": "2.7.0",
+        "isSemVerMajor": true
+      }
+    },
+    "fast-xml-parser": {
+      "name": "fast-xml-parser",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1113240,
+          "name": "fast-xml-parser",
+          "dependency": "fast-xml-parser",
+          "title": "fast-xml-parser affected by DoS through entity expansion in DOCTYPE (no expansion limit)",
+          "url": "https://github.com/advisories/GHSA-jmr7-xgp7-cmfj",
+          "severity": "high",
+          "cwe": [
+            "CWE-776"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": ">=4.1.3 <5.3.6"
+        }
+      ],
+      "effects": [
+        "@aws-sdk/xml-builder"
+      ],
+      "range": "4.1.3 - 5.3.5",
+      "nodes": [
+        "node_modules/fast-xml-parser"
+      ],
+      "fixAvailable": {
+        "name": "@aws-sdk/client-dynamodb",
+        "version": "3.893.0",
+        "isSemVerMajor": true
+      }
+    },
+    "fhir": {
+      "name": "fhir",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "lodash"
+      ],
+      "effects": [],
+      "range": ">=4.0.0",
+      "nodes": [
+        "node_modules/fhir"
+      ],
+      "fixAvailable": {
+        "name": "fhir",
+        "version": "3.3.1",
+        "isSemVerMajor": true
+      }
+    },
+    "lodash": {
+      "name": "lodash",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1112455,
+          "name": "lodash",
+          "dependency": "lodash",
+          "title": "Lodash has Prototype Pollution Vulnerability in `_.unset` and `_.omit` functions",
+          "url": "https://github.com/advisories/GHSA-xxjr-mmjv-4gpg",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-1321"
+          ],
+          "cvss": {
+            "score": 6.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:L"
+          },
+          "range": ">=4.0.0 <=4.17.22"
+        }
+      ],
+      "effects": [
+        "fhir"
+      ],
+      "range": "4.0.0 - 4.17.21",
+      "nodes": [
+        "node_modules/fhir/node_modules/lodash"
+      ],
+      "fixAvailable": {
+        "name": "fhir",
+        "version": "3.3.1",
+        "isSemVerMajor": true
+      }
+    },
+    "typescript-eslint": {
+      "name": "typescript-eslint",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "@typescript-eslint/utils",
+        "eslint"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/typescript-eslint"
+      ],
+      "fixAvailable": {
+        "name": "typescript-eslint",
+        "version": "8.14.0",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 2,
+      "moderate": 14,
+      "high": 27,
+      "critical": 0,
+      "total": 43
+    },
+    "dependencies": {
+      "prod": 465,
+      "dev": 808,
+      "optional": 105,
+      "peer": 30,
+      "peerOptional": 0,
+      "total": 1307
+    }
+  }
+}
