@@ -14,3 +14,6 @@ vulnerabilities:
       - "package-lock.json"
     statement: downstream dependency of fast-xml-parser
     expired_at: 2026-06-01
+  - id: CVE-2026-26278
+    statement: fast-xml-parser vulnerability accepted as risk - dependency of aws-cdk
+    expired_at: 2026-06-01
