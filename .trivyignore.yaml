@@ -14,27 +14,9 @@ vulnerabilities:
       - "package-lock.json"
     statement: downstream dependency of fast-xml-parser
     expired_at: 2026-06-01
-  # ajv vulnerabilities - bundled in ESLint and aws-cdk-lib, cannot be updated independently
-  - id: GHSA-2g4f-4pwh-qvx6
-    paths:
-      - "package-lock.json"
-    statement: ajv bundled in eslint and aws-cdk-lib - requires ESLint v6 compatibility, cannot force v8
+  - id: CVE-2026-26278
+    statement: fast-xml-parser vulnerability accepted as risk - dependency of aws-sdk/client-dynamodb
     expired_at: 2026-06-01
-  # fast-xml-parser vulnerabilities in bundled dependencies
-  - id: GHSA-jmr7-xgp7-cmfj  
-    paths:
-      - "package-lock.json"
-    statement: fast-xml-parser bundled in aws-sdk packages - fixed versions available but blocked by aws-sdk version constraints
-    expired_at: 2026-06-01
-  # lodash vulnerabilities in bundled fhir package
-  - id: GHSA-xxjr-mmjv-4gpg
-    paths:
-      - "package-lock.json" 
-    statement: lodash bundled in fhir package v4.12.0 - cannot update without major fhir version upgrade
-    expired_at: 2026-06-01
-  # aws-sdk v2 region parameter vulnerability
-  - id: GHSA-j965-2qgj-vjmq
-    paths:
-      - "package-lock.json"
-    statement: aws-sdk v2 region validation - used by aws-lambda package, requires application-level validation
+  - id: CVE-2026-26960
+    statement: tar vulnerability accepted as risk
     expired_at: 2026-06-01
