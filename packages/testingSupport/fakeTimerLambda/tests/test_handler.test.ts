@@ -40,7 +40,7 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     context = {...mockContext}
-    
+
     // Reset mocks to default behavior
     mockGetTokenMapping.mockResolvedValue({
       username: "test-user",
@@ -87,7 +87,7 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
 
     it("works without request_id parameter", async (): Promise<void> => {
       mockGetTokenMapping.mockResolvedValue({
-        username: "test-user",  
+        username: "test-user",
         lastActivityTime: Date.now()
       })
       mockUpdateTokenMapping.mockResolvedValue(undefined)
@@ -100,9 +100,10 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
     })
 
     it("returns 500 when getTokenMapping fails for unknown user", async (): Promise<void> => {
-      mockGetTokenMapping.mockRejectedValue(new Error("Error retrieving data from TokenMappingTable for user: unknown-user"))
+      mockGetTokenMapping.mockRejectedValue(new Error("Error retrieving data from TokenMappingTable "
+         + "for user: unknown-user"))
 
-      const event = buildEvent({username: "unknown-user"})  
+      const event = buildEvent({username: "unknown-user"})
       const response: APIGatewayProxyResult = await handler(event, context)
 
       expect(response.statusCode).toBe(500)
