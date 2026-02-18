@@ -41,6 +41,14 @@
         "packages/testingSupport/fakeTimerLambda",
         "packages/sessionManagementLambda"
     ],
+    "overrides": {
+        "ajv": "^8.18.0",
+        "fast-xml-parser": "^5.3.6", 
+        "lodash": "^4.17.23",
+        "@aws-sdk/core": "^3.994.0",
+        "@aws-sdk/xml-builder": "^3.994.0",
+        "aws-amplify": "^6.16.3"
+    },
     "devDependencies": {
         "@eslint/js": "^9.38.0",
         "@jest/globals": "^30.1.1",
