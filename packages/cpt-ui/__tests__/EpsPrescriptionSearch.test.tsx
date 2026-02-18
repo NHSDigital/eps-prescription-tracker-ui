@@ -29,7 +29,7 @@ describe("The tabs component", () => {
     const {container} = render(
       <MemoryRouter>
         <EpsTabs
-          activeTabPath="/search-by-prescription-id"
+          activeTabPath={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
           tabHeaderArray={exampleTabs}
         >
           <div data-testid="tab-content">Tab Content</div>
@@ -38,8 +38,8 @@ describe("The tabs component", () => {
     )
 
     // Get the tab links for each search type
-    const prescriptionIdTab = container.querySelector('a[href="/search-by-prescription-id"]')
-    const nhsNumberTab = container.querySelector('a[href="/search-by-nhs-number"]')
+    const prescriptionIdTab = container.querySelector(`a[href="${FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}"]`)
+    const nhsNumberTab = container.querySelector(`a[href="${FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER}"]`)
 
     // Verify the tabs exist
     expect(prescriptionIdTab).toBeInTheDocument()

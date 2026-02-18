@@ -5,6 +5,7 @@ import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
 import {AuthContextType, useAuth} from "@/context/AuthProvider"
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
 import userEvent from "@testing-library/user-event"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Mock useAuth hook
 jest.mock("@/context/AuthProvider")
@@ -90,8 +91,8 @@ describe("YourSelectedRolePage", () => {
     const orgChangeLink = changeLinks.find(link =>
       link.closest('[data-testid="org-change-role-cell"]')
     )
-    expect(roleChangeLink).toHaveAttribute("href", "/change-your-role")
-    expect(orgChangeLink).toHaveAttribute("href", "/change-your-role")
+    expect(roleChangeLink).toHaveAttribute("href", FRONTEND_PATHS.CHANGE_YOUR_ROLE)
+    expect(orgChangeLink).toHaveAttribute("href", FRONTEND_PATHS.CHANGE_YOUR_ROLE)
   })
 
   it("navigates to /search-by-prescription-id when confirm button is clicked", async () => {
@@ -102,10 +103,11 @@ describe("YourSelectedRolePage", () => {
 
     // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id
     render(
-      <MemoryRouter initialEntries={["/your-selected-role"]}>
+      <MemoryRouter initialEntries={[FRONTEND_PATHS.YOUR_SELECTED_ROLE]}>
         <Routes>
-          <Route path="/your-selected-role" element={<YourSelectedRolePage />} />
-          <Route path="/search-by-prescription-id" element={<div data-testid="search-page">Search Page</div>} />
+          <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
+          <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
+            element={<div data-testid="search-page">Search Page</div>} />
         </Routes>
       </MemoryRouter>
     )

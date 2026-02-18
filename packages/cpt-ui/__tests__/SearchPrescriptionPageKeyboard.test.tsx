@@ -85,7 +85,7 @@ const defaultSearchContext: SearchProviderContextType = {
 const renderWithProviders = (
   ui: React.ReactElement,
   {
-    initialEntries = ["/search-by-prescription-id"],
+    initialEntries = ["/search#prescription-id"],
     authContext = defaultAuthContext,
     searchContext = defaultSearchContext
   } = {}
@@ -122,7 +122,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
     jest.spyOn(document, "querySelectorAll").mockImplementation(mockQuerySelectorAll)
 
     renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: ["/search#prescription-id"]
     })
 
     // Simulate arrow right key press
@@ -134,7 +134,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
       jest.advanceTimersByTime(100)
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith("/search-by-nhs-number")
+    expect(mockNavigate).toHaveBeenCalledWith("/search#nhs-number")
   })
 
   it("handles arrow left key navigation when no input is focused", () => {
@@ -146,7 +146,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
     jest.spyOn(document, "querySelectorAll").mockImplementation(mockQuerySelectorAll)
 
     renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: ["/search#prescription-id"]
     })
 
     // Simulate arrow left key press (should wrap to last tab)
@@ -158,7 +158,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
       jest.advanceTimersByTime(100)
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith("/search-by-basic-details")
+    expect(mockNavigate).toHaveBeenCalledWith("/search#basic-details")
   })
 
   it("handles arrow left key navigation from middle tab", () => {
@@ -170,7 +170,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
     jest.spyOn(document, "querySelectorAll").mockImplementation(mockQuerySelectorAll)
 
     renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: ["/search#nhs-number"]
     })
 
     // Simulate arrow left key press
@@ -182,7 +182,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
       jest.advanceTimersByTime(100)
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
+    expect(mockNavigate).toHaveBeenCalledWith("/search#prescription-id")
   })
 
   it("handles arrow right key navigation from last tab (wraps to first)", () => {
@@ -194,7 +194,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
     jest.spyOn(document, "querySelectorAll").mockImplementation(mockQuerySelectorAll)
 
     renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: ["/search#basic-details"]
     })
 
     // Simulate arrow right key press (should wrap to first tab)
@@ -206,7 +206,7 @@ describe("SearchPrescriptionPage - Keyboard Navigation Tests", () => {
       jest.advanceTimersByTime(100)
     })
 
-    expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
+    expect(mockNavigate).toHaveBeenCalledWith("/search#prescription-id")
   })
 
   it("ignores keyboard navigation when input is focused", () => {

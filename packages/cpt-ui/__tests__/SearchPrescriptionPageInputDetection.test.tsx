@@ -7,6 +7,7 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Mock the NavigationProvider's useNavigationContext hook
 const mockNavigationContext = {
@@ -83,7 +84,7 @@ const defaultSearchContext: SearchProviderContextType = {
 const renderWithProviders = (
   ui: React.ReactElement,
   {
-    initialEntries = ["/search-by-prescription-id"],
+    initialEntries = [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID],
     authContext = defaultAuthContext,
     searchContext = defaultSearchContext
   } = {}
@@ -122,7 +123,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     // Click on NHS number tab to trigger the check
@@ -151,7 +152,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]
     })
 
     // Click on prescription ID tab to trigger the check
@@ -179,7 +180,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -206,7 +207,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -233,7 +234,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -260,7 +261,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -287,7 +288,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -314,7 +315,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -334,7 +335,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     jest.spyOn(document, "querySelector").mockReturnValue(null)
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -362,7 +363,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -390,7 +391,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -424,7 +425,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -444,7 +445,7 @@ describe("SearchPrescriptionPage - Input Detection and Aria-Live Tests", () => {
     jest.spyOn(document, "querySelector").mockReturnValue(document.createElement("input")) // Empty input
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")

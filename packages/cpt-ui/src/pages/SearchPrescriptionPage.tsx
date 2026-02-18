@@ -25,7 +25,7 @@ import {useSearchContext} from "@/context/SearchProvider"
 export default function SearchPrescriptionPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const pathname = location.pathname
+  const pathname = location.pathname + location.hash
   const searchContext = useSearchContext()
 
   // Clear search context contamination when navigating to search pages
@@ -52,16 +52,16 @@ export default function SearchPrescriptionPage() {
   const activeTabRef = useRef(activeTab)
 
   const pathToIndex: Record<string, number> = {
-    "/search-by-prescription-id": 0,
-    "/search-by-nhs-number": 1,
-    "/search-by-basic-details": 2
+    "/search#prescription-id": 0,
+    "/search#nhs-number": 1,
+    "/search#basic-details": 2
   }
 
   // Map paths directly to content components
   const pathContent: Record<string, React.ReactNode> = {
-    "/search-by-prescription-id": <PrescriptionIdSearch />,
-    "/search-by-nhs-number": <NhsNumSearch />,
-    "/search-by-basic-details": <BasicDetailsSearch />
+    "/search#prescription-id": <PrescriptionIdSearch />,
+    "/search#nhs-number": <NhsNumSearch />,
+    "/search#basic-details": <BasicDetailsSearch />
   }
 
   // Update active tab when pathname changes

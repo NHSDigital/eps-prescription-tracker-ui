@@ -27,7 +27,7 @@ jest.mock("@/constants/environment", () => ({
   FRONTEND_PATHS: {
     LOGOUT: "/logout",
     LOGIN: "/login",
-    SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id"
+    SEARCH_BY_PRESCRIPTION_ID: "/search#prescription-id"
   },
   API_ENDPOINTS: {
     SESSION_MANAGEMENT: "/api/session-management"

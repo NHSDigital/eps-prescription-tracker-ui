@@ -71,6 +71,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
   ]
 
   const searchPages = [
+    FRONTEND_PATHS.SEARCH,
     FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
     FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER,
     FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS

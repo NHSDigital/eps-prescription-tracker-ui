@@ -7,6 +7,7 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Mock the NavigationProvider's useNavigationContext hook
 const mockNavigationContext = {
@@ -83,7 +84,7 @@ const defaultSearchContext: SearchProviderContextType = {
 const renderWithProviders = (
   ui: React.ReactElement,
   {
-    initialEntries = ["/search-by-prescription-id"],
+    initialEntries = [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID],
     authContext = defaultAuthContext,
     searchContext = defaultSearchContext
   } = {}
@@ -108,7 +109,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
   it("renders with default prescription ID path", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     expect(container.querySelector('[data-testid="search-for-a-prescription"]')).toBeInTheDocument()
@@ -123,7 +124,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
   it("renders with NHS number path", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]
     })
 
     expect(container.querySelector('[data-testid="search-for-a-prescription"]')).toBeInTheDocument()
@@ -138,7 +139,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
   it("renders with basic details path", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-basic-details"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS]
     })
 
     expect(container.querySelector('[data-testid="search-for-a-prescription"]')).toBeInTheDocument()
@@ -168,7 +169,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
   it("updates active tab when pathname changes", () => {
     const {rerender} = render(
-      <MemoryRouter initialEntries={["/search-by-prescription-id"]}>
+      <MemoryRouter initialEntries={[FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]}>
         <AuthContext.Provider value={defaultAuthContext}>
           <AccessContext.Provider value={{}}>
             <SearchContext.Provider value={defaultSearchContext}>
@@ -181,7 +182,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
     // Re-render with different path
     rerender(
-      <MemoryRouter initialEntries={["/search-by-nhs-number"]}>
+      <MemoryRouter initialEntries={[FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]}>
         <AuthContext.Provider value={defaultAuthContext}>
           <AccessContext.Provider value={{}}>
             <SearchContext.Provider value={defaultSearchContext}>
@@ -215,7 +216,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
   it("handles tabindex correctly for active and inactive tabs", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll('[role="tab"]')
@@ -252,7 +253,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
 
   it("sets correct role and id for tab panel", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabPanel = container.querySelector('[role="tabpanel"]')
@@ -301,7 +302,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
   it("handles default case in checkForInputText function", () => {
     // This tests the default case in the switch statement
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     // Mock querySelector to simulate an unknown tab index scenario

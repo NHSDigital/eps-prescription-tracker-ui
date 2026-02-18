@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+
 import "@testing-library/jest-dom"
 import {render, screen, fireEvent} from "@testing-library/react"
 import {
@@ -63,9 +63,9 @@ const renderWithRouter = (
       <NavigationProvider>
         <Routes>
           <Route path="/too-many-search-results" element={<TestWrapper />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<DummyPage label="Basic Details Search" />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER} element={<DummyPage label="NHS Number Search" />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID} element={<DummyPage label="Prescription ID Search" />} />
+          <Route path="/search" element={<DummyPage label="Basic Details Search" />} />
+          <Route path="/search#nhs-number" element={<DummyPage label="NHS Number Search" />} />
+          <Route path="/search#prescription-id" element={<DummyPage label="Prescription ID Search" />} />
         </Routes>
       </NavigationProvider>
     </MemoryRouter>
