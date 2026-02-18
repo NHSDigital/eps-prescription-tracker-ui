@@ -115,14 +115,20 @@ export class RestApiGatewayMethods extends Construct {
       const clearActiveSessionResource = props.restApiGateway.root.addResource("test-support-clear-active-session")
       clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
         credentialsRole: props.restAPiGatewayRole
-      }), {})
+      }), {
+        authorizationType: AuthorizationType.COGNITO,
+        authorizer: props.authorizer
+      })
 
       // testing-support-fake-timer
       const fakeTimerResource =
        props.restApiGateway.root.addResource("test-support-fake-timer")
       fakeTimerResource.addMethod("POST", new LambdaIntegration(props.fakeTimerLambda, {
         credentialsRole: props.restAPiGatewayRole
-      }), {})
+      }), {
+        authorizationType: AuthorizationType.COGNITO,
+        authorizer: props.authorizer
+      })
     }
 
     //Outputs
