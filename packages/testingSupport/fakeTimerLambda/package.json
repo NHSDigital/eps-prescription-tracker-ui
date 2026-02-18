@@ -1,7 +1,7 @@
 {
-  "name": "clear-active-session-timeout-lambda",
+  "name": "fake-timer-lambda",
   "version": "1.0.0",
-  "description": "Lambda to handle clearing active sessions for a user with timeout context for test purposes",
+  "description": "Lambda to handle fake timer operations for regression testing purposes",
   "main": "handler.ts",
   "author": "NHS Digital",
   "license": "MIT",

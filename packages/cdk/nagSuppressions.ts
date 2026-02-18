@@ -165,7 +165,7 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/PatientSearch/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/ClearActiveSessions/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/ApiFunctions/ClearActiveSessionsTimeout/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/ApiFunctions/FakeTimerLambda/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SessionMgmt/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",

@@ -1,6 +1,7 @@
 {
     "name": "eps-prescription-tracker-ui",
     "version": "1.0.0",
+    "type": "module",
     "description": "![Build](https://github.com/NHSDigital/eps-prescription-tracker-ui/workflows/Build/badge.svg?branch=main)",
     "scripts": {
         "test": "jest",
@@ -37,7 +38,7 @@
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda",
         "packages/testingSupport/clearActiveSessions",
-        "packages/testingSupport/clearActiveSessionsTimeout",
+        "packages/testingSupport/fakeTimerLambda",
         "packages/sessionManagementLambda"
     ],
     "devDependencies": {

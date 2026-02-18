@@ -61,7 +61,7 @@ export class ApiFunctions extends Construct {
   public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
   public readonly clearActiveSessionLambda: NodejsFunction
-  public readonly clearActiveSessionTimeoutLambda: NodejsFunction
+  public readonly fakeTimerLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -289,14 +289,14 @@ export class ApiFunctions extends Construct {
 
       this.clearActiveSessionLambda = clearActiveSessionLambda.lambda
 
-      const clearActiveSessionTimeoutLambda = new LambdaFunction(this, "ClearActiveSessionsTimeout", {
+      const fakeTimerLambda = new LambdaFunction(this, "FakeTimerLambda", {
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-clr-timeout`,
         additionalPolicies: additionalPolicies,
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
-        packageBasePath: "packages/testingSupport/clearActiveSessionsTimeout",
+        packageBasePath: "packages/testingSupport/fakeTimerLambda",
         entryPoint: "src/handler.ts",
         lambdaEnvironmentVariables: {
           ...commonLambdaEnv,
@@ -306,9 +306,9 @@ export class ApiFunctions extends Construct {
       })
 
       // Add the policy to apiFunctionsPolicies
-      apiFunctionsPolicies.push(clearActiveSessionTimeoutLambda.executeLambdaManagedPolicy)
+      apiFunctionsPolicies.push(fakeTimerLambda.executeLambdaManagedPolicy)
 
-      this.clearActiveSessionTimeoutLambda = clearActiveSessionTimeoutLambda.lambda
+      this.fakeTimerLambda = fakeTimerLambda.lambda
     }
 
     // Outputs

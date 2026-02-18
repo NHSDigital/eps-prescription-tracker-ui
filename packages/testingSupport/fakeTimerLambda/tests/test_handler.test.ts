@@ -6,12 +6,16 @@ import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 process.env.TokenMappingTableName = "TokenMappingTable"
 process.env.SessionManagementTableName = "SessionManagementTable"
 
-// Mock deleteRecordAllowFailures for handler integration tests
+// Mock dynamo functions for handler integration tests
 const mockDeleteRecordAllowFailures = jest.fn() as any
+const mockGetTokenMapping = jest.fn() as any
+const mockUpdateTokenMapping = jest.fn() as any
 
 jest.unstable_mockModule("@cpt-ui-common/dynamoFunctions", () => {
   return {
-    deleteRecordAllowFailures: mockDeleteRecordAllowFailures
+    deleteRecordAllowFailures: mockDeleteRecordAllowFailures,
+    getTokenMapping: mockGetTokenMapping,
+    updateTokenMapping: mockUpdateTokenMapping
   }
 })
 
@@ -36,6 +40,14 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     context = {...mockContext}
+    
+    // Reset mocks to default behavior
+    mockGetTokenMapping.mockResolvedValue({
+      username: "test-user",
+      lastActivityTime: Date.now()
+    })
+    mockUpdateTokenMapping.mockResolvedValue(undefined)
+    mockDeleteRecordAllowFailures.mockResolvedValue(undefined)
   })
 
   const buildEvent = (body: unknown): APIGatewayProxyEvent => ({
@@ -44,46 +56,58 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
   })
 
   describe("successful handler scenarios", () => {
-    it("returns 401 with timeout context when both records are deleted successfully", async (): Promise<void> => {
-      mockDeleteRecordAllowFailures.mockResolvedValue(undefined)
+    it("returns 200 when successfully updating lastActivityTime to 13 minutes in past", async (): Promise<void> => {
+      mockGetTokenMapping.mockResolvedValue({
+        username: "test-user",
+        lastActivityTime: Date.now()
+      })
+      mockUpdateTokenMapping.mockResolvedValue(undefined)
 
       const event = buildEvent({username: "test-user", request_id: "test-request"})
       const response: APIGatewayProxyResult = await handler(event, context)
 
-      expect(response.statusCode).toBe(401)
-      expect(JSON.parse(response.body)).toEqual({
-        message: "Session expired or invalid. Please log in again.",
-        restartLogin: true,
-        invalidSessionCause: "Timeout"
-      })
-      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledTimes(2)
-      expect(mockDeleteRecordAllowFailures).toHaveBeenNthCalledWith(
-        1,
+      expect(response.statusCode).toBe(200)
+      expect(JSON.parse(response.body)).toEqual({})
+      expect(mockGetTokenMapping).toHaveBeenCalledWith(
         expect.anything(),
         "TokenMappingTable",
         "test-user",
         expect.anything()
       )
-      expect(mockDeleteRecordAllowFailures).toHaveBeenLastCalledWith(
+      expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
         expect.anything(),
-        "SessionManagementTable",
-        "test-user",
+        "TokenMappingTable",
+        expect.objectContaining({
+          username: "test-user",
+          lastActivityTime: expect.any(Number)
+        }),
         expect.anything()
       )
     })
 
     it("works without request_id parameter", async (): Promise<void> => {
-      mockDeleteRecordAllowFailures.mockResolvedValue(undefined)
+      mockGetTokenMapping.mockResolvedValue({
+        username: "test-user",  
+        lastActivityTime: Date.now()
+      })
+      mockUpdateTokenMapping.mockResolvedValue(undefined)
 
       const event = buildEvent({username: "test-user"})
       const response: APIGatewayProxyResult = await handler(event, context)
 
-      expect(response.statusCode).toBe(401)
-      expect(JSON.parse(response.body)).toEqual({
-        message: "Session expired or invalid. Please log in again.",
-        restartLogin: true,
-        invalidSessionCause: "Timeout"
-      })
+      expect(response.statusCode).toBe(200)
+      expect(JSON.parse(response.body)).toEqual({})
+    })
+
+    it("returns 500 when getTokenMapping fails for unknown user", async (): Promise<void> => {
+      mockGetTokenMapping.mockRejectedValue(new Error("Error retrieving data from TokenMappingTable for user: unknown-user"))
+
+      const event = buildEvent({username: "unknown-user"})  
+      const response: APIGatewayProxyResult = await handler(event, context)
+
+      expect(response.statusCode).toBe(500)
+      expect(JSON.parse(response.body)).toEqual({message: "Error updating session timeout"})
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
     })
   })
 
@@ -94,7 +118,8 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
 
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({message: "Invalid request body"})
-      expect(mockDeleteRecordAllowFailures).not.toHaveBeenCalled()
+      expect(mockGetTokenMapping).not.toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
     })
 
     it("returns 400 when body is missing", async (): Promise<void> => {
@@ -103,7 +128,8 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
 
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({message: "Invalid request body"})
-      expect(mockDeleteRecordAllowFailures).not.toHaveBeenCalled()
+      expect(mockGetTokenMapping).not.toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
     })
 
     it("returns 400 when username is empty string", async (): Promise<void> => {
@@ -112,22 +138,24 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
 
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({message: "Invalid request body"})
-      expect(mockDeleteRecordAllowFailures).not.toHaveBeenCalled()
+      expect(mockGetTokenMapping).not.toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
     })
 
     it("accepts username that is not a string (handler doesn't type-check)", async (): Promise<void> => {
-      mockDeleteRecordAllowFailures.mockResolvedValue(undefined)
+      mockGetTokenMapping.mockResolvedValue({
+        username: "123",
+        lastActivityTime: Date.now()
+      })
+      mockUpdateTokenMapping.mockResolvedValue(undefined)
 
       const event = buildEvent({username: 123})
       const response: APIGatewayProxyResult = await handler(event, context)
 
-      expect(response.statusCode).toBe(401)
-      expect(JSON.parse(response.body)).toEqual({
-        message: "Session expired or invalid. Please log in again.",
-        restartLogin: true,
-        invalidSessionCause: "Timeout"
-      })
-      expect(mockDeleteRecordAllowFailures).toHaveBeenCalledTimes(2)
+      expect(response.statusCode).toBe(200)
+      expect(JSON.parse(response.body)).toEqual({})
+      expect(mockGetTokenMapping).toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).toHaveBeenCalled()
     })
   })
 })

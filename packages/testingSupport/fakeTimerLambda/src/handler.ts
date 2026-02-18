@@ -1,3 +1,9 @@
+// push lastactivitytime 13 minutes forward
+//then fe pusghes forewward a minute to check foir mnodal
+//then another minute to force logout
+
+//disabletokenrefresh is what goes nuclear so not showing the new logout
+
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
@@ -9,7 +15,7 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
 
-import {deleteRecordAllowFailures} from "@cpt-ui-common/dynamoFunctions"
+import {getTokenMapping, updateTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 const logger = new Logger({serviceName: "status"})
 const dynamoClient = new DynamoDBClient()
@@ -24,9 +30,7 @@ const errorResponseBody = {
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
 
-// Env vars
 const tokenMappingTableName = process.env["TokenMappingTableName"] as string
-const sessionManagementTableName = process.env["SessionManagementTableName"] as string
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
@@ -46,33 +50,63 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   const username = body.username
   const requestId = body.request_id
 
-  logger.info("Deleting token mapping and session management data "
-    + "for user with timeout simulation", {username, requestId})
+  logger.info("Setting lastActivityTime to 13 minutes in the Past for user", {username, requestId})
 
-  const results = await Promise.allSettled([
-    deleteRecordAllowFailures(documentClient, tokenMappingTableName, username, logger),
-    deleteRecordAllowFailures(documentClient, sessionManagementTableName, username, logger)
-  ])
+  const thirteenMinutesInPast = Date.now() - (13 * 60 * 1000)
 
-  for (const result of results) {
-    if (result.status === "rejected") {
-      throw result.reason
+  try {
+    const existingTokenMapping = await getTokenMapping(
+      documentClient,
+      tokenMappingTableName,
+      username,
+      logger
+    )
+
+    if (existingTokenMapping) {
+      await updateTokenMapping(
+        documentClient,
+        tokenMappingTableName,
+        {
+          username,
+          lastActivityTime: thirteenMinutesInPast
+        },
+        logger
+      )
+
+      logger.info("Successfully updated lastActivityTime for regression testing", {
+        username,
+        requestId,
+        newLastActivityTime: thirteenMinutesInPast
+      })
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({}),
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache"
+        }
+      }
+    } else {
+      logger.error("No existing token mapping found for user", {username})
+      return {
+        statusCode: 404,
+        body: JSON.stringify({"message": "No active session found for user"}),
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache"
+        }
+      }
     }
-  }
-
-  logger.info("Successfully conducted deletions and simulating timeout for user", {username, requestId})
-  
-  // Return 401 with timeout cause - this will trigger handleRestartLogin with "Timeout"
-  return {
-    statusCode: 401,
-    body: JSON.stringify({
-      "message": "Session expired or invalid. Please log in again.",
-      "restartLogin": true,
-      "invalidSessionCause": "Timeout"
-    }),
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-cache"
+  } catch (error) {
+    logger.error("Error updating lastActivityTime", {error, username, requestId})
+    return {
+      statusCode: 500,
+      body: JSON.stringify({"message": "Error updating session timeout"}),
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache"
+      }
     }
   }
 }
