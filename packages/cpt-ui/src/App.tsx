@@ -6,7 +6,8 @@ import {NavigationProvider} from "@/context/NavigationProvider"
 import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
 import {PrescriptionInformationProvider} from "./context/PrescriptionInformationProvider"
 import Layout from "@/Layout"
-import {useFocusManagement} from "@/helpers/useFocusManagement"
+import {useEffect} from "react"
+import {useLocalStorageState} from "./helpers/useLocalStorageState"
 
 import LoginPage from "@/pages/LoginPage"
 import LogoutPage from "@/pages/LogoutPage"
@@ -34,9 +35,104 @@ import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 function AppContent() {
   const location = useLocation()
 
-  // Use the custom focus management hook to handle skip link behavior
-  // and persist user interaction state across page refreshes
-  useFocusManagement()
+  // Persist last focused interactive element for page refresh scenarios
+  const [lastFocusedElement, setLastFocusedElement] = useLocalStorageState<string | null>(
+    "lastFocusedElement",
+    "focusState",
+    null
+  )
+  const [lastPathname, setLastPathname] = useLocalStorageState<string>(
+    "lastPathname",
+    "focusState",
+    location.pathname
+  )
+
+  useEffect(() => {
+    let hasTabbed = false
+    let hasUserInteracted = false
+
+    const isPageRefresh = lastPathname === location.pathname
+    const isNavigation = lastPathname !== location.pathname
+
+    if (isNavigation) {
+      setLastFocusedElement(null)
+      setLastPathname(location.pathname)
+    }
+
+    const activeElement = document.activeElement as HTMLElement
+    if (activeElement && activeElement !== document.body && activeElement.tagName !== "HTML") {
+      hasUserInteracted = true
+    }
+
+    if (isPageRefresh && lastFocusedElement) {
+      const savedElement = document.querySelector(lastFocusedElement) as HTMLElement
+      if (savedElement && savedElement.offsetParent !== null) {
+        hasUserInteracted = true
+      }
+    }
+
+    const handleUserInteraction = (event: Event) => {
+      hasUserInteracted = true
+
+      const target = event.target as HTMLElement
+      if (target && target.id) {
+        const interactiveSelectors = [
+          "presc-id-input",
+          "nhs-number-input",
+          "first-name",
+          "last-name",
+          "dob-day-input",
+          "dob-month-input",
+          "dob-year-input",
+          "postcode-input"
+        ]
+
+        if (interactiveSelectors.includes(target.id)) {
+          setLastFocusedElement(`#${target.id}`)
+          setLastPathname(location.pathname)
+        }
+      }
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab" && !hasTabbed && !e.shiftKey) {
+        hasTabbed = true
+
+        if (!hasUserInteracted) {
+          e.preventDefault()
+          const skipLink = document.querySelector(".nhsuk-skip-link") as HTMLElement
+          if (skipLink) {
+            skipLink.focus()
+          }
+        } else if (isPageRefresh && lastFocusedElement) {
+          e.preventDefault()
+          const savedElement = document.querySelector(lastFocusedElement) as HTMLElement
+          if (savedElement && savedElement.offsetParent !== null) {
+            savedElement.focus()
+          } else {
+            const skipLink = document.querySelector(".nhsuk-skip-link") as HTMLElement
+            if (skipLink) {
+              skipLink.focus()
+            }
+          }
+        }
+
+        document.removeEventListener("keydown", handleKeyDown)
+        document.removeEventListener("click", handleUserInteraction)
+        document.removeEventListener("focusin", handleUserInteraction)
+      }
+    }
+
+    document.addEventListener("click", handleUserInteraction)
+    document.addEventListener("focusin", handleUserInteraction)
+    document.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("click", handleUserInteraction)
+      document.removeEventListener("focusin", handleUserInteraction)
+    }
+  }, [location.pathname, lastFocusedElement, lastPathname, setLastFocusedElement, setLastPathname])
 
   // Check if we're on a prescription list or prescription details page
   const isPrescriptionPage =
