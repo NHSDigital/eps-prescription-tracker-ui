@@ -292,7 +292,7 @@ export class ApiFunctions extends Construct {
       const fakeTimerLambda = new LambdaFunction(this, "FakeTimerLambda", {
         serviceName: props.serviceName,
         stackName: props.stackName,
-        lambdaName: `${props.stackName}-clr-timeout`,
+        lambdaName: `${props.stackName}-fake-timer`,
         additionalPolicies: additionalPolicies,
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
