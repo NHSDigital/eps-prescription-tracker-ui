@@ -136,6 +136,29 @@ export default function RoleSelectionPage({
     handleSetSelectedRole(e, roleCardProps)
   }
 
+  const chunkRolesForRumLogs = (
+    roles: Array<unknown>, logMessage: string, logId: string, fieldToPopulate: string) => {
+    const chunkSize = 4
+
+    const chunks = []
+    for (let index = 0; index < roles.length; index += chunkSize) {
+      const chunk = roles.slice(index, index + chunkSize)
+      chunks.push(chunk)
+    }
+
+    for (const [index, chunk] of chunks.entries()){
+      logger.debug(logMessage, {
+        logId,
+        sessionId: auth.sessionId,
+        userId: auth.userDetails?.sub,
+        pageName: location.pathname,
+        totalChunks: chunks.length,
+        chunkNo: index+1,
+        [fieldToPopulate]: chunk
+      }, true)
+    }
+  }
+
   useEffect(() => {
     // Transform roles data for display
     const rolesWithAccessComponentProps = auth.rolesWithAccess.length === 0
@@ -154,6 +177,7 @@ export default function RoleSelectionPage({
     }))
 
     if(auth.userDetails?.sub) {
+      /* RUM has a 6kb event payload size limit so we need to split this up*/
       const logId = crypto.randomUUID()
       logger.debug("Counts of roles returned vs rendered", {
         logId,
@@ -180,8 +204,6 @@ export default function RoleSelectionPage({
           cognitoUsername: auth.user,
           name: auth.userDetails.name,
           currentlySelectedRole: auth.selectedRole,
-          rolesWithAccess: auth.rolesWithAccess,
-          rolesWithoutAccess: auth.rolesWithoutAccess,
           isSignedIn: auth.isSignedIn,
           isSigningIn: auth.isSigningIn,
           isSigningOut: auth.isSigningOut,
@@ -191,16 +213,13 @@ export default function RoleSelectionPage({
         }
       }, true)
 
-      logger.debug("Component props for rendered roles", {
-        logId,
-        sessionId: auth.sessionId,
-        userId: auth.userDetails.sub,
-        pageName: location.pathname,
-        roleComponentProps:{
-          rolesWithAccess: rolesWithAccessComponentProps,
-          rolesWithoutAccess: rolesWithoutAccessComponentProps
-        }
-      }, true)
+      chunkRolesForRumLogs(auth.rolesWithAccess, "Returned roles with access", logId, "returnedRolesWithAccess")
+      chunkRolesForRumLogs(
+        auth.rolesWithoutAccess, "Returned roles without access", logId, "returnedRolesWithoutAccess")
+      chunkRolesForRumLogs(
+        rolesWithAccessComponentProps, "Rendered roles with access", logId, "renderedRolesWithAccessProps")
+      chunkRolesForRumLogs(
+        rolesWithoutAccessComponentProps, "Rendered roles without access", logId, "renderedRolesWithoutAccessProps")
     }
 
     setRoleComponentProps({

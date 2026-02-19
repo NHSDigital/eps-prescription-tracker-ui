@@ -313,7 +313,7 @@ describe("RoleSelectionPage", () => {
     expect(screen.queryByText("Admin")).not.toBeInTheDocument()
   })
 
-  it("logs rendered role information", async () => {
+  it("logs counts of roles", async () => {
     // eslint-disable-next-line no-undef
     jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
     mockUseAuth.mockReturnValue({
@@ -370,6 +370,53 @@ describe("RoleSelectionPage", () => {
       renderedRolesWithAccessCount: 1,
       renderedRolesWithoutAccessCount: 1
     }, true)
+  })
+
+  it("logs auth context", async () => {
+    // eslint-disable-next-line no-undef
+    jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
+    mockUseAuth.mockReturnValue({
+      sessionId: "session-1234",
+      user: "cognito-user",
+      userDetails: {
+        sub: "12345",
+        name: "Test User"
+      },
+      isSignedIn: true,
+      isSigningIn: false,
+      isSigningOut: false,
+      isConcurrentSession: false,
+      selectedRole: {
+        role_id: "1"
+      },
+      rolesWithAccess: [
+        {
+          role_id: "2",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "1", // this one should be filtered out
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }
+      ],
+      rolesWithoutAccess: [
+        {
+          role_id: "3",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        }
+      ],
+      error: null,
+      invalidSessionCause: undefined,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
+    })
+
+    render(<RoleSelectionPage contentText={defaultContentText} />)
 
     expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
       logId: "some-log-id-uuid-value",
@@ -382,24 +429,6 @@ describe("RoleSelectionPage", () => {
         currentlySelectedRole: {
           role_id: "1"
         },
-        rolesWithAccess: [{
-          role_id: "2",
-          role_name: "Pharmacist",
-          org_code: "ABC",
-          org_name: "Pharmacy Org"
-        },
-        {
-          role_id: "1",
-          role_name: "Admin",
-          org_code: "ZZZ",
-          org_name: "Same Org"
-        }],
-        rolesWithoutAccess: [{
-          role_id: "3",
-          role_name: "Technician",
-          org_code: "XYZ",
-          org_name: "Tech Org"
-        }],
         isSignedIn: true,
         isSigningIn: false,
         isSigningOut: false,
@@ -408,14 +437,218 @@ describe("RoleSelectionPage", () => {
         invalidSessionCause: undefined
       }
     }, true)
+  })
 
-    expect(logger.debug).toHaveBeenCalledWith("Component props for rendered roles", {
+  it("chunks and logs roles", async () => {
+    // eslint-disable-next-line no-undef
+    jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
+    mockUseAuth.mockReturnValue({
+      sessionId: "session-1234",
+      user: "cognito-user",
+      userDetails: {
+        sub: "12345",
+        name: "Test User"
+      },
+      isSignedIn: true,
+      isSigningIn: false,
+      isSigningOut: false,
+      isConcurrentSession: false,
+      selectedRole: {
+        role_id: "1"
+      },
+      rolesWithAccess: [
+        {
+          role_id: "2",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "1", // this one should be filtered out
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        },
+        {
+          role_id: "3",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "4",
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        },
+        {
+          role_id: "5",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "6",
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }
+      ],
+      rolesWithoutAccess: [
+        {
+          role_id: "7",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "8",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "9",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "10",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "11",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        }
+      ],
+      error: null,
+      invalidSessionCause: undefined,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
+    })
+
+    render(<RoleSelectionPage contentText={defaultContentText} />)
+
+    expect(logger.debug).toHaveBeenCalledTimes(10)
+    expect(logger.debug).toHaveBeenCalledWith("Returned roles with access", {
       logId: "some-log-id-uuid-value",
       sessionId: "session-1234",
       userId: "12345",
       pageName: "/",
-      roleComponentProps:{
-        rolesWithAccess: [{
+      totalChunks: 2,
+      chunkNo: 1,
+      returnedRolesWithAccess: [
+        {
+          role_id: "2",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "1", // this one should be filtered out
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        },
+        {
+          role_id: "3",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "4",
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Returned roles with access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 2,
+      returnedRolesWithAccess: [
+        {
+          role_id: "5",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "6",
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Returned roles without access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 1,
+      returnedRolesWithoutAccess: [
+        {
+          role_id: "7",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "8",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "9",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "10",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Returned roles without access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 2,
+      returnedRolesWithoutAccess: [
+        {
+          role_id: "11",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Rendered roles with access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 1,
+      renderedRolesWithAccessProps: [
+        {
           link: "/your-selected-role",
           role: {
             role_id: "2",
@@ -424,14 +657,108 @@ describe("RoleSelectionPage", () => {
             org_name: "Pharmacy Org"
           },
           uuid: "role_with_access_0"
-        }],
-        rolesWithoutAccess: [{
-          uuid: "role_without_access_0",
+        },
+        {
+          link: "/your-selected-role",
+          role: {
+            role_id: "3",
+            role_name: "Pharmacist",
+            org_code: "ABC",
+            org_name: "Pharmacy Org"
+          },
+          uuid: "role_with_access_2"
+        },
+        {
+          link: "/your-selected-role",
+          role: {
+            role_id: "4",
+            role_name: "Admin",
+            org_code: "ZZZ",
+            org_name: "Same Org"
+          },
+          uuid: "role_with_access_3"
+        },
+        {
+          link: "/your-selected-role",
+          role: {
+            role_id: "5",
+            role_name: "Pharmacist",
+            org_code: "ABC",
+            org_name: "Pharmacy Org"
+          },
+          uuid: "role_with_access_4"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Rendered roles with access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 2,
+      renderedRolesWithAccessProps: [
+        {
+          link: "/your-selected-role",
+          role: {
+            role_id: "6",
+            role_name: "Admin",
+            org_code: "ZZZ",
+            org_name: "Same Org"
+          },
+          uuid: "role_with_access_5"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Rendered roles without access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 1,
+      renderedRolesWithoutAccessProps: [
+        {
           roleName: "Technician",
           odsCode: "XYZ",
-          orgName: "Tech Org"
-        }]
-      }
+          orgName: "Tech Org",
+          uuid: "role_without_access_0"
+        },
+        {
+          roleName: "Technician",
+          odsCode: "XYZ",
+          orgName: "Tech Org",
+          uuid: "role_without_access_1"
+        },
+        {
+          roleName: "Technician",
+          odsCode: "XYZ",
+          orgName: "Tech Org",
+          uuid: "role_without_access_2"
+        },
+        {
+          roleName: "Technician",
+          odsCode: "XYZ",
+          orgName: "Tech Org",
+          uuid: "role_without_access_3"
+        }
+      ]
+    }, true)
+    expect(logger.debug).toHaveBeenCalledWith("Rendered roles without access", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      totalChunks: 2,
+      chunkNo: 2,
+      renderedRolesWithoutAccessProps: [
+        {
+          roleName: "Technician",
+          odsCode: "XYZ",
+          orgName: "Tech Org",
+          uuid: "role_without_access_4"
+        }
+      ]
     }, true)
   })
 
