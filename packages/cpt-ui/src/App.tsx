@@ -125,9 +125,10 @@ function AppContent() {
             e.preventDefault()
             savedElement.focus()
             document.removeEventListener("keydown", handleKeyDown)
-            document.removeEventListener("click", handleUserInteraction)
-            document.removeEventListener("focusin", handleUserInteraction)
-            document.removeEventListener("input", handleUserInteraction)
+            const mainContent = document.querySelector("#main-content") || document.body
+            mainContent.removeEventListener("click", handleUserInteraction)
+            mainContent.removeEventListener("focusin", handleUserInteraction)
+            mainContent.removeEventListener("input", handleUserInteraction)
             return
           }
         }
@@ -139,9 +140,10 @@ function AppContent() {
             (activeElement.tagName === "INPUT" ||
               activeElement.tagName === "TEXTAREA" || activeElement.tagName === "SELECT")) {
           document.removeEventListener("keydown", handleKeyDown)
-          document.removeEventListener("click", handleUserInteraction)
-          document.removeEventListener("focusin", handleUserInteraction)
-          document.removeEventListener("input", handleUserInteraction)
+          const mainContent = document.querySelector("#main-content") || document.body
+          mainContent.removeEventListener("click", handleUserInteraction)
+          mainContent.removeEventListener("focusin", handleUserInteraction)
+          mainContent.removeEventListener("input", handleUserInteraction)
           return
         }
 
@@ -155,9 +157,10 @@ function AppContent() {
         }
 
         document.removeEventListener("keydown", handleKeyDown)
-        document.removeEventListener("click", handleUserInteraction)
-        document.removeEventListener("focusin", handleUserInteraction)
-        document.removeEventListener("input", handleUserInteraction)
+        const mainContent = document.querySelector("#main-content") || document.body
+        mainContent.removeEventListener("click", handleUserInteraction)
+        mainContent.removeEventListener("focusin", handleUserInteraction)
+        mainContent.removeEventListener("input", handleUserInteraction)
       }
     }
 
@@ -177,16 +180,18 @@ function AppContent() {
 
     setTimeout(addDirectListeners, 100)
 
-    document.addEventListener("click", handleUserInteraction)
-    document.addEventListener("focusin", handleUserInteraction)
-    document.addEventListener("input", handleUserInteraction)
+    const mainContent = document.querySelector("#main-content") || document.body
+    mainContent.addEventListener("click", handleUserInteraction)
+    mainContent.addEventListener("focusin", handleUserInteraction)
+    mainContent.addEventListener("input", handleUserInteraction)
     document.addEventListener("keydown", handleKeyDown)
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
-      document.removeEventListener("click", handleUserInteraction)
-      document.removeEventListener("focusin", handleUserInteraction)
-      document.removeEventListener("input", handleUserInteraction)
+      const mainContent = document.querySelector("#main-content") || document.body
+      mainContent.removeEventListener("click", handleUserInteraction)
+      mainContent.removeEventListener("focusin", handleUserInteraction)
+      mainContent.removeEventListener("input", handleUserInteraction)
     }
   }, [location.pathname, lastFocusedElement, lastPathname, setLastFocusedElement, setLastPathname])
 
