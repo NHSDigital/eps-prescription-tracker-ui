@@ -96,7 +96,7 @@ export default function EpsHeader() {
             to={getHomeLink(auth?.isSignedIn || false)}
             onClick={redirectToLogin}
             className="eps-header__logo-link"
-            aria-label="Prescription Tracker ()"
+            aria-label="Prescription Tracker (private beta)"
             aria-labelledby="eps-prescription-tracker-header-link"
             data-testid="eps_header_logoLink"
             id="eps-prescription-tracker-header-link"
