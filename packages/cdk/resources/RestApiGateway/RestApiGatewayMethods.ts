@@ -116,8 +116,7 @@ export class RestApiGatewayMethods extends Construct {
       clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {
-        authorizationType: AuthorizationType.COGNITO,
-        authorizer: props.authorizer
+        authorizationType: AuthorizationType.NONE
       })
 
       // testing-support-fake-timer
@@ -126,8 +125,7 @@ export class RestApiGatewayMethods extends Construct {
       fakeTimerResource.addMethod("POST", new LambdaIntegration(props.fakeTimerLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {
-        authorizationType: AuthorizationType.COGNITO,
-        authorizer: props.authorizer
+        authorizationType: AuthorizationType.NONE
       })
     }
 

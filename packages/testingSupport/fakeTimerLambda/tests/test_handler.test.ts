@@ -2,9 +2,7 @@
 import {jest} from "@jest/globals"
 import {mockContext, mockAPIGatewayProxyEvent} from "./mockObjects"
 
-// Set env vars before importing handler
-process.env.TokenMappingTableName = "TokenMappingTable"
-process.env.SessionManagementTableName = "SessionManagementTable"
+// Environment variables are set in .jest/setEnvVars.js
 
 // Mock dynamo functions for handler integration tests
 const mockDeleteRecordAllowFailures = jest.fn() as any

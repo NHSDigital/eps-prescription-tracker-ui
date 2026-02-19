@@ -1,1 +1,1 @@
-// put any environment variable setup in here
+process.env.TokenMappingTableName = "TokenMappingTable"

@@ -132,7 +132,7 @@ export const nagSuppressions = (stack: Stack) => {
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
         "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
         "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session/POST/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session-timeout/POST/Resource"
+        "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-fake-timer/POST/Resource"
       ],
       [
         {

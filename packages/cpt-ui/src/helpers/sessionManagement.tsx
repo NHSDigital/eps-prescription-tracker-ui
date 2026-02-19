@@ -37,7 +37,6 @@ export const extendUserSession = async (): Promise<boolean> => {
   try {
     // updates lastActivityTime in dynamoDB
     //middleware authentication handles the actual dynamodb interaction, and updates the lastActivityTime
-    //TODO: tidy up comments
     const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
     logger.info("Extended user session")
 
