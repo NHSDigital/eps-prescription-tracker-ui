@@ -11,8 +11,8 @@ export function returnLocalState(auth: AuthContextType) {
     isConcurrentSession: auth.isConcurrentSession,
     invalidSessionCause: auth.invalidSessionCause,
     sessionId: auth.sessionId,
-    rolesWithAccess: auth.rolesWithAccess.length,
-    rolesWithoutAccess: auth.rolesWithoutAccess.length,
+    rolesWithAccessCount: auth.rolesWithAccess.length,
+    rolesWithoutAccessCount: auth.rolesWithoutAccess.length,
     selectedRole: auth.selectedRole || null
   }
   return stateValues
