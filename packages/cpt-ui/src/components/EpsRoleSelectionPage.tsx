@@ -177,7 +177,11 @@ export default function RoleSelectionPage({
     }))
 
     if(auth.userDetails?.sub) {
-      /* RUM has a 6kb event payload size limit so we need to split this up*/
+      /* RUM has a 6kb event payload size limit so we need to split up the information we want to log.
+      All logs generated at this point will include the same logId so that we can tie them all back to the
+      same occurrence when trying to debug issues*/
+
+      /* First log just include counts of roles and other information required for the report*/
       const logId = crypto.randomUUID()
       logger.debug("Counts of roles returned vs rendered", {
         logId,
@@ -193,6 +197,7 @@ export default function RoleSelectionPage({
         renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length
       }, true)
 
+      /* Second log includes the auth context at this moment, minus the roles with/without access lists*/
       logger.debug("Auth context for rendered roles", {
         logId,
         sessionId: auth.sessionId,
