@@ -21,6 +21,7 @@ export default function LoadingPage() {
     const stateValues = returnLocalState(auth)
     const timeout = setTimeout(() => {
       // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
+      logger.info("Redirection page error timer triggered")
       logger.debug("Redirection page error timer", {...stateValues, path}, true)
     }, ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL) // set to 10 seconds to allow for slow connections
 
