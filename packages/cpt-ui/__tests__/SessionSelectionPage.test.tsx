@@ -27,7 +27,7 @@ jest.mock("@/helpers/sessionManagement", () => ({
 const mockPostSessionManagementUpdate =
     postSessionManagementUpdate as jest.MockedFunction<typeof postSessionManagementUpdate>
 
-const mockEnvValues = {
+jest.mock("@/constants/environment", () => ({
   AUTH_CONFIG: {
     USER_POOL_ID: "test-pool-id",
     USER_POOL_CLIENT_ID: "test-client-id",
@@ -46,8 +46,9 @@ const mockEnvValues = {
   API_ENDPOINTS: {
     SESSION_MANAGEMENT: "/api/session-management"
   }
-}
-jest.mock("@/constants/environment", () => (mockEnvValues))
+}))
+
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const mockUpdateTrackerUserInfo = jest.fn()
 
@@ -164,7 +165,7 @@ describe("SessionSelectionPage", () => {
     await userEvent.click(newSessionButton)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(mockEnvValues.FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     })
   })
 
@@ -181,7 +182,7 @@ describe("SessionSelectionPage", () => {
     })
 
     // Should not navigate if session management fails
-    expect(mockNavigate).not.toHaveBeenCalledWith(mockEnvValues.FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+    expect(mockNavigate).not.toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     expect(defaultAuthState.cognitoSignOut).toHaveBeenCalled()
   })
 

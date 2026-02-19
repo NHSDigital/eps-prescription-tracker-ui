@@ -53,6 +53,7 @@ const Tab: React.FC<TabProps> = ({
       aria-label={label}
       disabled={disabled}
       tabIndex={finalTabIndex}
+      data-testid={active ? "tab-active" : "tab-inactive"}
       {...rest}
     >
       {children}

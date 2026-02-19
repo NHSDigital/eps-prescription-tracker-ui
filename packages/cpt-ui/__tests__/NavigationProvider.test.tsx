@@ -387,13 +387,13 @@ describe("NavigationProvider", () => {
         context!.setOriginalSearchPage("basicDetails")
       })
 
-      expect(context!.getBackPath()).toBe("/search-by-basic-details")
+      expect(context!.getBackPath()).toBe(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
 
       await act(async () => {
         context!.goBack()
       })
 
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-basic-details")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
     })
   })
 

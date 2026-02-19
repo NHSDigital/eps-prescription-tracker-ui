@@ -95,18 +95,18 @@ describe("YourSelectedRolePage", () => {
     expect(orgChangeLink).toHaveAttribute("href", FRONTEND_PATHS.CHANGE_YOUR_ROLE)
   })
 
-  it("navigates to /search-by-prescription-id when confirm button is clicked", async () => {
+  it("navigates to /search#prescription-id when confirm button is clicked", async () => {
     const selectedRole = {role_name: "Pharmacist", org_name: "Org", org_code: "ORG1"}
     mockedUseAuth.mockReturnValue({
       ...mockUseAuthReturnValue, selectedRole
     })
 
-    // Setup MemoryRouter with initial entry at the page, and a dummy route for /search-by-prescription-id
+    // Setup MemoryRouter with initial entry at the page, and a dummy route for /search#prescription-id
     render(
       <MemoryRouter initialEntries={[FRONTEND_PATHS.YOUR_SELECTED_ROLE]}>
         <Routes>
           <Route path={FRONTEND_PATHS.YOUR_SELECTED_ROLE} element={<YourSelectedRolePage />} />
-          <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
+          <Route path={FRONTEND_PATHS.SEARCH}
             element={<div data-testid="search-page">Search Page</div>} />
         </Routes>
       </MemoryRouter>

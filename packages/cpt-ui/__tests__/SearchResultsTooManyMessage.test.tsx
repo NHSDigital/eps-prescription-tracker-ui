@@ -13,6 +13,16 @@ import SearchResultsTooManyMessage from "@/components/SearchResultsTooManyMessag
 import {STRINGS} from "@/constants/ui-strings/SearchResultsTooManyStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {SearchProvider} from "@/context/SearchProvider"
+import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
+import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
+import {STRINGS as BASIC_SEARCH_STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
+import {STRINGS as NHS_NUMBER_SEARCH_STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
+import {
+  PRESCRIPTION_ID_SEARCH_TAB_TITLE,
+  NHS_NUMBER_SEARCH_TAB_TITLE,
+  BASIC_DETAILS_SEARCH_TAB_TITLE
+} from "@/constants/ui-strings/SearchTabStrings"
 
 // Mock the navigation context
 const mockGetBackPath = jest.fn()
@@ -38,9 +48,6 @@ jest.mock("@/context/NavigationProvider", () => ({
   useNavigationContext: () => mockNavigationContext
 }))
 
-// Dummy component to receive navigation
-const DummyPage = ({label}: { label: string }) => <div data-testid="dummy-page">{label}</div>
-
 // useLocation wrapper to pass .search to the component
 function TestWrapper() {
   const location = useLocation()
@@ -48,7 +55,9 @@ function TestWrapper() {
 }
 
 function makeQuery(params: Record<string, string>): string {
-  return "?" + Object.entries(params)
+  const entries = Object.entries(params)
+  if (entries.length === 0) return ""
+  return "?" + entries
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join("&")
 }
@@ -61,12 +70,13 @@ const renderWithRouter = (
   return render(
     <MemoryRouter initialEntries={[initialPath + search]}>
       <NavigationProvider>
-        <Routes>
-          <Route path="/too-many-search-results" element={<TestWrapper />} />
-          <Route path="/search" element={<DummyPage label="Basic Details Search" />} />
-          <Route path="/search#nhs-number" element={<DummyPage label="NHS Number Search" />} />
-          <Route path="/search#prescription-id" element={<DummyPage label="Prescription ID Search" />} />
-        </Routes>
+        <SearchProvider>
+          <Routes>
+            <Route path="/too-many-search-results" element={<TestWrapper />} />
+            <Route path="/search" element={<SearchPrescriptionPage />} />
+          </Routes>
+        </SearchProvider>
+
       </NavigationProvider>
     </MemoryRouter>
   )
@@ -88,28 +98,35 @@ describe("SearchResultsTooManyMessage", () => {
   const navigationLinks = [
     {
       label: STRINGS.BASIC_DETAILS_LINK_TEXT,
-      expected: "Basic Details Search"
+      tabTitle: BASIC_DETAILS_SEARCH_TAB_TITLE,
+      expectedSubHeader: BASIC_SEARCH_STRINGS.HEADING
     },
     {
       label: STRINGS.NHS_NUMBER_LINK_TEXT,
-      expected: "NHS Number Search"
+      tabTitle: NHS_NUMBER_SEARCH_TAB_TITLE,
+      expectedSubHeader: NHS_NUMBER_SEARCH_STRINGS.labelText
     },
     {
       label: STRINGS.PRESCRIPTION_ID_LINK_TEXT,
-      expected: "Prescription ID Search"
+      tabTitle: PRESCRIPTION_ID_SEARCH_TAB_TITLE,
+      expectedSubHeader: PRESCRIPTION_ID_SEARCH_STRINGS.labelText
     }
   ]
 
   it.each(navigationLinks)(
     "navigates correctly when '$label' link is clicked",
-    ({label, expected}) => {
+    ({label, tabTitle, expectedSubHeader}) => {
       renderWithRouter()
       fireEvent.click(screen.getByText(label))
-      expect(screen.getByTestId("dummy-page")).toHaveTextContent(expected)
+      expect(screen.getByTestId("tab-active")).toHaveTextContent(tabTitle)
+      expect(screen.getByTestId(
+        // eg basic-details-search-heading for testid name, dynamically created based on which heading used
+        tabTitle.replaceAll(" ", "-").toLowerCase() + "-heading")
+      ).toHaveTextContent(expectedSubHeader)
     }
   )
 
-  it("navigates to the basic details search when the go back link is clicked", () => {
+  it("navigates to the basic details search when the go back link is clicked", async () => {
     renderWithRouter()
     const backLink = screen.getByTestId("go-back-link")
     expect(backLink.getAttribute("href")).toContain(
