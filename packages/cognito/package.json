@@ -22,7 +22,7 @@
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
-    "@middy/core": "^7.0.2",
+    "@middy/core": "^7.1.0",
     "@middy/input-output-logger": "^7.0.2",
     "aws-lambda": "^1.0.7",
     "axios": "^1.13.5",
