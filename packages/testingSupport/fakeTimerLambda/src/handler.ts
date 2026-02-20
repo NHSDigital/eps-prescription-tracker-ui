@@ -43,12 +43,10 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   const username = body.username
   const requestId = body.request_id
-  //defaults to 13 for backwards compabitility from first usage but can call with any other number
-  const minutes = body.minutes || 13
 
-  logger.info(`Setting lastActivityTime to ${minutes} minutes in the past for user`, {username, requestId, minutes})
+  logger.info("Setting lastActivityTime to 13 minutes in the Past for user", {username, requestId})
 
-  const minutesInPast = Date.now() - (minutes * 60 * 1000)
+  const thirteenMinutesInPast = Date.now() - (13 * 60 * 1000)
 
   try {
     const existingTokenMapping = await getTokenMapping(
@@ -64,7 +62,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         tokenMappingTableName,
         {
           username,
-          lastActivityTime: minutesInPast
+          lastActivityTime: thirteenMinutesInPast
         },
         logger
       )
@@ -72,8 +70,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger.info("Successfully updated lastActivityTime for regression testing", {
         username,
         requestId,
-        minutes,
-        newLastActivityTime: minutesInPast
+        newLastActivityTime: thirteenMinutesInPast
       })
 
       return {
