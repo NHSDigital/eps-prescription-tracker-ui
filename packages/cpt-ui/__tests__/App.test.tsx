@@ -98,6 +98,8 @@ describe("App", () => {
     if (document.activeElement && document.activeElement !== document.body) {
       (document.activeElement as HTMLElement).blur?.()
     }
+    // Clear localStorage to prevent state leakage between tests
+    localStorage.removeItem("lastFocusedInput")
     // Clear any existing event listeners
     jest.clearAllMocks()
   })

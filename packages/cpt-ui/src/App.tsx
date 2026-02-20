@@ -51,7 +51,7 @@ function AppContent() {
       <a
         href={skipTarget}
         className="nhsuk-skip-link"
-        data-testid="skip-link"
+        data-testid="eps_header_skipLink"
       >
         {HEADER_STRINGS.SKIP_TO_MAIN_CONTENT}
       </a>
