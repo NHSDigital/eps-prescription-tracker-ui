@@ -97,7 +97,6 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
     await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }, [auth, clearCountdownTimer])
 
-  // Handle countdown when modal should be shown
   useEffect(() => {
     if (showModal && timeLeft > 0) {
       // Start with the server-provided time
@@ -123,17 +122,11 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
             clearInterval(countdownTimerRef.current)
             countdownTimerRef.current = null
           }
-          // Use props onLogOut if provided, otherwise internal handler
-          if (props?.onLogOut) {
-            props.onLogOut()
-          } else {
-            handleTimeoutLogout()
-          }
+          handleTimeoutLogout()
         }
       }, 1000) as unknown as number
 
     }
-    // Removed the problematic else if (!showModal) branch
 
     // Cleanup timer when effect runs again or component unmounts
     return () => {
@@ -142,9 +135,8 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
         countdownTimerRef.current = null
       }
     }
-  }, [showModal, timeLeft, clearCountdownTimer]) // Removed handleTimeoutLogout
+  }, [showModal, timeLeft, clearCountdownTimer])
 
-  // Create wrapper functions that handle state updates in props mode
   const wrappedStayLoggedIn = useCallback(async () => {
     if (props?.onStayLoggedIn) {
       setSessionState(prev => ({...prev, isExtending: true}))
@@ -170,6 +162,6 @@ export const useSessionTimeout = (props?: SessionTimeoutProps) => {
     onStayLoggedIn: props?.onStayLoggedIn ? wrappedStayLoggedIn : handleStayLoggedIn,
     onLogOut: props?.onLogOut || handleLogOut,
     isExtending: sessionState.isExtending,
-    resetSessionTimeout: () => {} // No longer needed with server-side approach
+    resetSessionTimeout: () => {}
   }
 }

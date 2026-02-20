@@ -46,7 +46,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
       ariaLabelledBy="session-timeout-title"
       onClose={onStayLoggedIn}
     >
-      <Container>
+      <Container data-testid="session-timeout-modal">
         <h2
           id="session-timeout-title"
           style={{
