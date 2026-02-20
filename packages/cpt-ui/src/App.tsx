@@ -6,8 +6,7 @@ import {NavigationProvider} from "@/context/NavigationProvider"
 import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
 import {PrescriptionInformationProvider} from "./context/PrescriptionInformationProvider"
 import Layout from "@/Layout"
-import {useEffect} from "react"
-import {useLocalStorageState} from "./helpers/useLocalStorageState"
+import {useFocusManagement} from "./helpers/useFocusManagement"
 
 import LoginPage from "@/pages/LoginPage"
 import LogoutPage from "@/pages/LogoutPage"
@@ -35,165 +34,8 @@ import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 function AppContent() {
   const location = useLocation()
 
-  // Persist last focused interactive element for page refresh scenarios
-  const [lastFocusedElement, setLastFocusedElement] = useLocalStorageState<string | null>(
-    "lastFocusedElement",
-    "focusState",
-    null
-  )
-  const [lastPathname, setLastPathname] = useLocalStorageState<string>(
-    "lastPathname",
-    "focusState",
-    location.pathname
-  )
-
-  useEffect(() => {
-    let hasTabbed = false
-    let hasUserInteracted = false
-
-    const isNavigation = lastPathname !== location.pathname
-
-    try {
-      localStorage.getItem("focusState")
-    } catch {
-      // Silent handling - dont need to do anything
-    }
-
-    if (isNavigation) {
-      setLastFocusedElement(null)
-      setLastPathname(location.pathname)
-    }
-
-    const handleUserInteraction = (event: Event) => {
-      hasUserInteracted = true
-      const target = event.target as HTMLElement
-
-      if (target && target.id) {
-        const interactiveSelectors = [
-          "presc-id-input",
-          "nhs-number-input",
-          "first-name",
-          "last-name",
-          "dob-day-input",
-          "dob-month-input",
-          "dob-year-input",
-          "postcode-input"
-        ]
-
-        if (interactiveSelectors.includes(target.id)) {
-          const selector = `#${target.id}`
-          setLastFocusedElement(selector)
-          setLastPathname(location.pathname)
-
-          try {
-            const focusData = {
-              lastFocusedElement: selector,
-              lastPathname: location.pathname
-            }
-            localStorage.setItem("focusState", JSON.stringify(focusData))
-          } catch {
-            // Silent handling - dont need to do anything
-          }
-        }
-      }
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Tab" && !hasTabbed && !e.shiftKey) {
-        hasTabbed = true
-
-        let storedFocusData = null
-        let storedElement = null
-        let storedPathname = null
-
-        try {
-          const stored = localStorage.getItem("focusState")
-          if (stored) {
-            storedFocusData = JSON.parse(stored)
-            storedElement = storedFocusData.lastFocusedElement
-            storedPathname = storedFocusData.lastPathname
-          }
-        } catch {
-          // Silent handling - dont need to do anything
-        }
-        const isStoredPageRefresh = storedPathname === location.pathname
-
-        if (isStoredPageRefresh && storedElement) {
-          const savedElement = document.querySelector(storedElement) as HTMLElement
-
-          if (savedElement && savedElement.offsetParent !== null) {
-            e.preventDefault()
-            savedElement.focus()
-            document.removeEventListener("keydown", handleKeyDown)
-            const mainContent = document.querySelector("#main-content") || document.body
-            mainContent.removeEventListener("click", handleUserInteraction)
-            mainContent.removeEventListener("focusin", handleUserInteraction)
-            mainContent.removeEventListener("input", handleUserInteraction)
-            return
-          }
-        }
-
-        const activeElement = document.activeElement as HTMLElement
-        if (activeElement &&
-            activeElement !== document.body &&
-            activeElement.tagName !== "HTML" &&
-            (activeElement.tagName === "INPUT" ||
-              activeElement.tagName === "TEXTAREA" || activeElement.tagName === "SELECT")) {
-          document.removeEventListener("keydown", handleKeyDown)
-          const mainContent = document.querySelector("#main-content") || document.body
-          mainContent.removeEventListener("click", handleUserInteraction)
-          mainContent.removeEventListener("focusin", handleUserInteraction)
-          mainContent.removeEventListener("input", handleUserInteraction)
-          return
-        }
-
-        // Only focus skip link if user has not interacted with the page at all
-        if (!hasUserInteracted) {
-          e.preventDefault()
-          const skipLink = document.querySelector(".nhsuk-skip-link") as HTMLElement
-          if (skipLink) {
-            skipLink.focus()
-          }
-        }
-
-        document.removeEventListener("keydown", handleKeyDown)
-        const mainContent = document.querySelector("#main-content") || document.body
-        mainContent.removeEventListener("click", handleUserInteraction)
-        mainContent.removeEventListener("focusin", handleUserInteraction)
-        mainContent.removeEventListener("input", handleUserInteraction)
-      }
-    }
-
-    const addDirectListeners = () => {
-      const inputs = document.querySelectorAll("input")
-
-      inputs.forEach((input) => {
-        const directHandler = (e: Event) => {
-          handleUserInteraction(e)
-        }
-
-        input.addEventListener("click", directHandler)
-        input.addEventListener("focus", directHandler)
-        input.addEventListener("input", directHandler)
-      })
-    }
-
-    setTimeout(addDirectListeners, 100)
-
-    const mainContent = document.querySelector("#main-content") || document.body
-    mainContent.addEventListener("click", handleUserInteraction)
-    mainContent.addEventListener("focusin", handleUserInteraction)
-    mainContent.addEventListener("input", handleUserInteraction)
-    document.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown)
-      const mainContent = document.querySelector("#main-content") || document.body
-      mainContent.removeEventListener("click", handleUserInteraction)
-      mainContent.removeEventListener("focusin", handleUserInteraction)
-      mainContent.removeEventListener("input", handleUserInteraction)
-    }
-  }, [location.pathname, lastFocusedElement, lastPathname, setLastFocusedElement, setLastPathname])
+  // Use the refactored focus management hook
+  useFocusManagement()
 
   // Check if we're on a prescription list or prescription details page
   const isPrescriptionPage =
@@ -209,7 +51,7 @@ function AppContent() {
       <a
         href={skipTarget}
         className="nhsuk-skip-link"
-        data-testid="eps_header_skipLink"
+        data-testid="skip-link"
       >
         {HEADER_STRINGS.SKIP_TO_MAIN_CONTENT}
       </a>
