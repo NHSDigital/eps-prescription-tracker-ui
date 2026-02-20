@@ -1,9 +1,3 @@
-// push lastactivitytime 13 minutes forward
-//then fe pusghes forewward a minute to check foir mnodal
-//then another minute to force logout
-
-//disabletokenrefresh is what goes nuclear so not showing the new logout
-
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
@@ -49,10 +43,12 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
   const username = body.username
   const requestId = body.request_id
+  //defaults to 13 for backwards compabitility from first usage but can call with any other number
+  const minutes = body.minutes || 13
 
-  logger.info("Setting lastActivityTime to 13 minutes in the Past for user", {username, requestId})
+  logger.info(`Setting lastActivityTime to ${minutes} minutes in the past for user`, {username, requestId, minutes})
 
-  const thirteenMinutesInPast = Date.now() - (13 * 60 * 1000)
+  const minutesInPast = Date.now() - (minutes * 60 * 1000)
 
   try {
     const existingTokenMapping = await getTokenMapping(
@@ -68,7 +64,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         tokenMappingTableName,
         {
           username,
-          lastActivityTime: thirteenMinutesInPast
+          lastActivityTime: minutesInPast
         },
         logger
       )
@@ -76,7 +72,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger.info("Successfully updated lastActivityTime for regression testing", {
         username,
         requestId,
-        newLastActivityTime: thirteenMinutesInPast
+        minutes,
+        newLastActivityTime: minutesInPast
       })
 
       return {
