@@ -19,7 +19,7 @@
     "axios": "^1.13.5",
     "date-fns": "^4.1.0",
     "identity-obj-proxy": "^3.0.0",
-    "nhsuk-frontend": "9.6.4",
+    "nhsuk-frontend": "10.2.2",
     "nhsuk-react-components": "^5.0.0",
     "nhsuk-react-components-extensions": "^2.3.0-beta",
     "pino": "^10.3.1",
