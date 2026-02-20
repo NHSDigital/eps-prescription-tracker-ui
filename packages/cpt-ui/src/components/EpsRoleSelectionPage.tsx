@@ -136,6 +136,29 @@ export default function RoleSelectionPage({
     handleSetSelectedRole(e, roleCardProps)
   }
 
+  const chunkRolesForRumLogs = (
+    roles: Array<unknown>, logMessage: string, logId: string, fieldToPopulate: string) => {
+    const chunkSize = 4
+
+    const chunks = []
+    for (let index = 0; index < roles.length; index += chunkSize) {
+      const chunk = roles.slice(index, index + chunkSize)
+      chunks.push(chunk)
+    }
+
+    for (const [index, chunk] of chunks.entries()){
+      logger.debug(logMessage, {
+        logId,
+        sessionId: auth.sessionId,
+        userId: auth.userDetails?.sub,
+        pageName: location.pathname,
+        totalChunks: chunks.length,
+        chunkNo: index+1,
+        [fieldToPopulate]: chunk
+      }, true)
+    }
+  }
+
   useEffect(() => {
     // Transform roles data for display
     const rolesWithAccessComponentProps = auth.rolesWithAccess.length === 0
@@ -154,7 +177,14 @@ export default function RoleSelectionPage({
     }))
 
     if(auth.userDetails?.sub) {
-      logger.debug("Role components to be rendered", {
+      /* RUM has a 6kb event payload size limit so we need to split up the information we want to log.
+      All logs generated at this point will include the same logId so that we can tie them all back to the
+      same occurrence when trying to debug issues*/
+
+      /* First log just include counts of roles and other information required for the report*/
+      const logId = crypto.randomUUID()
+      logger.debug("Counts of roles returned vs rendered", {
+        logId,
         sessionId: auth.sessionId,
         userId: auth.userDetails.sub,
         pageName: location.pathname,
@@ -164,27 +194,37 @@ export default function RoleSelectionPage({
         returnedRolesWithAccessCount: auth.rolesWithAccess.length,
         returnedRolesWithoutAccessCount: auth.rolesWithoutAccess.length,
         renderedRolesWithAccessCount: rolesWithAccessComponentProps.length,
-        renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length,
+        renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length
+      }, true)
+
+      /* Second log includes the auth context at this moment, minus the roles with/without access lists*/
+      logger.debug("Auth context for rendered roles", {
+        logId,
+        sessionId: auth.sessionId,
+        userId: auth.userDetails.sub,
+        pageName: location.pathname,
         /* only pick out the specific additional values we care about to reduce unnecessary noise
         in logs from function props of the auth context object */
         authContext: {
           cognitoUsername: auth.user,
           name: auth.userDetails.name,
           currentlySelectedRole: auth.selectedRole,
-          rolesWithAccess: auth.rolesWithAccess,
-          rolesWithoutAccess: auth.rolesWithoutAccess,
           isSignedIn: auth.isSignedIn,
           isSigningIn: auth.isSigningIn,
           isSigningOut: auth.isSigningOut,
           isConcurrentSession: auth.isConcurrentSession,
           error: auth.error,
           invalidSessionCause: auth.invalidSessionCause
-        },
-        roleComponentProps:{
-          rolesWithAccess: rolesWithAccessComponentProps,
-          rolesWithoutAccess: rolesWithoutAccessComponentProps
         }
       }, true)
+
+      chunkRolesForRumLogs(auth.rolesWithAccess, "Returned roles with access", logId, "returnedRolesWithAccess")
+      chunkRolesForRumLogs(
+        auth.rolesWithoutAccess, "Returned roles without access", logId, "returnedRolesWithoutAccess")
+      chunkRolesForRumLogs(
+        rolesWithAccessComponentProps, "Rendered roles with access", logId, "renderedRolesWithAccessProps")
+      chunkRolesForRumLogs(
+        rolesWithoutAccessComponentProps, "Rendered roles without access", logId, "renderedRolesWithoutAccessProps")
     }
 
     setRoleComponentProps({
