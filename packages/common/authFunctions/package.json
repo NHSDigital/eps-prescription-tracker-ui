@@ -20,7 +20,7 @@
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.31.0",
     "@aws-lambda-powertools/parameters": "^2.31.0",
-    "@aws-sdk/client-secrets-manager": "^3.990.0",
+    "@aws-sdk/client-secrets-manager": "^3.995.0",
     "@aws-sdk/lib-dynamodb": "^3.994.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@middy/core": "^7.1.0",
