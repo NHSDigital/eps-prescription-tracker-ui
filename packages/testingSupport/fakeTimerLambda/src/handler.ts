@@ -28,27 +28,27 @@ const tokenMappingTableName = process.env["TokenMappingTableName"] as string
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
 
-  const body = JSON.parse(event.body? event.body : "{}")
+  try {
+    const body = JSON.parse(event.body? event.body : "{}")
 
-  if (!body || !body.username) {
-    logger.error("Invalid request body", {body})
-    return {
-      statusCode: 400,
-      body: JSON.stringify({"message": "Invalid request body"}),
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache"
+    if (!body || !body.username) {
+      logger.error("Invalid request body", {body})
+      return {
+        statusCode: 400,
+        body: JSON.stringify({"message": "Invalid request body"}),
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache"
+        }
       }
     }
-  }
-  const username = body.username
-  const requestId = body.request_id
+    const username = body.username
+    const requestId = body.request_id
 
-  logger.info("Setting lastActivityTime to 13 minutes in the Past for user", {username, requestId})
+    logger.info("Setting lastActivityTime to 13 minutes in the Past for user", {username, requestId})
 
-  const thirteenMinutesInPast = Date.now() - (13 * 60 * 1000)
+    const thirteenMinutesInPast = Date.now() - (13 * 60 * 1000)
 
-  try {
     const existingTokenMapping = await getTokenMapping(
       documentClient,
       tokenMappingTableName,
@@ -93,7 +93,20 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       }
     }
   } catch (error) {
-    logger.error("Error updating lastActivityTime", {error, username, requestId})
+    // Handle JSON parsing errors and other errors
+    if (error instanceof SyntaxError) {
+      logger.error("Invalid JSON in request body", {error: error.message, body: event.body})
+      return {
+        statusCode: 400,
+        body: JSON.stringify({"message": "Invalid JSON in request body"}),
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache"
+        }
+      }
+    }
+    
+    logger.error("Error updating lastActivityTime", {error, username: body?.username, requestId: body?.request_id})
     return {
       statusCode: 500,
       body: JSON.stringify({"message": "Error updating session timeout"}),
