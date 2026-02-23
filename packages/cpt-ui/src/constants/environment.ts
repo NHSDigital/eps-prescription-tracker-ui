@@ -15,7 +15,8 @@ export const ENV_CONFIG = {
   BASE_PATH: import.meta.env.BASE_PATH || "site",
   LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true",
   BASE_URL: import.meta.env.BASE_URL,
-  BASE_URL_PATH: `${import.meta.env.BASE_URL}/${import.meta.env.BASE_PATH || "site"}/`
+  BASE_URL_PATH: `${import.meta.env.BASE_URL}/${import.meta.env.BASE_PATH || "site"}/`,
+  RUM_ERROR_TIMER_INTERVAL: Number(import.meta.env.VITE_RUM_ERROR_TIMER_INTERVAL) || 10000
 } as const
 
 // Application Configuration

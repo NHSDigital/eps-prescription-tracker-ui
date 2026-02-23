@@ -67,7 +67,8 @@ jest.mock("@/constants/environment", () => ({
     TARGET_ENVIRONMENT: "test",
     API_DOMAIN_OVERRIDE: "http://localhost:8080",
     BASE_PATH: "",
-    LOCAL_DEV: true
+    LOCAL_DEV: true,
+    RUM_ERROR_TIMER_INTERVAL: 1000 // set to 1 second for testing
   },
   APP_CONFIG: {
     SERVICE_NAME: "Clinical prescription tracking service",
@@ -95,6 +96,24 @@ jest.mock("@/constants/environment", () => ({
     SEARCH_BY_BASIC_DETAILS: "/search#basic-details",
     TOO_MANY_SEARCH_RESULTS: "/too-many-search-results"
   },
+  ALLOWED_NO_ROLE_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/session-logged-out",
+    "/cookies-selected",
+    "/",
+    "/select-active-session"
+  ],
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/"
+  ],
   MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"]
 }))
 
