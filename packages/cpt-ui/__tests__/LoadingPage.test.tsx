@@ -2,7 +2,12 @@
 import {useAuth as mockUseAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
 import {mockAuthState} from "./mocks/AuthStateMock"
-import {render} from "@testing-library/react"
+import {
+  render,
+  act,
+  screen,
+  waitFor
+} from "@testing-library/react"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {AccessProvider} from "@/context/AccessProvider"
 import {useNavigate, useLocation, MemoryRouter} from "react-router-dom"
@@ -91,7 +96,9 @@ describe("LoadingPage", () => {
     expect(container).toBeInTheDocument()
 
     // Advance time to trigger useEffect
-    jest.advanceTimersByTime(ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL + 1000)
+    act(() => {
+      jest.advanceTimersByTime(ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL + 1000)
+    })
 
     // Verify
     const localState = returnLocalState(mockReturnAdjusted)
@@ -129,10 +136,115 @@ describe("LoadingPage", () => {
     expect(container).toBeInTheDocument()
 
     // Advance time to trigger useEffect
-    jest.advanceTimersByTime(ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL - 1000)
+    act(() => {
+      jest.advanceTimersByTime(ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL - 1000)
+    })
 
     // Verify
     const localState = returnLocalState(mockReturnAdjusted)
     expect(logger.debug).not.toHaveBeenCalledWith(`Redirection page error timer: ${path}`, localState, true)
+  })
+
+  it("shows information message with only desktop id after timeout", async () => {
+    // Setup
+    let mockReturnAdjusted = {
+      ...mockReturn,
+      isSignedIn: true,
+      isSigningOut: true,
+      sessionId: undefined, // Simulate session ID not being available
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+    }
+    ;(mockUseAuth as jest.Mock).mockReturnValue({...mockReturnAdjusted})
+
+    const path = "/some-protected-path"
+    ;(useLocation as jest.Mock).mockReturnValue({
+      pathname: `${path}`
+    })
+    ;(mockNormalizePath as jest.Mock).mockReturnValue(path)
+
+    const {container} = render(
+      <MemoryRouter>
+        <AccessProvider>
+          <Layout>
+            <LoadingPage />
+          </Layout>
+        </AccessProvider>
+      </MemoryRouter>
+    )
+
+    // Should render nothing (children blocked) - show loading wheel
+    expect(container).toBeInTheDocument()
+
+    // Advance time to trigger useEffect
+    act(() => {
+      jest.advanceTimersByTime(ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL - 1000)
+    })
+
+    // Verify
+    const localState = returnLocalState(mockReturnAdjusted)
+    expect(logger.debug).not.toHaveBeenCalledWith(`Redirection page error timer: ${path}`, localState, true)
+
+    // Go forward in time to show warning callout (15000ms total needed)
+    await act(async () => {
+      jest.advanceTimersByTime(15000)
+    })
+
+    await waitFor(() => {
+      const email = screen.getByTestId("email")
+      expect(email).toBeInTheDocument()
+      expect(screen.getByText(`desktop ID ${mockReturnAdjusted.desktopId}`)).toBeInTheDocument()
+      expect(screen.queryByText(/session ID/i)).not.toBeInTheDocument()
+    })
+  })
+
+  it("shows information message with desktop and session id shown after timeout", async () => {
+    // Setup
+    let mockReturnAdjusted = {
+      ...mockReturn,
+      isSignedIn: true,
+      isSigningOut: true,
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+    }
+    ;(mockUseAuth as jest.Mock).mockReturnValue({...mockReturnAdjusted})
+
+    const path = "/some-protected-path"
+    ;(useLocation as jest.Mock).mockReturnValue({
+      pathname: `${path}`
+    })
+    ;(mockNormalizePath as jest.Mock).mockReturnValue(path)
+
+    const {container} = render(
+      <MemoryRouter>
+        <AccessProvider>
+          <Layout>
+            <LoadingPage />
+          </Layout>
+        </AccessProvider>
+      </MemoryRouter>
+    )
+
+    // Should render nothing (children blocked) - show loading wheel
+    expect(container).toBeInTheDocument()
+
+    // Advance time to trigger useEffect
+    act(() => {
+      jest.advanceTimersByTime(ENV_CONFIG.RUM_ERROR_TIMER_INTERVAL - 1000)
+    })
+
+    // Verify
+    const localState = returnLocalState(mockReturnAdjusted)
+    expect(logger.debug).not.toHaveBeenCalledWith(`Redirection page error timer: ${path}`, localState, true)
+
+    // Go forward in time to show warning callout (15000ms total needed)
+    await act(async () => {
+      jest.advanceTimersByTime(15000)
+    })
+
+    await waitFor(() => {
+      const email = screen.getByTestId("email")
+      expect(email).toBeInTheDocument()
+      expect(screen.getByText(`desktop ID ${mockReturnAdjusted.desktopId}`)).toBeInTheDocument()
+      expect(screen.getByText(`session ID ${mockReturnAdjusted.sessionId}`)).toBeInTheDocument()
+    })
   })
 })

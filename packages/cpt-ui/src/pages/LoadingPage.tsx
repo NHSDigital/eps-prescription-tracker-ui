@@ -1,5 +1,6 @@
-import {Container, WarningCallout} from "nhsuk-react-components"
+import {Container} from "nhsuk-react-components"
 import EpsSpinner from "@/components/EpsSpinner"
+import {LoadingPageWarning} from "@/components/LoadingPageWarning"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import {logger} from "@/helpers/logger"
 import {normalizePath} from "@/helpers/utils"
@@ -12,10 +13,8 @@ import {returnLocalState} from "@/helpers/appLocalStateOutput"
 
 export default function LoadingPage() {
   const auth = useAuth()
-  usePageTitle("Loading information")
+  usePageTitle(LOADING_STRINGS.PAGE_TITLE)
   const [showWarningCallout, setShowWarningCallout] = useState<boolean | undefined>(undefined)
-  const sessionId = auth?.sessionId ? auth.sessionId?.trim() : undefined
-  const desktopId = auth?.desktopId ? auth.desktopId?.trim() : undefined
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -54,19 +53,7 @@ export default function LoadingPage() {
           <br />
           {!showWarningCallout && <EpsSpinner />}
           {showWarningCallout && (
-            <WarningCallout>
-              <WarningCallout.Label>
-                Information
-              </WarningCallout.Label>
-              <p>
-                If you keep seeing this page, email{" "}
-                <a href={`mailto:epssupport@nhs.net?subject=Issue for session ${sessionId}`}>epssupport@nhs.net</a>
-                {" "}and include this information:</p>
-              <ul>
-                {sessionId && <li>session ID {sessionId}</li>}
-                <li>desktop ID {desktopId}</li>
-              </ul>
-            </WarningCallout>
+            <LoadingPageWarning {...auth} />
           )}
         </Fragment>
       </Container>
