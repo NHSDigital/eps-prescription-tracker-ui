@@ -23,5 +23,4 @@ vulnerabilities:
   - id: CVE-2026-26996
     paths:
       - "package-lock.json"
-    statement: minimatch ReDoS vulnerability accepted as risk - downstream dependency
-    expired_at: 2026-06-01
+    statement: downstream dependency - vulnerability is not relevant - we don't allow user input for anything regex.
