@@ -22,6 +22,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -38,6 +39,7 @@ const mockCognitoSignOut = jest.fn()
 const mockClearAuthState = jest.fn()
 
 const signedInAuthState: AuthContextType = {
+  ...mockAuthState,
   isSignedIn: true,
   isSigningIn: false,
   invalidSessionCause: undefined,
