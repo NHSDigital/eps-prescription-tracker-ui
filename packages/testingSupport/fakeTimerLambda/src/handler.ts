@@ -105,8 +105,18 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         }
       }
     }
-    
-    logger.error("Error updating lastActivityTime", {error, username: body?.username, requestId: body?.request_id})
+
+    let username: string | undefined
+    let requestId: string | undefined
+    try {
+      const parsedBody = JSON.parse(event.body || "{}")
+      username = parsedBody?.username
+      requestId = parsedBody?.request_id
+    } catch {
+      // Ignore parsing errors for logging purposes
+    }
+
+    logger.error("Error updating lastActivityTime", {error, username, requestId})
     return {
       statusCode: 500,
       body: JSON.stringify({"message": "Error updating session timeout"}),
