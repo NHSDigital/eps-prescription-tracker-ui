@@ -44,10 +44,23 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     }
     const username = body.username
     const requestId = body.request_id
+    const minutes = body.minutes || 13 // Default to 13 minutes for backward compatibility
 
-    logger.info("Setting lastActivityTime to 13 minutes in the Past for user", {username, requestId})
+    if (typeof minutes !== "number" || minutes < 0 || !Number.isInteger(minutes)) {
+      logger.error("Invalid minutes parameter", {minutes})
+      return {
+        statusCode: 400,
+        body: JSON.stringify({"message": "Minutes parameter must be a non-negative integer"}),
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache"
+        }
+      }
+    }
 
-    const thirteenMinutesInPast = Date.now() - (13 * 60 * 1000)
+    logger.info(`Setting lastActivityTime to ${minutes} minutes in the past for user`, {username, requestId, minutes})
+
+    const pastTime = Date.now() - (minutes * 60 * 1000)
 
     const existingTokenMapping = await getTokenMapping(
       documentClient,
@@ -62,7 +75,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
         tokenMappingTableName,
         {
           username,
-          lastActivityTime: thirteenMinutesInPast
+          lastActivityTime: pastTime
         },
         logger
       )
@@ -70,7 +83,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
       logger.info("Successfully updated lastActivityTime for regression testing", {
         username,
         requestId,
-        newLastActivityTime: thirteenMinutesInPast
+        minutes,
+        newLastActivityTime: pastTime
       })
 
       return {

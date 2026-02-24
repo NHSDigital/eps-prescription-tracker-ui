@@ -54,24 +54,48 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
   })
 
   describe("successful handler scenarios", () => {
-    it("returns 200 when successfully updating lastActivityTime to 13 minutes in past", async (): Promise<void> => {
+    it("returns 200 when successfully updating lastActivityTime to 13 minutes in past (default)",
+      async (): Promise<void> => {
+        mockGetTokenMapping.mockResolvedValue({
+          username: "test-user",
+          lastActivityTime: Date.now()
+        })
+        mockUpdateTokenMapping.mockResolvedValue(undefined)
+
+        const event = buildEvent({username: "test-user", request_id: "test-request"})
+        const response: APIGatewayProxyResult = await handler(event, context)
+
+        expect(response.statusCode).toBe(200)
+        expect(JSON.parse(response.body)).toEqual({})
+        expect(mockGetTokenMapping).toHaveBeenCalledWith(
+          expect.anything(),
+          "TokenMappingTable",
+          "test-user",
+          expect.anything()
+        )
+        expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
+          expect.anything(),
+          "TokenMappingTable",
+          expect.objectContaining({
+            username: "test-user",
+            lastActivityTime: expect.any(Number)
+          }),
+          expect.anything()
+        )
+      })
+
+    it("returns 200 when successfully updating lastActivityTime with custom minutes", async (): Promise<void> => {
       mockGetTokenMapping.mockResolvedValue({
         username: "test-user",
         lastActivityTime: Date.now()
       })
       mockUpdateTokenMapping.mockResolvedValue(undefined)
 
-      const event = buildEvent({username: "test-user", request_id: "test-request"})
+      const event = buildEvent({username: "test-user", request_id: "test-request", minutes: 16})
       const response: APIGatewayProxyResult = await handler(event, context)
 
       expect(response.statusCode).toBe(200)
       expect(JSON.parse(response.body)).toEqual({})
-      expect(mockGetTokenMapping).toHaveBeenCalledWith(
-        expect.anything(),
-        "TokenMappingTable",
-        "test-user",
-        expect.anything()
-      )
       expect(mockUpdateTokenMapping).toHaveBeenCalledWith(
         expect.anything(),
         "TokenMappingTable",
@@ -82,6 +106,21 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
         expect.anything()
       )
     })
+
+    it("returns 200 when successfully updating lastActivityTime with 0 minutes (current time)",
+      async (): Promise<void> => {
+        mockGetTokenMapping.mockResolvedValue({
+          username: "test-user",
+          lastActivityTime: Date.now()
+        })
+        mockUpdateTokenMapping.mockResolvedValue(undefined)
+
+        const event = buildEvent({username: "test-user", minutes: 0})
+        const response: APIGatewayProxyResult = await handler(event, context)
+
+        expect(response.statusCode).toBe(200)
+        expect(JSON.parse(response.body)).toEqual({})
+      })
 
     it("works without request_id parameter", async (): Promise<void> => {
       mockGetTokenMapping.mockResolvedValue({
@@ -155,6 +194,36 @@ describe("Lambda Handler Integration Tests - Timeout Version", () => {
       expect(JSON.parse(response.body)).toEqual({})
       expect(mockGetTokenMapping).toHaveBeenCalled()
       expect(mockUpdateTokenMapping).toHaveBeenCalled()
+    })
+
+    it("returns 400 when minutes parameter is negative", async (): Promise<void> => {
+      const event = buildEvent({username: "test-user", minutes: -5})
+      const response: APIGatewayProxyResult = await handler(event, context)
+
+      expect(response.statusCode).toBe(400)
+      expect(JSON.parse(response.body)).toEqual({message: "Minutes parameter must be a non-negative integer"})
+      expect(mockGetTokenMapping).not.toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
+    })
+
+    it("returns 400 when minutes parameter is not an integer", async (): Promise<void> => {
+      const event = buildEvent({username: "test-user", minutes: 13.5})
+      const response: APIGatewayProxyResult = await handler(event, context)
+
+      expect(response.statusCode).toBe(400)
+      expect(JSON.parse(response.body)).toEqual({message: "Minutes parameter must be a non-negative integer"})
+      expect(mockGetTokenMapping).not.toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
+    })
+
+    it("returns 400 when minutes parameter is not a number", async (): Promise<void> => {
+      const event = buildEvent({username: "test-user", minutes: "invalid"})
+      const response: APIGatewayProxyResult = await handler(event, context)
+
+      expect(response.statusCode).toBe(400)
+      expect(JSON.parse(response.body)).toEqual({message: "Minutes parameter must be a non-negative integer"})
+      expect(mockGetTokenMapping).not.toHaveBeenCalled()
+      expect(mockUpdateTokenMapping).not.toHaveBeenCalled()
     })
   })
 })
