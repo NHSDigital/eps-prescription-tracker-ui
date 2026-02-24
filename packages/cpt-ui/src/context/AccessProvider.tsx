@@ -68,6 +68,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
     const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
+    // signed in true, signing out true -> should go to logout
+    // signed in true, signing out false -> continue
+    // signed in false, signing out true -> should go to logout
+    // signed in false, signing out false -> can access public pages incl. login only.
+
+    // nb. only logout page sets isSigningOut back to false - but you have to render logout page
+    // session logged doesnt reset it
+
     logger.info(`Requested path: ${path}`)
     if (loggedOut && (!inNoRoleAllowed || atRoot)) {
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
