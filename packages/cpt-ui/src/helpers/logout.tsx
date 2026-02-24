@@ -29,7 +29,7 @@ export const handleRestartLogin = async (auth: AuthContextType, invalidSessionCa
     logger.info(`Invalid session cause supplied, ${invalidSessionCause}`)
     await auth.updateInvalidSessionCause(invalidSessionCause)
     await signOut(auth, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
-    return
+  } else {
+    await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }
-  await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
 }

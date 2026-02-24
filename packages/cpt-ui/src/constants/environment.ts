@@ -92,6 +92,7 @@ export const PUBLIC_PATHS = [
   "/"
 ] as const
 
+// TODO: Potentially redundant as we're no longer relying on it in routing
 export const ALLOWED_NO_ROLE_PATHS = [
   ...PUBLIC_PATHS,
   FRONTEND_PATHS.SELECT_YOUR_ROLE,
