@@ -17,11 +17,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {headers} from "@cpt-ui-common/lambdaUtils"
 
 import {rewriteRequestBody} from "./helpers"
-import {
-  insertTokenMapping, 
-  tryGetTokenMapping, 
-  TokenMappingItem
-} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, tryGetTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -80,6 +76,8 @@ function checkIfValidTokenMapping(tokenMapping: TokenMappingItem | undefined): b
 
   return tokenMapping !== undefined &&
     tokenMapping.sessionId !== undefined &&
+    tokenMapping.apigeeAccessToken !== undefined &&
+    tokenMapping.apigeeExpiresIn !== undefined &&
     tokenMapping.lastActivityTime !== undefined &&
     tokenMapping.lastActivityTime > Date.now() - fifteenMinutes
 }

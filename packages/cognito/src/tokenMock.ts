@@ -9,11 +9,7 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {
-  insertTokenMapping,
-  tryGetTokenMapping,
-  TokenMappingItem
-} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, tryGetTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import jwt from "jsonwebtoken"
 import axios from "axios"
@@ -81,6 +77,8 @@ function checkIfValidTokenMapping(tokenMapping: TokenMappingItem | undefined): b
 
   return tokenMapping !== undefined &&
     tokenMapping.sessionId !== undefined &&
+    tokenMapping.apigeeAccessToken !== undefined &&
+    tokenMapping.apigeeExpiresIn !== undefined &&
     tokenMapping.lastActivityTime !== undefined &&
     tokenMapping.lastActivityTime > Date.now() - fifteenMinutes
 }
