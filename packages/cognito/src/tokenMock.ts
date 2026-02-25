@@ -9,7 +9,11 @@ import inputOutputLogger from "@middy/input-output-logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
-import {insertTokenMapping, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {
+  insertTokenMapping,
+  tryGetTokenMapping,
+  TokenMappingItem
+} from "@cpt-ui-common/dynamoFunctions"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import jwt from "jsonwebtoken"
 import axios from "axios"
@@ -70,6 +74,15 @@ async function createSignedJwt(claims: Record<string, unknown>) {
     algorithm: "RS512",
     keyid: jwtKid
   })
+}
+
+function checkIfValidTokenMapping(tokenMapping: TokenMappingItem | undefined): boolean {
+  const fifteenMinutes = 15 * 60 * 1000
+
+  return tokenMapping !== undefined &&
+    tokenMapping.sessionId !== undefined &&
+    tokenMapping.lastActivityTime !== undefined &&
+    tokenMapping.lastActivityTime > Date.now() - fifteenMinutes
 }
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -154,7 +167,7 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
   logger.info("Existing token mapping for user", {existingTokenMapping})
 
-  let tokenMappingItem = {
+  let tokenMappingItem: TokenMappingItem = {
     username: `Mock_${baseUsername}`,
     sessionId: sessionId,
     apigeeAccessToken: exchangeResult.accessToken,
@@ -167,11 +180,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     lastActivityTime: Date.now()
   }
 
-  const fifteenMinutes = 15 * 60 * 1000
-
   const sessionManagementTableName = mockOidcConfig.sessionManagementTableName
 
-  if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
+  if (checkIfValidTokenMapping(existingTokenMapping)) {
     const username = tokenMappingItem.username
     logger.info("User already exists in token mapping table, creating draft session",
       {username}, {sessionManagementTableName})

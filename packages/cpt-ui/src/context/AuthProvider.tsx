@@ -86,6 +86,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
+    setSessionId(undefined)
     // updateTrackerUserInfo will set InvalidSessionCause to undefined
   }
 
