@@ -250,4 +250,110 @@ describe("useFocusManagement", () => {
 
     expect(skipLinkFocusSpy).toHaveBeenCalled()
   })
+
+  it("focuses cookie banner accept button before skip link when both present without interaction", async () => {
+    renderHookWithRouter()
+
+    // Create cookie banner with accept button specifically
+    const cookieBanner = document.createElement("div")
+    cookieBanner.setAttribute("data-testid", "cookieBanner")
+
+    const acceptButton = document.createElement("button")
+    acceptButton.textContent = "Accept cookies"
+    acceptButton.setAttribute("data-testid", "accept-button")
+    cookieBanner.appendChild(acceptButton)
+
+    // Make the cookie banner visible
+    Object.defineProperty(cookieBanner, "offsetParent", {
+      value: document.body,
+      writable: true
+    })
+
+    document.body.appendChild(cookieBanner)
+
+    // Create skip link
+    const skipLink = document.createElement("a")
+    skipLink.className = "nhsuk-skip-link"
+    skipLink.href = "#main"
+    document.body.appendChild(skipLink)
+
+    const acceptButtonFocusSpy = jest.spyOn(acceptButton, "focus")
+    const skipLinkFocusSpy = jest.spyOn(skipLink, "focus")
+
+    await act(async () => {
+      fireEvent.keyDown(document, {key: "Tab", code: "Tab"})
+    })
+
+    expect(acceptButtonFocusSpy).toHaveBeenCalled()
+    expect(skipLinkFocusSpy).not.toHaveBeenCalled()
+  })
+
+  it("focuses skip link when cookie banner not visible", async () => {
+    renderHookWithRouter()
+
+    // Create cookie banner but make it hidden
+    const cookieBanner = document.createElement("div")
+    cookieBanner.setAttribute("data-testid", "cookieBanner")
+
+    const acceptButton = document.createElement("button")
+    cookieBanner.appendChild(acceptButton)
+
+    // Make the cookie banner hidden (offsetParent is null)
+    Object.defineProperty(cookieBanner, "offsetParent", {
+      value: null,
+      writable: true
+    })
+
+    document.body.appendChild(cookieBanner)
+
+    // Create skip link
+    const skipLink = document.createElement("a")
+    skipLink.className = "nhsuk-skip-link"
+    document.body.appendChild(skipLink)
+
+    const buttonFocusSpy = jest.spyOn(acceptButton, "focus")
+    const skipLinkFocusSpy = jest.spyOn(skipLink, "focus")
+
+    await act(async () => {
+      fireEvent.keyDown(document, {key: "Tab", code: "Tab"})
+    })
+
+    expect(buttonFocusSpy).not.toHaveBeenCalled()
+    expect(skipLinkFocusSpy).toHaveBeenCalled()
+  })
+
+  it("focuses skip link when cookie banner exists but no accept button", async () => {
+    renderHookWithRouter()
+
+    // Create cookie banner without accept button
+    const cookieBanner = document.createElement("div")
+    cookieBanner.setAttribute("data-testid", "cookieBanner")
+
+    const someOtherButton = document.createElement("button")
+    someOtherButton.textContent = "Other button"
+    cookieBanner.appendChild(someOtherButton)
+
+    // Make the cookie banner visible
+    Object.defineProperty(cookieBanner, "offsetParent", {
+      value: document.body,
+      writable: true
+    })
+
+    document.body.appendChild(cookieBanner)
+
+    // Create skip link
+    const skipLink = document.createElement("a")
+    skipLink.className = "nhsuk-skip-link"
+    document.body.appendChild(skipLink)
+
+    const otherButtonFocusSpy = jest.spyOn(someOtherButton, "focus")
+    const skipLinkFocusSpy = jest.spyOn(skipLink, "focus")
+
+    await act(async () => {
+      fireEvent.keyDown(document, {key: "Tab", code: "Tab"})
+    })
+
+    expect(otherButtonFocusSpy).not.toHaveBeenCalled()
+    expect(skipLinkFocusSpy).toHaveBeenCalled()
+  })
 })

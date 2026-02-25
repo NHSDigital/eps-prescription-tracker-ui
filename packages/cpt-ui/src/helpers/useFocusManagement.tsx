@@ -47,10 +47,23 @@ export function useFocusManagement() {
           element.focus()
           return
         }
-        // If stored element is not visible, fall back to skip link regardless of user interaction
       }
 
       if (!hasUserInteracted || lastInputId) {
+        // First check for cookie banner if user hasn't interacted
+        if (!hasUserInteracted) {
+          const cookieBanner = document.querySelector("[data-testid=\"cookieBanner\"]") as HTMLElement
+          if (cookieBanner && cookieBanner.offsetParent !== null) {
+            // Focus the Accept button to start the tab order through cookie banner elements
+            const acceptButton = cookieBanner.querySelector("[data-testid=\"accept-button\"]") as HTMLElement
+            if (acceptButton) {
+              acceptButton.focus()
+              return
+            }
+          }
+        }
+
+        // Fall back to skip link if no cookie banner or user has interacted
         const skipLink = document.querySelector(
           "[data-testid=\"eps_header_skipLink\"], .nhsuk-skip-link") as HTMLElement
         if (skipLink) {

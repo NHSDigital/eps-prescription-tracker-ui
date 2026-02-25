@@ -7,6 +7,7 @@ import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
 import {PrescriptionInformationProvider} from "./context/PrescriptionInformationProvider"
 import Layout from "@/Layout"
 import {useFocusManagement} from "./helpers/useFocusManagement"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 
 import LoginPage from "@/pages/LoginPage"
 import LogoutPage from "@/pages/LogoutPage"
@@ -37,6 +38,10 @@ function AppContent() {
   // Use the refactored focus management hook
   useFocusManagement()
 
+  // Track cookie banner visibility using the same logic as EPSCookieBanner
+  const [cookiePreferencesSaved] = useLocalStorageState<boolean>(
+    "cookiePreferencesSaved", "cookiePreferencesSaved", false)
+
   // Check if we're on a prescription list or prescription details page
   const isPrescriptionPage =
     location.pathname === FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT ||
@@ -46,12 +51,16 @@ function AppContent() {
 
   const skipTarget = isPrescriptionPage ? "#patient-details-banner" : "#main-content"
 
+  // Set skip link tabIndex based on cookie banner visibility
+  const skipLinkTabIndex = !cookiePreferencesSaved ? 4 : 0
+
   return (
     <>
       <a
         href={skipTarget}
         className="nhsuk-skip-link"
         data-testid="eps_header_skipLink"
+        tabIndex={skipLinkTabIndex}
       >
         {HEADER_STRINGS.SKIP_TO_MAIN_CONTENT}
       </a>
