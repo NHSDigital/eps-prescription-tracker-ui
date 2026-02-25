@@ -23,10 +23,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const location = useLocation()
 
   const shouldBlockChildren = () => {
-    // TODO: Investigate moving 'ensureRoleSelected' functionality into this blockChildren
-    // This could potentially stop amplify re-trying login on a pre-existing session
-
     const path = normalizePath(location.pathname)
+
+    if (auth.isSignedIn && auth.selectedRole &&
+      (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+      logger.info(`Signed-in user on ${path} - blocking render until redirect`)
+      return true
+    }
 
     // not signed in → block on protected paths, and also block root path to prevent flash
     if (!auth.isSignedIn && !auth.isSigningIn) {
@@ -35,7 +38,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return true
       }
       return !ALLOWED_NO_ROLE_PATHS.includes(path)
-    } else {
+    } else if (auth.isSignedIn) {
       // Signed In
       if (auth.isConcurrentSession) {
         // Only session-selection page is allowed
@@ -65,47 +68,45 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       navigate(to)
     }
 
-    if (!PUBLIC_PATHS.includes(path) || path === "/") {
-      if (!auth.isSignedIn) {
-        // Not authed, accessing protected page or root - Go to login
-        if (auth.isSigningOut) {
-          logger.info("User is signing out - blocking access to protected page or root")
-        } else {
-          redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
-        }
-      } else {
-        // Authed, accessing protected page or root
-        if (auth.isSigningOut) {
-          handleRestartLogin(auth, auth.invalidSessionCause)
-        }
-        if (auth.selectedRole) {
-          // Authed with role, accessing protected page or root
-          if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
-            return redirect(FRONTEND_PATHS.SESSION_SELECTION,
-              "Concurrent session found - redirecting to session selection")
-          }
-          if (auth.isSigningIn) {
-            // Authed with role, but still isSigningIn, accessing protected page or root
-            if (auth.isConcurrentSession
-              && path !== FRONTEND_PATHS.SESSION_SELECTION) {
-              return redirect(FRONTEND_PATHS.SESSION_SELECTION,
-                "Concurrent session found - redirecting to session selection")
-            } else {
-              // TODO: isSigningIn shouldn't still be true here?
-              logger.info("Authed with role, but still isSigningIn, accessing protected page or root")
-              // return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-              // "User already logged in. Role already selected.")
-            }
-          } else {
-            // Authed with role but not isSigningIn anymore - ok to proceed
-            if (path === "/") {
-              return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-                "User already logged in. Role already selected.")
-            }
-          }
-        } else {
-          return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
-        }
+    if (auth.isSignedIn && auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+      return redirect(
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+        `Signed-in user on ${path} - redirecting to default page`
+      )
+    }
+
+    // Public paths (except root) don't need protection
+    if (PUBLIC_PATHS.includes(path) && path !== "/") {
+      return
+    }
+
+    // Not signed in
+    if (!auth.isSignedIn) {
+      // Transitional states - don't redirect
+      if (auth.isSigningOut) {
+        logger.info("User is signing out - not redirecting elsewhere")
+        return
+      }
+
+      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+    }
+
+    // Signed in - check states in priority order
+    if (auth.isSignedIn) {
+      if (auth.isSigningOut) {
+        return handleRestartLogin(auth, auth.invalidSessionCause)
+      }
+
+      if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
+        return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
+      }
+
+      if (!auth.selectedRole && path !== FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+        return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
+      }
+
+      if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+        return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "User already logged in. Role already selected.")
       }
     }
   }

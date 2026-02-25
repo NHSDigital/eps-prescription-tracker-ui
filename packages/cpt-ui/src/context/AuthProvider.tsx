@@ -205,8 +205,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
-    await signInWithRedirect(input)
     setIsSigningIn(true)
+    await signInWithRedirect(input)
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {

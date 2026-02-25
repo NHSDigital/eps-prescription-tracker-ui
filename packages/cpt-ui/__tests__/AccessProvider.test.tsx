@@ -241,7 +241,7 @@ describe("AccessProvider", () => {
     renderWithProvider()
 
     expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-    expect(logger.info).toHaveBeenCalledWith("Authenticated user on root path - redirecting to search")
+    expect(logger.info).toHaveBeenCalledWith("User already logged in. Role already selected.")
   })
 
   describe("shouldBlockChildren", () => {

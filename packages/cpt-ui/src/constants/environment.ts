@@ -101,7 +101,7 @@ export const ALLOWED_NO_ROLE_PATHS = [
 ] as const
 
 export const ALLOWED_NO_REDIRECT_PATHS = [
-  ...PUBLIC_PATHS,
+  FRONTEND_PATHS.LOGIN,
   FRONTEND_PATHS.SESSION_LOGGED_OUT
 ] as const
 
