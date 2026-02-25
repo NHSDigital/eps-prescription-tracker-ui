@@ -10,6 +10,7 @@ import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import Layout from "@/Layout"
 import LoadingPage from "@/pages/LoadingPage"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
@@ -65,6 +66,9 @@ jest.mock("@/constants/environment", () => ({
   },
   AUTH_CONFIG: {
     REDIRECT_SIGN_OUT: "mock-signout"
+  },
+  ENV_CONFIG: {
+    RUM_ERROR_TIMER_INTERVAL: 10000
   }
 }))
 
@@ -139,6 +143,7 @@ describe("AccessProvider", () => {
 
   it("redirects to login if not signed in and not on allowed path", () => {
     mockAuthHook.mockReturnValue({
+      ...mockAuthState,
       isSignedIn: false,
       isSigningIn: false,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -156,6 +161,7 @@ describe("AccessProvider", () => {
 
   it("redirects to session selection if signed in and concurrent session", () => {
     mockAuthHook.mockReturnValue({
+      ...mockAuthState,
       isSignedIn: true,
       isConcurrentSession: true,
       isSigningIn: false,
@@ -171,6 +177,7 @@ describe("AccessProvider", () => {
 
   it("redirects to select role if signed in but no role is selected", () => {
     mockAuthHook.mockReturnValue({
+      ...mockAuthState,
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: null,
@@ -187,6 +194,7 @@ describe("AccessProvider", () => {
 
   it("does not redirect if signed in and role is selected", () => {
     mockAuthHook.mockReturnValue({
+      ...mockAuthState,
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "someRole"},
@@ -203,6 +211,7 @@ describe("AccessProvider", () => {
 
   it("skips redirection logic when signing in and on select-your-role path", () => {
     mockAuthHook.mockReturnValue({
+      ...mockAuthState,
       isSignedIn: false,
       isSigningIn: true,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -245,6 +254,7 @@ describe("AccessProvider", () => {
 
   it("redirects authenticated user with role from root path to search page", () => {
     mockAuthHook.mockReturnValue({
+      ...mockAuthState,
       isSignedIn: true,
       isSigningIn: false,
       selectedRole: {name: "TestRole"},
@@ -263,6 +273,7 @@ describe("AccessProvider", () => {
   describe("shouldBlockChildren", () => {
     it("blocks children when concurrent session exists and user is on protected path", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isConcurrentSession: true,
         isSigningIn: false,
@@ -315,6 +326,7 @@ describe("AccessProvider", () => {
 
     it("blocks children when no role selected and user is on protected path", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: null,
@@ -347,6 +359,7 @@ describe("AccessProvider", () => {
       const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
 
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -365,6 +378,7 @@ describe("AccessProvider", () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
 
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -383,6 +397,7 @@ describe("AccessProvider", () => {
       const clearIntervalSpy = jest.spyOn(globalThis, "clearInterval")
 
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -406,6 +421,7 @@ describe("AccessProvider", () => {
 
     it("should skip user info check when isSigningIn is true", async () => {
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: true,
         selectedRole: {name: "TestRole"},
@@ -428,6 +444,7 @@ describe("AccessProvider", () => {
     it("should skip user info check when on allowed no-role paths", async () => {
       // This test focuses on the isSigningIn logic since we can't easily mock window.location
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: true, // This will trigger the skip logic
         selectedRole: {name: "TestRole"},
@@ -450,6 +467,7 @@ describe("AccessProvider", () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: null})
 
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -472,6 +490,7 @@ describe("AccessProvider", () => {
       mockUpdateTrackerUserInfo.mockResolvedValue({error: "Session expired", invalidSessionCause: "InvalidSession"})
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -492,6 +511,7 @@ describe("AccessProvider", () => {
 
     it("should not call updateTrackerUserInfo when user is not signed in", async () => {
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: false,
         isSigningIn: false,
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
@@ -512,6 +532,7 @@ describe("AccessProvider", () => {
 
     it("should handle multiple allowed no-role paths correctly", async () => {
       mockAuthHook.mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -536,6 +557,7 @@ describe("AccessProvider", () => {
         .mockResolvedValueOnce({error: null}) // second periodic check
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
