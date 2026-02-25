@@ -62,11 +62,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       navigate(to)
     }
 
-    const loggedOut = !auth.isSignedIn && !auth.isSigningOut
-    const loggingOut = auth.isSignedIn && auth.isSigningOut
-    const concurrent = auth.isSignedIn && auth.isConcurrentSession
-    const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
-    const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
+    // const loggedOut = !auth.isSignedIn && !auth.isSigningOut
+    // const loggingOut = auth.isSignedIn && auth.isSigningOut
+    // const concurrent = auth.isSignedIn && auth.isConcurrentSession
+    // const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
+    // const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
 
     // signed in true, signing out true -> should go to logout
     // signed in true, signing out false -> continue
@@ -76,7 +76,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     // signed in false, isconcurrent false -> unless on public path, login
     // signed in false, select role true -> unless on public path, login
     // signed in false, select role false -> unless on public path, login
-  
+
     // nb. only logout page sets isSigningOut back to false - but you have to render logout page
     // session logged doesnt reset it
 
@@ -89,12 +89,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     if (!PUBLIC_PATHS.includes(path) || path === "/") {
       if (!auth.isSignedIn) {
-          // Not authed, accessing protected page or root - Go to login
-          if (auth.isSigningOut) {
-            logger.info("User is signing out - blocking access to protected page or root")
-          } else {
-            redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
-          }
+        // Not authed, accessing protected page or root - Go to login
+        if (auth.isSigningOut) {
+          logger.info("User is signing out - blocking access to protected page or root")
+        } else {
+          redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+        }
       } else {
         // Authed, accessing protected page or root
         if (auth.isSigningOut) {
@@ -109,7 +109,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         if (auth.selectedRole) {
           // Authed with role, accessing protected page or root
           if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
-              return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
+            return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
           }
           if (auth.isSigningIn) {
             // Authed with role, but still isSigningIn, accessing protected page or root
@@ -131,7 +131,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         }
       }
     }
-    
 
     // logger.info(`Requested path: ${path}`)
     // if (!auth.isSignedIn && !auth.isSigningOut && (!inNoRoleAllowed || atRoot)) {
