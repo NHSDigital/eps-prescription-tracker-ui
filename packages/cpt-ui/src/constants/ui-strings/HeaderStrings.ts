@@ -13,6 +13,6 @@ export const HEADER_STRINGS = {
   PRESCRIPTION_SEARCH_TARGET: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
   SELECT_YOUR_ROLE_BUTTON: "Select Your Role",
   SELECT_YOUR_ROLE_TARGET: FRONTEND_PATHS.SELECT_YOUR_ROLE,
-  SERVICE: "Prescription Tracker (pilot)",
+  SERVICE: "Prescription Tracker (private beta)",
   SKIP_TO_MAIN_CONTENT: "Skip to main content"
 }
