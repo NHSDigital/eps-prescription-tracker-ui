@@ -16,21 +16,13 @@ export default function LoadingPage() {
   usePageTitle(LOADING_STRINGS.PAGE_TITLE)
   const [showWarningCallout, setShowWarningCallout] = useState<boolean | undefined>(undefined)
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setShowWarningCallout(true)
-    }, 15000)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
-
   const path = normalizePath(location.pathname)
 
   useEffect(() => {
     const stateValues = returnLocalState(auth)
     const timeout = setTimeout(() => {
+      setShowWarningCallout(true)
+
       // Send non-PID state values as additional fields to RUM for better observability of auth state during loading
       logger.info("Redirection page error timer triggered")
       logger.debug("Redirection page error timer", {...stateValues, path}, true)
