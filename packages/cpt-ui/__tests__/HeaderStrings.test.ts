@@ -3,7 +3,7 @@ import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 
 describe("HeaderStrings", () => {
   it("exports all header string constants", () => {
-    expect(HEADER_STRINGS.SERVICE).toBe("Prescription Tracker (pilot)")
+    expect(HEADER_STRINGS.SERVICE).toBe("Prescription Tracker (private beta)")
     expect(HEADER_STRINGS.CHANGE_ROLE_BUTTON).toBe("Change role")
     expect(HEADER_STRINGS.SELECT_YOUR_ROLE_BUTTON).toBe("Select Your Role")
     expect(HEADER_STRINGS.PRESCRIPTION_SEARCH_BUTTON).toBe("Search for a prescription")

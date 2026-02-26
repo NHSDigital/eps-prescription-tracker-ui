@@ -19,7 +19,7 @@ jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
     LOG_OUT_BUTTON: "Log out",
     SELECT_YOUR_ROLE_BUTTON: "Select your role",
     SELECT_YOUR_ROLE_TARGET: "/select-your-role",
-    SERVICE: "Prescription Tracker (Pilot)"
+    SERVICE: "Prescription Tracker (private beta)"
   }
 }))
 
@@ -110,7 +110,7 @@ describe("EpsHeader", () => {
 
     it("displays the correct service name in the header", () => {
       expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
-        "Prescription Tracker (Pilot)"
+        "Prescription Tracker (private beta)"
       )
     })
 
@@ -139,7 +139,7 @@ describe("EpsHeader", () => {
 
     it("displays the correct service name in the header", () => {
       expect(screen.getByTestId("eps_header_serviceName")).toHaveTextContent(
-        "Prescription Tracker (Pilot)"
+        "Prescription Tracker (private beta)"
       )
     })
 
