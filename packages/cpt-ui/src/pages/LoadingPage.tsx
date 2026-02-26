@@ -51,10 +51,7 @@ export default function LoadingPage() {
             {" "}to reset your session and then log in again.
           </p>
           <br />
-          {!showWarningCallout && <EpsSpinner />}
-          {showWarningCallout && (
-            <LoadingPageWarning {...auth} />
-          )}
+          {showWarningCallout ? <LoadingPageWarning {...auth} /> : <EpsSpinner />}
         </Fragment>
       </Container>
     </main>
