@@ -26,6 +26,7 @@ jest.mock("@/context/NavigationProvider", () => ({
   useNavigationContext: () => mockNavigationContext
 }))
 import {SearchProvider} from "@/context/SearchProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Default mock values for contexts
 const defaultAuthContext: AuthContextType = {
@@ -57,7 +58,7 @@ const renderWithProviders = (
   {
     authContext = defaultAuthContext,
     accessContext = null,
-    initialEntries = ["/search-by-prescription-id"]
+    initialEntries = [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
   } = {}
 ) => {
   return render(
@@ -125,14 +126,14 @@ describe("SearchForAPrescription", () => {
 
   it("sets active tab based on pathname - prescription ID", () => {
     renderWithProviders(<SearchForAPrescription />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
     expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
   })
 
   it("sets active tab based on pathname - NHS number", () => {
     renderWithProviders(<SearchForAPrescription />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]
     })
     expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
   })

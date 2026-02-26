@@ -41,12 +41,14 @@ jest.mock("@/constants/environment", () => ({
   FRONTEND_PATHS: {
     LOGOUT: "/logout",
     LOGIN: "/login",
-    SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id"
+    SEARCH_BY_PRESCRIPTION_ID: "/search#prescription-id"
   },
   API_ENDPOINTS: {
     SESSION_MANAGEMENT: "/api/session-management"
   }
 }))
+
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const mockUpdateTrackerUserInfo = jest.fn()
 
@@ -163,7 +165,7 @@ describe("SessionSelectionPage", () => {
     await userEvent.click(newSessionButton)
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     })
   })
 
@@ -180,7 +182,7 @@ describe("SessionSelectionPage", () => {
     })
 
     // Should not navigate if session management fails
-    expect(mockNavigate).not.toHaveBeenCalledWith("/search-by-prescription-id")
+    expect(mockNavigate).not.toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     expect(defaultAuthState.cognitoSignOut).toHaveBeenCalled()
   })
 

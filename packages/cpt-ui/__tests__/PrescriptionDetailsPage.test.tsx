@@ -18,6 +18,7 @@ import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider
 import {NavigationProvider} from "@/context/NavigationProvider"
 
 import {AxiosError, AxiosHeaders} from "axios"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 const defaultAuthState: AuthContextType = {
   isSignedIn: false,
@@ -120,7 +121,7 @@ const renderComponent = (
                 <Routes>
                   <Route path="/prescription-details" element={<PrescriptionDetailsPage />} />
                   <Route path="/login" element={<div data-testid="login-page-shown" />} />
-                  <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
+                  <Route path={FRONTEND_PATHS.SEARCH} element={<div data-testid="search-page-shown" />} />
                 </Routes>
               </NavigationProvider>
             </MemoryRouter>

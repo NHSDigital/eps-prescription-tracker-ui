@@ -90,9 +90,10 @@ jest.mock("@/constants/environment", () => ({
     SELECT_YOUR_ROLE: "/select-your-role",
     YOUR_SELECTED_ROLE: "/your-selected-role",
     CHANGE_YOUR_ROLE: "/change-your-role",
-    SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
-    SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
-    SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+    SEARCH: "/search",
+    SEARCH_BY_PRESCRIPTION_ID: "/search#prescription-id",
+    SEARCH_BY_NHS_NUMBER: "/search#nhs-number",
+    SEARCH_BY_BASIC_DETAILS: "/search#basic-details",
     TOO_MANY_SEARCH_RESULTS: "/too-many-search-results"
   },
   ALLOWED_NO_ROLE_PATHS: [

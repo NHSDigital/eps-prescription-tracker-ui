@@ -339,8 +339,8 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
-      mockNormalizePathFn.mockReturnValue("/search-by-prescription-id")
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
+      mockNormalizePathFn.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
 
       renderWithProvider()
 
@@ -358,7 +358,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       renderWithProvider()
 
@@ -377,7 +377,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       const {unmount} = render(
         <MemoryRouter>
@@ -401,7 +401,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       renderWithProvider()
 
@@ -447,7 +447,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       renderWithProvider()
 
@@ -471,7 +471,7 @@ describe("AccessProvider", () => {
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       }
       mockAuthHook.mockReturnValue(authContext)
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       renderWithProvider()
 
@@ -512,7 +512,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       renderWithProvider()
 
@@ -538,7 +538,7 @@ describe("AccessProvider", () => {
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       }
       mockAuthHook.mockReturnValue(authContext)
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID})
 
       renderWithProvider()
 

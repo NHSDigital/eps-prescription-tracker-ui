@@ -7,6 +7,7 @@ import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Mock the NavigationProvider's useNavigationContext hook
 const mockNavigationContext = {
@@ -87,7 +88,7 @@ const defaultSearchContext: SearchProviderContextType = {
 const renderWithProviders = (
   ui: React.ReactElement,
   {
-    initialEntries = ["/search-by-prescription-id"],
+    initialEntries = [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID],
     authContext = defaultAuthContext,
     accessContext = defaultAccessContext,
     searchContext = defaultSearchContext
@@ -124,7 +125,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     jest.spyOn(document, "getElementById").mockReturnValue(mockInputElement as unknown as HTMLInputElement)
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -139,7 +140,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
         jest.advanceTimersByTime(100)
       })
 
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-prescription-id")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
       expect(document.getElementById).toHaveBeenCalledWith("presc-id-input")
       expect(mockInputElement.focus).toHaveBeenCalled()
     }
@@ -152,7 +153,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     jest.spyOn(document, "getElementById").mockReturnValue(mockInputElement as unknown as HTMLInputElement)
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -167,7 +168,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
         jest.advanceTimersByTime(100)
       })
 
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-nhs-number")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
       expect(document.getElementById).toHaveBeenCalledWith("nhs-number-input")
       expect(mockInputElement.focus).toHaveBeenCalled()
     }
@@ -183,7 +184,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -198,7 +199,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
         jest.advanceTimersByTime(100)
       })
 
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-basic-details")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
       expect(mockActiveElement.blur).toHaveBeenCalled()
     }
   })
@@ -207,7 +208,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     jest.spyOn(document, "getElementById").mockReturnValue(null)
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -229,7 +230,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -254,7 +255,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     })
 
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -289,7 +290,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
 
   it("verifies setActiveTab state changes in handleTabClick", () => {
     const {container} = renderWithProviders(<SearchPrescriptionPage />, {
-      initialEntries: ["/search-by-prescription-id"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
     })
 
     const tabs = container.querySelectorAll("button")
@@ -300,7 +301,7 @@ describe("SearchPrescriptionPage - Coverage for handleTabClick Function", () => 
     if (nhsTab) {
       fireEvent.click(nhsTab)
 
-      expect(mockNavigate).toHaveBeenCalledWith("/search-by-nhs-number")
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER)
     }
   })
 })

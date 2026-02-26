@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 describe("HeaderStrings", () => {
   it("exports all header string constants", () => {
@@ -21,8 +22,8 @@ describe("HeaderStrings", () => {
 
   it("has the correct target paths", () => {
     expect(HEADER_STRINGS.EXIT_TARGET).toBe("/")
-    expect(HEADER_STRINGS.CHANGE_ROLE_TARGET).toBe("/change-your-role")
-    expect(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET).toBe("/select-your-role")
-    expect(HEADER_STRINGS.PRESCRIPTION_SEARCH_TARGET).toBe("/search-by-prescription-id")
+    expect(HEADER_STRINGS.CHANGE_ROLE_TARGET).toBe(FRONTEND_PATHS.CHANGE_YOUR_ROLE)
+    expect(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET).toBe(FRONTEND_PATHS.SELECT_YOUR_ROLE)
+    expect(HEADER_STRINGS.PRESCRIPTION_SEARCH_TARGET).toBe(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
   })
 })

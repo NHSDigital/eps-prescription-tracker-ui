@@ -9,6 +9,7 @@ import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Mock the NavigationProvider's useNavigationContext hook
 const mockNavigationContext = {
@@ -85,7 +86,7 @@ const renderWithProviders = (
     authContext = defaultAuthContext,
     accessContext = null,
     searchContext = defaultSearchContext,
-    initialEntries = ["/search-by-prescription-id"]
+    initialEntries = [FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID]
   } = {}
 ) => {
   return render(
@@ -168,7 +169,7 @@ describe("SearchForAPrescription", () => {
 
   it("sets active tab based on pathname - NHS number", () => {
     renderWithProviders(<SearchForAPrescription />, {
-      initialEntries: ["/search-by-nhs-number"]
+      initialEntries: [FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER]
     })
     expect(screen.getByTestId("search-for-a-prescription")).toBeInTheDocument()
   })

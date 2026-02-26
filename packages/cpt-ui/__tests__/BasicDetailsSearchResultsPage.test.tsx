@@ -25,6 +25,7 @@ import {
   PatientSummaryGender
 } from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
@@ -152,8 +153,9 @@ function renderWithRouter(initialEntries = ["/patient-search-results"]) {
               <Route path="/too-many-search-results" element={<div data-testid="too-many-results-page-shown" />} />
               <Route path="/login" element={<div data-testid="login-page-shown" />} />
               <Route path="/prescription-list-current" element={<div data-testid="prescription-list-shown" />} />
-              <Route path="/search-by-basic-details" element={<div data-testid="search-page-shown" />} />
-              <Route path="/search-by-prescription-id" element={<div data-testid="search-page-shown" />} />
+              <Route path={FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS} element={<div data-testid="search-page-shown" />} />
+              <Route path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
+                element={<div data-testid="search-page-shown" />} />
             </Routes>
           </NavigationProvider>
         </MemoryRouter>
@@ -181,7 +183,7 @@ describe("BasicDetailsSearchResultsPage", () => {
       postcode: "SW1A 1AA"
     })
 
-    mockGetBackPath.mockReturnValue("/search-by-basic-details")
+    mockGetBackPath.mockReturnValue(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
   })
 
   it("shows loading state initially", () => {
