@@ -179,8 +179,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   }
 
   const sessionManagementTableName = mockOidcConfig.sessionManagementTableName
-
-  if (checkIfValidTokenMapping(existingTokenMapping)) {
+  const validToken = checkIfValidTokenMapping(existingTokenMapping)
+  if (validToken) {
     const username = tokenMappingItem.username
     logger.info("User already exists in token mapping table, creating draft session",
       {username}, {sessionManagementTableName})

@@ -76,8 +76,9 @@ function checkIfValidTokenMapping(tokenMapping: TokenMappingItem | undefined): b
 
   return tokenMapping !== undefined &&
     tokenMapping.sessionId !== undefined &&
-    tokenMapping.apigeeAccessToken !== undefined &&
-    tokenMapping.apigeeExpiresIn !== undefined &&
+    tokenMapping.cis2AccessToken !== undefined &&
+    tokenMapping.cis2IdToken !== undefined &&
+    tokenMapping.cis2ExpiresIn !== undefined &&
     tokenMapping.lastActivityTime !== undefined &&
     tokenMapping.lastActivityTime > Date.now() - fifteenMinutes
 }
@@ -159,8 +160,8 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
   )
 
   const sessionManagementTableName = cis2OidcConfig.sessionManagementTableName
-
-  if (checkIfValidTokenMapping(existingTokenMapping)) {
+  const validToken = checkIfValidTokenMapping(existingTokenMapping)
+  if (validToken) {
     logger.info("User already exists in token mapping table, creating draft session",
       {username}, {sessionManagementTableName})
     await insertTokenMapping(documentClient, sessionManagementTableName, tokenMappingItem, logger)
