@@ -19,22 +19,20 @@ export default function LoginPage() {
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
   const isAutoLoginEnvironment = AUTO_LOGIN_ENVIRONMENTS.map(x => x.environment).includes(target_environment)
 
-  const mockSignIn = async () => {
-    logger.info("Signing in (Mock)", auth)
-    await auth?.cognitoSignIn({
-      provider: {
-        custom: "Mock"
-      }
-    })
-  }
-
-  const cis2SignIn = async () => {
-    logger.info("Signing in (Primary)", auth)
-    await auth?.cognitoSignIn({
-      provider: {
-        custom: "Primary"
-      }
-    })
+  const signIn = async (type: "Primary" | "Mock") => {
+    logger.info(`Redirecting user to ${type} login`)
+    // await auth.cognitoSignOut() // Clear any existing sessions to ensure a clean login flow
+    try {
+      await auth?.cognitoSignIn({
+        provider: {
+          custom: type
+        }
+      })
+    } catch (err) {
+      logout()
+      logger.error(`Error during ${type} sign in:`, err)
+      throw new Error("Error during sign in", {cause: err})
+    }
     logger.info("Signed in: ", auth)
   }
 
@@ -53,13 +51,14 @@ export default function LoginPage() {
     if (isAutoLoginEnvironment) {
       logger.info("performing auto login")
       const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
-      if (autoLoginDetails?.loginMethod === "cis2") {
-        logger.info("Redirecting user to cis2 login")
-        cis2SignIn()
-      } else {
-        logger.info("Redirecting user to mock login")
-        mockSignIn()
-      }
+      signIn(autoLoginDetails?.loginMethod === "cis2" ? "Primary" : "Mock")
+      // if (autoLoginDetails?.loginMethod === "cis2") {
+      //   logger.info("Redirecting user to cis2 login")
+      //   cis2SignIn()
+      // } else {
+      //   logger.info("Redirecting user to mock login")
+      //   mockSignIn()
+      // }
     }
   }, [])
 
@@ -104,8 +103,10 @@ export default function LoginPage() {
 
         <Row>
           <Col width="full">
-            <Button id="primary-signin" style={{margin: "8px"}} onClick={cis2SignIn}>Log in with PTL CIS2</Button>
-            <Button id="mock-signin" style={{margin: "8px"}} onClick={mockSignIn}>Log in with mock CIS2</Button>
+            <Button id="primary-signin" style={{margin: "8px"}}
+              onClick={() => signIn("Primary")}>Log in with PTL CIS2</Button>
+            <Button id="mock-signin" style={{margin: "8px"}}
+              onClick={() => signIn("Mock")}>Log in with mock CIS2</Button>
             <Button id="signout" style={{margin: "8px"}} onClick={logout}>Sign Out</Button>
 
             {auth && (

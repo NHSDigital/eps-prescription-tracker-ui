@@ -87,7 +87,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSigningIn(false)
     setIsConcurrentSession(false)
     setSessionId(undefined)
-    // updateTrackerUserInfo will set InvalidSessionCause to undefined
+    setInvalidSessionCause(undefined)
   }
 
   const updateTrackerUserInfo = async () => {
@@ -147,7 +147,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
-          setIsSigningOut(true)
+          // setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
@@ -169,6 +169,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
     logger.info("Signing out in authProvider...")
+
     try {
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
@@ -176,7 +177,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await http.get(CIS2SignOutEndpoint)
         logger.info("Successfully signed out of CIS2")
       } catch (err) {
-        logger.error("Failed to sign out of CIS2:", err)
+        logger.error("Error signing out of CIS2:", err)
       }
 
       if (signoutRedirectUrl) {
@@ -194,9 +195,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
-      logger.error("Failed to sign out:", err)
       setError(String(err))
-      return false
+      throw new Error("Failed to sign out", {cause: err})
     }
   }
 

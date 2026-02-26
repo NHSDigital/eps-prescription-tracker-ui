@@ -25,35 +25,30 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const shouldBlockChildren = () => {
     const path = normalizePath(location.pathname)
 
-    if (auth.isSignedIn && auth.selectedRole &&
-      (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
-      logger.info(`Signed-in user on ${path} - blocking render until redirect`)
+    if ((!auth.isSignedIn || auth.isSigningIn) && !PUBLIC_PATHS.includes(path)) {
+      logger.info(`Not signed in fully and trying to access ${path} - blocking render`, auth)
       return true
     }
 
-    // not signed in → block on protected paths, and also block root path to prevent flash
-    if (!auth.isSignedIn && !auth.isSigningIn) {
-      if (path === "/") {
-        logger.info("At root path and not signed in - blocking render")
+    if (auth.isSignedIn) {
+      if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
+        logger.info(`Concurrent session detected on ${path} - blocking render until redirect to session selection`)
         return true
       }
-      return !ALLOWED_NO_ROLE_PATHS.includes(path)
-    } else if (auth.isSignedIn) {
-      // Signed In
-      if (auth.isConcurrentSession) {
-        // Only session-selection page is allowed
-        return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
+
+      if (!auth.selectedRole && path !== FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+        logger.info(`No role selected on ${path} - blocking render until redirect to select your role`)
+        return (![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path)))
       }
-      if (auth.isSigningIn || auth.isSigningOut) {
-        if (!auth.selectedRole) {
-          // Block render if a user doesn't have a role selected - awaiting redirection
-          return (
-            ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path))
-          )
-        } else {
-          // Block render if a user is temporarily in a transition state
-          return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
-        }
+
+      if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+        logger.info(`Signed-in user on ${path} - blocking render until redirect`)
+        return true
+      }
+
+      if (auth.isSigningOut || auth.isSigningIn) {
+        // Block render if a user is temporarily in a transition state
+        return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
       }
     }
 
@@ -82,9 +77,19 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     // Not signed in
     if (!auth.isSignedIn) {
-      // Transitional states - don't redirect
-      if (auth.isSigningOut) {
-        logger.info("User is signing out - not redirecting elsewhere")
+      if (path === "/") {
+        logger.info("User at root path - redirecting to login page")
+        return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
+      }
+
+      // Transitional states - don't redirect. Login / Logout sequence will take care of it.
+      if (auth.isSigningOut && !PUBLIC_PATHS.includes(path)) {
+        return redirect(FRONTEND_PATHS.LOGOUT,
+          "Not signed in, transition state on protected page. Redirecting to logout")
+      }
+
+      // Capture this case to prevent new login session being redirected
+      if (auth.isSigningIn && ALLOWED_NO_ROLE_PATHS.includes(path)) {
         return
       }
 
@@ -93,7 +98,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     // Signed in - check states in priority order
     if (auth.isSignedIn) {
-      if (auth.isSigningOut) {
+      if (auth.isSigningOut && path !== FRONTEND_PATHS.LOGOUT) {
         return handleRestartLogin(auth, auth.invalidSessionCause)
       }
 
@@ -113,12 +118,12 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   const checkUserInfo = () => {
     // Check if a user is signed in, if it fails sign the user out.
-    if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
+    if (auth.isSigningIn && ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
       logger.debug("Not checking user info")
       return
     }
 
-    if (auth.isSignedIn) {
+    if (auth.isSignedIn && !auth.isSigningOut) {
       logger.debug("Refreshing user info")
       auth.updateTrackerUserInfo().then((response) => {
         if (response.error) {
@@ -132,11 +137,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    const currentPath = location.pathname
-    const onSelectYourRole = currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE
-    if (auth.isSigningIn && onSelectYourRole) {
-      return
-    }
+    // Note: Any logical assertions should be placed within the function.
+    // Any placed here cause developer confusion.
     logger.info("Ensure role selected")
     ensureRoleSelected()
   }, [
@@ -144,9 +146,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     auth.isSigningIn,
     auth.isSigningOut,
     auth.selectedRole,
-    auth.isConcurrentSession,
-    location.pathname,
-    navigate
+    auth.isConcurrentSession
   ])
 
   useEffect(() => {
@@ -161,7 +161,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }, 60000) // 60000 ms = 1 minute
 
     return () => clearInterval(interval)
-  }, [auth.isSignedIn, auth.isSigningIn, auth.isSigningOut, location.pathname])
+  }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
 
   return (
     <AccessContext.Provider value={{}}>
