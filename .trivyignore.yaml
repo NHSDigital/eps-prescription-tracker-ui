@@ -24,3 +24,7 @@ vulnerabilities:
     paths:
       - "package-lock.json"
     statement: downstream dependency - vulnerability is not relevant - we don't allow user input for anything regex.
+  - id: CVE-2026-27606
+    paths:
+      - "package-lock.json"
+    statement: One proof-of-concept exploit is available on github.com. There is no evidence of proof of exploitation at the moment.
