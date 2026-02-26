@@ -145,7 +145,7 @@ describe("LoadingPage", () => {
     expect(logger.debug).not.toHaveBeenCalledWith(`Redirection page error timer: ${path}`, localState, true)
   })
 
-  it("shows information message with only desktop id after timeout", async () => {
+  it("shows information message with only device ID after timeout", async () => {
     // Setup
     let mockReturnAdjusted = {
       ...mockReturn,
@@ -192,7 +192,7 @@ describe("LoadingPage", () => {
     await waitFor(() => {
       const email = screen.getByTestId("email")
       expect(email).toBeInTheDocument()
-      expect(screen.getByText(`desktop ID ${mockReturnAdjusted.desktopId}`)).toBeInTheDocument()
+      expect(screen.getByText(`device ID ${mockReturnAdjusted.deviceId}`)).toBeInTheDocument()
       expect(screen.queryByText(/session ID/i)).not.toBeInTheDocument()
     })
   })
@@ -243,7 +243,7 @@ describe("LoadingPage", () => {
     await waitFor(() => {
       const email = screen.getByTestId("email")
       expect(email).toBeInTheDocument()
-      expect(screen.getByText(`desktop ID ${mockReturnAdjusted.desktopId}`)).toBeInTheDocument()
+      expect(screen.getByText(`device ID ${mockReturnAdjusted.deviceId}`)).toBeInTheDocument()
       expect(screen.getByText(`session ID ${mockReturnAdjusted.sessionId}`)).toBeInTheDocument()
     })
   })

@@ -14,7 +14,7 @@ export function returnLocalState(auth: AuthContextType) {
     rolesWithAccessCount: auth.rolesWithAccess.length,
     rolesWithoutAccessCount: auth.rolesWithoutAccess.length,
     selectedRole: auth.selectedRole || null,
-    desktopId: auth.desktopId
+    deviceId: auth.deviceId
   }
   return stateValues
 }

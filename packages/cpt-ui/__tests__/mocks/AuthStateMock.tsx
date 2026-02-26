@@ -23,7 +23,7 @@ export const mockAuthState = {
   isConcurrentSession: false,
   invalidSessionCause: undefined,
   sessionId: "test-session-id",
-  desktopId: "test-desktop-id",
+  deviceId: "test-desktop-id",
   rolesWithAccess: [],
   rolesWithoutAccess: [],
   selectedRole: undefined,

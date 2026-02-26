@@ -8,7 +8,7 @@ export const LoadingPageWarning = (auth: AuthContextType) => {
 I keep being shown the 'You're being redirected' page in the Prescription Tracker with these details:
 
 session ID ${auth.sessionId}
-desktop ID ${auth.desktopId}
+device ID ${auth.deviceId}
 
 Please could you investigate this issue?`
 
@@ -25,7 +25,7 @@ Please could you investigate this issue?`
         {" "}and include this information:</p>
       <ul>
         {auth.sessionId && <li>session ID {auth.sessionId}</li>}
-        <li>desktop ID {auth.desktopId}</li>
+        <li>device ID {auth.deviceId}</li>
       </ul>
     </WarningCallout>
   )
