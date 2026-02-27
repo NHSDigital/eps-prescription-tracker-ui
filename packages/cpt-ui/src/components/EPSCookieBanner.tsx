@@ -102,6 +102,7 @@ export default function EPSCookieBanner() {
                   className="cookie_info_link"
                   data-testid="cookieInfoLink"
                   aria-label={CookieStrings.banner.cookies_info_link_text}
+                  tabIndex={3}
                 >
                   {CookieStrings.banner.cookies_info_link_text}
                 </Link>
@@ -114,6 +115,7 @@ export default function EPSCookieBanner() {
                   onClick={() => handleCookieChoice("accepted")}
                   data-testid="accept-button"
                   aria-label={CookieStrings.accept_cookies}
+                  tabIndex={1}
                 >
                   {CookieStrings.accept_cookies}
                 </button>
@@ -123,6 +125,7 @@ export default function EPSCookieBanner() {
                   onClick={() => handleCookieChoice("rejected")}
                   data-testid="reject-button"
                   aria-label={CookieStrings.reject_cookies}
+                  tabIndex={2}
                 >
                   {CookieStrings.reject_cookies}
                 </button>
