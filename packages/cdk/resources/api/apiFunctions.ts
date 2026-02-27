@@ -289,14 +289,14 @@ export class ApiFunctions extends Construct {
 
       this.clearActiveSessionLambda = clearActiveSessionLambda.lambda
 
-      const setLastActivityTimerLambda = new LambdaFunction(this, "setLastActivityTimerLambda", {
+      const setLastActivityTimerLambda = new LambdaFunction(this, "SetLastActivityTimer", {
         serviceName: props.serviceName,
         stackName: props.stackName,
         lambdaName: `${props.stackName}-fake-timer`,
         additionalPolicies: additionalPolicies,
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
-        packageBasePath: "packages/testingSupport/setLastActivityTimerLambda",
+        packageBasePath: "packages/testingSupport/setLastActivityTime",
         entryPoint: "src/handler.ts",
         lambdaEnvironmentVariables: {
           ...commonLambdaEnv,
