@@ -6,7 +6,8 @@ import {NavigationProvider} from "@/context/NavigationProvider"
 import {PatientDetailsProvider} from "./context/PatientDetailsProvider"
 import {PrescriptionInformationProvider} from "./context/PrescriptionInformationProvider"
 import Layout from "@/Layout"
-import {useEffect} from "react"
+import {useFocusManagement} from "./helpers/useFocusManagement"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 
 import LoginPage from "@/pages/LoginPage"
 import LogoutPage from "@/pages/LogoutPage"
@@ -54,45 +55,12 @@ function AppContent() {
     isExtending
   } = useSessionTimeout(sessionTimeoutProps)
 
-  // this useEffect ensures that focus starts with skip link when using tab navigation,
-  // unless the user has already interacted with the page
-  useEffect(() => {
-    let hasTabbed = false
-    let hasUserInteracted = false
+  // Use the refactored focus management hook
+  useFocusManagement()
 
-    const activeElement = document.activeElement as HTMLElement
-    if (activeElement && activeElement !== document.body && activeElement.tagName !== "HTML") {
-      hasUserInteracted = true
-    }
-
-    const handleUserInteraction = () => {
-      hasUserInteracted = true
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Tab" && !hasTabbed && !hasUserInteracted && !e.shiftKey) {
-        hasTabbed = true
-        e.preventDefault()
-        const skipLink = document.querySelector(".nhsuk-skip-link") as HTMLElement
-        if (skipLink) {
-          skipLink.focus()
-        }
-        document.removeEventListener("keydown", handleKeyDown)
-        document.removeEventListener("click", handleUserInteraction)
-        document.removeEventListener("focusin", handleUserInteraction)
-      }
-    }
-
-    document.addEventListener("click", handleUserInteraction)
-    document.addEventListener("focusin", handleUserInteraction)
-    document.addEventListener("keydown", handleKeyDown)
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown)
-      document.removeEventListener("click", handleUserInteraction)
-      document.removeEventListener("focusin", handleUserInteraction)
-    }
-  }, [location.pathname])
+  // Track cookie banner visibility using the same logic as EPSCookieBanner
+  const [cookiePreferencesSaved] = useLocalStorageState<boolean>(
+    "cookiePreferencesSaved", "cookiePreferencesSaved", false)
 
   // Check if we're on a prescription list or prescription details page
   const isPrescriptionPage =
@@ -103,12 +71,16 @@ function AppContent() {
 
   const skipTarget = isPrescriptionPage ? "#patient-details-banner" : "#main-content"
 
+  // Set skip link tabIndex based on cookie banner visibility
+  const skipLinkTabIndex = !cookiePreferencesSaved ? 4 : 0
+
   return (
     <>
       <a
         href={skipTarget}
         className="nhsuk-skip-link"
         data-testid="eps_header_skipLink"
+        tabIndex={skipLinkTabIndex}
       >
         {HEADER_STRINGS.SKIP_TO_MAIN_CONTENT}
       </a>

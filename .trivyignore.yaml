@@ -24,3 +24,8 @@ vulnerabilities:
     paths:
       - "package-lock.json"
     statement: downstream dependency - vulnerability is not relevant - we don't allow user input for anything regex.
+  - id: CVE-2026-27606
+    paths:
+      - "package-lock.json"
+    statement: Vulnerability in AWS dependency accepted as risk
+    expired_at: 2026-06-01
