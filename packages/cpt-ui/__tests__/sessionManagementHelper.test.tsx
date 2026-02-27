@@ -1,4 +1,4 @@
-import {postSessionManagementUpdate} from "@/helpers/sessionManagement"
+import {postSessionManagementUpdate, extendUserSession} from "@/helpers/sessionManagement"
 import {AuthContextType} from "@/context/AuthProvider"
 import axios from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
@@ -16,7 +16,8 @@ jest.mock("@/helpers/logger", () => ({
 
 jest.mock("@/constants/environment", () => ({
   API_ENDPOINTS: {
-    SESSION_MANAGEMENT: "/api/session-management"
+    SESSION_MANAGEMENT: "/api/session-management",
+    TRACKER_USER_INFO: "/api/tracker-user-info"
   },
   AUTH_CONFIG: {
     USER_POOL_ID: "mock-pool-id",
@@ -146,6 +147,97 @@ describe("postSessionManagementUpdate", () => {
     expect(mockAuth.updateTrackerUserInfo).toHaveBeenCalled()
     expect(logger.error).toHaveBeenCalledWith("Error calling session management or updating user info", error)
     expect(redirect).not.toHaveBeenCalled()
+    expect(result).toBe(false)
+  })
+
+  it("returns false when response status is 401", async () => {
+    mockedAxios.post.mockResolvedValue({
+      status: 401,
+      data: {status: "Unauthorized"}
+    })
+
+    const result = await postSessionManagementUpdate(mockAuth)
+
+    expect(mockedAxios.post).toHaveBeenCalledWith("/api/session-management", {
+      action: "Set-Session"
+    })
+
+    expect(logger.warn).toHaveBeenCalledWith("Session expired or invalid. Restarting login.")
+    expect(mockAuth.updateTrackerUserInfo).not.toHaveBeenCalled()
+    expect(result).toBe(false)
+  })
+})
+
+describe("extendUserSession", () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it("should be defined and callable", () => {
+    expect(extendUserSession).toBeDefined()
+    expect(typeof extendUserSession).toBe("function")
+  })
+
+  it("returns true when session is successfully extended", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 200,
+      data: {message: "Session extended"}
+    })
+
+    const result = await extendUserSession()
+
+    expect(mockedAxios.get).toHaveBeenCalledWith("/api/tracker-user-info")
+    expect(logger.info).toHaveBeenCalledWith("Extended user session")
+    expect(logger.info).toHaveBeenCalledWith("Session successfully extended.")
+    expect(result).toBe(true)
+  })
+
+  it("returns false when session extension returns 401 status", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 401,
+      data: {error: "Unauthorized"}
+    })
+
+    const result = await extendUserSession()
+
+    expect(mockedAxios.get).toHaveBeenCalledWith("/api/tracker-user-info")
+    expect(logger.info).toHaveBeenCalledWith("Extended user session")
+    expect(logger.warn).toHaveBeenCalledWith("Session expired or invalid during extension attempt.")
+    expect(result).toBe(false)
+  })
+
+  it("returns false and logs error when unexpected status is returned", async () => {
+    mockedAxios.get.mockResolvedValue({
+      status: 500,
+      data: {error: "Server error"}
+    })
+
+    const result = await extendUserSession()
+
+    expect(mockedAxios.get).toHaveBeenCalledWith("/api/tracker-user-info")
+    expect(logger.info).toHaveBeenCalledWith("Extended user session")
+    expect(logger.error).toHaveBeenCalledWith("Unexpected response when extending session", {status: 500})
+    expect(result).toBe(false)
+  })
+
+  it("returns false and logs error when request throws an exception", async () => {
+    const error = new Error("Network error")
+    mockedAxios.get.mockRejectedValue(error)
+
+    const result = await extendUserSession()
+
+    expect(mockedAxios.get).toHaveBeenCalledWith("/api/tracker-user-info")
+    expect(logger.error).toHaveBeenCalledWith("Error extending user session", error)
+    expect(result).toBe(false)
+  })
+
+  it("handles unexpected error types when request fails", async () => {
+    mockedAxios.get.mockRejectedValue("Something went wrong")
+
+    const result = await extendUserSession()
+
+    expect(mockedAxios.get).toHaveBeenCalledWith("/api/tracker-user-info")
+    expect(logger.error).toHaveBeenCalledWith("Error extending user session", "Something went wrong")
     expect(result).toBe(false)
   })
 })
