@@ -21,7 +21,7 @@ export interface RestApiGatewayMethodsProps {
   readonly patientSearchLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
   readonly clearActiveSessionLambda: NodejsFunction
-  readonly fakeTimerLambda: NodejsFunction
+  readonly setLastActivityTimerLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
@@ -120,9 +120,9 @@ export class RestApiGatewayMethods extends Construct {
       })
 
       // testing-support-fake-timer
-      const fakeTimerResource =
+      const setLastActivityTimerResource =
        props.restApiGateway.root.addResource("test-support-fake-timer")
-      fakeTimerResource.addMethod("POST", new LambdaIntegration(props.fakeTimerLambda, {
+      setLastActivityTimerResource.addMethod("POST", new LambdaIntegration(props.setLastActivityTimerLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {
         authorizationType: AuthorizationType.NONE

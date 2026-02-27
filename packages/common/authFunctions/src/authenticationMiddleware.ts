@@ -63,7 +63,7 @@ export const authenticationMiddleware = ({
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
     }
-    if (!authenticatedResult || ("isTimeout" in authenticatedResult && authenticatedResult.isTimeout)) {
+    if (!authenticatedResult || "isTimeout" in authenticatedResult) {
       request.earlyResponse = {
         statusCode: 401,
         body: JSON.stringify({

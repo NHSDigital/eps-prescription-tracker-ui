@@ -38,12 +38,13 @@ function AppContent() {
   const location = useLocation()
   const accessContext = useAccess()
 
-  const sessionTimeoutProps = accessContext ? {
+  const sessionTimeoutProps = {
     showModal: accessContext.sessionTimeoutInfo.showModal,
     timeLeft: accessContext.sessionTimeoutInfo.timeLeft,
     onStayLoggedIn: accessContext.onStayLoggedIn,
-    onLogOut: accessContext.onLogOut
-  } : undefined
+    onLogOut: accessContext.onLogOut,
+    onTimeout: accessContext.onTimeout
+  }
 
   const {
     showModal,

@@ -83,8 +83,6 @@ export const authenticationConcurrentAwareMiddleware = (
         })
         invalidSessionCause = "InvalidSession"
       }
-
-      //check why this needs isconcurrentsession
       if (authenticatedResult && !("isTimeout" in authenticatedResult)) {
         event.requestContext.authorizer = {...(authenticatedResult as AuthResult), sessionId, isConcurrentSession}
       }
@@ -92,7 +90,7 @@ export const authenticationConcurrentAwareMiddleware = (
       logger.error("Authentication failed returning restart login prompt", {error})
     }
 
-    if (!authenticatedResult || ("isTimeout" in authenticatedResult && authenticatedResult.isTimeout)) {
+    if (authenticatedResult && "isTimeout" in authenticatedResult){
       request.earlyResponse = {
         statusCode: 401,
         body: JSON.stringify({

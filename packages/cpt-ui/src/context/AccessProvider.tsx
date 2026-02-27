@@ -28,6 +28,7 @@ export const AccessContext = createContext<{
   sessionTimeoutInfo: { showModal: boolean; timeLeft: number }
   onStayLoggedIn:() => Promise<void>
   onLogOut: () => Promise<void>
+  onTimeout: () => Promise<void>
     } | null>(null)
 
 export const AccessProvider = ({children}: { children: ReactNode }) => {
@@ -141,6 +142,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }, [auth])
 
+  const handleTimeout = useCallback(async () => {
+    logger.warn("Session automatically timed out")
+    setSessionTimeoutInfo({showModal: false, timeLeft: 0})
+    auth.updateInvalidSessionCause("Timeout")
+    await handleRestartLogin(auth, "Timeout")
+  }, [auth])
+
   const checkUserInfo = () => {
     // Check if a user is signed in, if it fails sign the user out.
     if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
@@ -189,12 +197,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
               })
             }
           } else {
-            // No remaining session time info available, hide modal
-            logger.debug("No remainingSessionTime in response - hiding modal")
-            setSessionTimeoutInfo({
-              showModal: false,
-              timeLeft: 0
-            })
+            // No remaining session time info available - this indicates a session integrity issue
+            logger.warn("No remainingSessionTime in response - session may be corrupted, logging out user")
+            auth.updateInvalidSessionCause("InvalidSession")
+            handleRestartLogin(auth, "InvalidSession")
           }
         }
       })
@@ -245,7 +251,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     <AccessContext.Provider value={{
       sessionTimeoutInfo,
       onStayLoggedIn: handleStayLoggedIn,
-      onLogOut: handleLogOut
+      onLogOut: handleLogOut,
+      onTimeout: handleTimeout
     }}>
       {children}
     </AccessContext.Provider>
