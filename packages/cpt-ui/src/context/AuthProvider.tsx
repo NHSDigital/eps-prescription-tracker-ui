@@ -98,10 +98,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       setSelectedRole(trackerUserInfo.selectedRole)
       setUserDetails(trackerUserInfo.userDetails)
     }
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause) // Set first
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setSessionId(trackerUserInfo.sessionId)
     setError(trackerUserInfo.error)
-    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
   }
 
@@ -206,6 +206,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
     setIsSigningIn(true)
+    setInvalidSessionCause(undefined)
     await signInWithRedirect(input)
   }
 

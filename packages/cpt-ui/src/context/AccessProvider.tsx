@@ -36,7 +36,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return true
       }
 
-      if (!auth.selectedRole && path !== FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+      if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
         logger.info(`No role selected on ${path} - blocking render until redirect to select your role`)
         return (![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path)))
       }
@@ -83,9 +83,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
 
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
-      if (auth.isSigningOut && !PUBLIC_PATHS.includes(path)) {
-        return redirect(FRONTEND_PATHS.LOGOUT,
-          "Not signed in, transition state on protected page. Redirecting to logout")
+      if (auth.isSigningOut && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
+        return handleRestartLogin(auth, auth.invalidSessionCause)
       }
 
       // Capture this case to prevent new login session being redirected
@@ -98,7 +97,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     // Signed in - check states in priority order
     if (auth.isSignedIn) {
-      if (auth.isSigningOut && path !== FRONTEND_PATHS.LOGOUT) {
+      if (auth.isSigningOut && path !== FRONTEND_PATHS.LOGOUT && !auth.invalidSessionCause) {
         return handleRestartLogin(auth, auth.invalidSessionCause)
       }
 
@@ -106,7 +105,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
       }
 
-      if (!auth.selectedRole && path !== FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+      if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
         return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
       }
 
@@ -139,6 +138,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   useEffect(() => {
     // Note: Any logical assertions should be placed within the function.
     // Any placed here cause developer confusion.
+
+    // Implementation notes: useNavigate as a dependency causes an infinite loop as redirects use it
     logger.info("Ensure role selected")
     ensureRoleSelected()
   }, [
@@ -146,7 +147,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     auth.isSigningIn,
     auth.isSigningOut,
     auth.selectedRole,
-    auth.isConcurrentSession
+    auth.isConcurrentSession,
+    location.pathname
   ])
 
   useEffect(() => {
