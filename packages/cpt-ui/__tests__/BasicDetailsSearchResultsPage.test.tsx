@@ -25,6 +25,7 @@ import {
   PatientSummaryGender
 } from "@cpt-ui-common/common-types"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock the axios module
 jest.mock("@/helpers/axios")
@@ -60,6 +61,7 @@ jest.mock("react-router-dom", () => ({
 }))
 
 const mockAuthContext: AuthContextType = {
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: true,

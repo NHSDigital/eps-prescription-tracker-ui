@@ -5,6 +5,7 @@ import React from "react"
 import LogoutPage from "@/pages/LogoutPage"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import {AccessProvider} from "@/context/AccessProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock constants
 jest.mock("@/constants/environment", () => ({
@@ -63,6 +64,7 @@ const MockAuthProvider = ({
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const authContextValue: AuthContextType = {
+    ...mockAuthState,
     error: null,
     user: defaultIsSignedIn ? {username: "testUser"} : null,
     isSignedIn: defaultIsSignedIn,

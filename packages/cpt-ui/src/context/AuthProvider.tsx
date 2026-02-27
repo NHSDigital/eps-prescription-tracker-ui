@@ -28,6 +28,7 @@ export interface AuthContextType {
   isConcurrentSession: boolean
   invalidSessionCause: string | undefined
   sessionId: string | undefined
+  deviceId: string | undefined
   rolesWithAccess: Array<RoleDetails>
   rolesWithoutAccess: Array<RoleDetails>
   selectedRole: RoleDetails | undefined
@@ -47,6 +48,8 @@ export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   Amplify.configure(authConfig, {ssr: false})
+  const [deviceId] = useLocalStorageState<string | undefined>(
+    "deviceId", "deviceId", crypto.randomUUID())
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useLocalStorageState<string | null>("user", "user", null)
   const [isSignedIn, setIsSignedIn] = useLocalStorageState<boolean>("isSignedIn", "isSignedIn", false)
@@ -244,6 +247,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       invalidSessionCause,
       sessionId,
       remainingSessionTime,
+      deviceId,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
