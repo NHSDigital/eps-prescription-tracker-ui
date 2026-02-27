@@ -139,7 +139,7 @@ describe("Unit test for session management lambda", function () {
   })
 
   it("should error if no username supplied", async () => {
-    const sessionManagementItem: TokenMappingItem = {
+    const sessionManagementItem = {
       username: "test-user",
       rolesWithAccess: [
         {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
@@ -172,7 +172,7 @@ describe("Unit test for session management lambda", function () {
   })
 
   it("should error if no sessionid supplied", async () => {
-    const sessionManagementItem: TokenMappingItem = {
+    const sessionManagementItem = {
       username: "test-user",
       rolesWithAccess: [
         {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
@@ -205,7 +205,7 @@ describe("Unit test for session management lambda", function () {
   })
 
   it("should error if payload body is not json", async () => {
-    const sessionManagementItem: TokenMappingItem = {
+    const sessionManagementItem = {
       username: "test-user",
       rolesWithAccess: [
         {role_id: "123", org_code: "XYZ", role_name: "MockRole_1"}
@@ -236,5 +236,226 @@ describe("Unit test for session management lambda", function () {
       "message": "A system error has occurred"
     })
     expect(mockTryGetTokenMapping).not.toHaveBeenCalled()
+  })
+
+  it("should return error when sessionId is missing", async () => {
+    event.requestContext.authorizer = {
+      username: "test-user"
+      // sessionId is missing
+    }
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+  })
+
+  it("should return error when username is missing", async () => {
+    event.requestContext.authorizer = {
+      sessionId: "sessionid123"
+    }
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+  })
+
+  it("should return error when no action is specified", async () => {
+    const sessionManagementItem = {
+      username: "test-user",
+      sessionId: "sessionid123",
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      userDetails: {family_name: "Test", given_name: "User"}
+    }
+
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return sessionManagementItem
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = JSON.stringify({}) // No action specified
+
+    const response = await handler(event, context)
+
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 500)
+    expect(response).toHaveProperty("body")
+
+    const body = JSON.parse(response.body)
+    expect(body).toHaveProperty("message", "No action specified")
+  })
+
+  it("should return 401 when session ID doesn't match", async () => {
+    const sessionManagementItem = {
+      username: "test-user",
+      sessionId: "different-session-id",
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      userDetails: {family_name: "Test", given_name: "User"}
+    }
+
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return sessionManagementItem
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 401)
+    expect(response).toHaveProperty("body")
+
+    const body = JSON.parse(response.body)
+    expect(body).toHaveProperty("message", "Session expired or invalid. Please log in again.")
+    expect(body).toHaveProperty("restartLogin", true)
+  })
+
+  it("should return 401 when no session management item found", async () => {
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return undefined // No session management item found
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 401)
+    expect(response).toHaveProperty("body")
+
+    const body = JSON.parse(response.body)
+    expect(body).toHaveProperty("message", "Session expired or invalid. Please log in again.")
+    expect(body).toHaveProperty("restartLogin", true)
+  })
+
+  it("should handle database errors gracefully", async () => {
+    mockTryGetTokenMapping.mockImplementation(() => {
+      throw new Error("Database connection failed")
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+  })
+
+  it("should handle insertTokenMapping errors", async () => {
+    const sessionManagementItem = {
+      username: "test-user",
+      sessionId: "sessionid123",
+      rolesWithAccess: [{role_id: "123", org_code: "XYZ", role_name: "TestRole"}],
+      rolesWithoutAccess: [],
+      userDetails: {family_name: "Test", given_name: "User"}
+    }
+
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return sessionManagementItem
+    })
+
+    mockInsertTokenMapping.mockImplementation(() => {
+      throw new Error("Insert failed")
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+  })
+
+  it("should handle deleteTokenMapping errors", async () => {
+    const sessionManagementItem = {
+      username: "test-user",
+      sessionId: "sessionid123",
+      rolesWithAccess: [{role_id: "123", org_code: "XYZ", role_name: "TestRole"}],
+      rolesWithoutAccess: [],
+      userDetails: {family_name: "Test", given_name: "User"}
+    }
+
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return sessionManagementItem
+    })
+
+    mockDeleteTokenMapping.mockImplementation(() => {
+      throw new Error("Delete failed")
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = JSON.stringify({action: "Set-Session"})
+
+    const response = await handler(event, context)
+
+    expect(response).toEqual({
+      "message": "A system error has occurred"
+    })
+  })
+
+  it("should handle body parsing with null body", async () => {
+    const sessionManagementItem = {
+      username: "test-user",
+      sessionId: "sessionid123",
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      userDetails: {family_name: "Test", given_name: "User"}
+    }
+
+    mockTryGetTokenMapping.mockImplementation(() => {
+      return sessionManagementItem
+    })
+
+    event.requestContext.authorizer = {
+      username: "test-user",
+      sessionId: "sessionid123"
+    }
+
+    event.body = null
+
+    const response = await handler(event, context)
+
+    expect(response).toBeDefined()
+    expect(response).toHaveProperty("statusCode", 500)
+
+    const body = JSON.parse(response.body)
+    expect(body).toHaveProperty("message", "No action specified")
   })
 })

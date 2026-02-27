@@ -58,7 +58,8 @@ export const defaultAuthState: AuthContextType = {
   updateTrackerUserInfo: mockUpdateTrackerUserInfo,
   updateInvalidSessionCause: jest.fn(),
   isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 const MockAuthProvider = ({
@@ -95,13 +96,11 @@ describe("SessionLoggedOutPage", () => {
     renderWithProviders(<SessionLoggedOutPage />)
 
     expect(screen.getByRole("main")).toBeInTheDocument()
-    expect(screen.getByText("For your security, we have logged you out")).toBeInTheDocument()
+    expect(screen.getByText("Logout successful")).toBeInTheDocument()
     expect(screen.getByText(
-      "We have logged you out because you did not do anything for 15 minutes."
+      "You are now logged out of the service. To continue using the service, you must log in again."
     )).toBeInTheDocument()
-    expect(screen.getByText(
-      "This is to protect patient information."
-    )).toBeInTheDocument()
+    expect(screen.getByTestId("login-link")).toBeInTheDocument()
   })
 
   it("renders without crashing with ConcurrentSession invalidSessionCause state", () => {

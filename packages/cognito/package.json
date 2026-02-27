@@ -31,7 +31,9 @@
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",
+    "@vitest/coverage-v8": "^4.0.18",
     "mock-jwks": "^3.3.5",
+    "vitest": "^4.0.18",
     "nock": "^14.0.11"
   }
 }
