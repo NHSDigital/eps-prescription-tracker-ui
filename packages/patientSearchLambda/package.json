@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@cpt-ui-common/testing": "^1.0.0",
-    "@types/aws-lambda": "^8.10.159",
+    "@types/aws-lambda": "^8.10.161",
     "@types/fhir": "^0.0.41"
   }
 }

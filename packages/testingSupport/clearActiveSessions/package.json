@@ -27,6 +27,6 @@
     "jwks-rsa": "^3.2.2"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.159"
+    "@types/aws-lambda": "^8.10.161"
   }
 }
