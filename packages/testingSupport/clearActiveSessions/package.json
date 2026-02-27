@@ -21,7 +21,7 @@
     "@cpt-ui-common/middyErrorHandler": "^1.0.0",
     "@middy/core": "^7.1.0",
     "@middy/http-header-normalizer": "^7.1.1",
-    "@middy/input-output-logger": "^7.1.1",
+    "@middy/input-output-logger": "^7.1.2",
     "aws-lambda": "^1.0.7",
     "axios": "^1.13.5",
     "jwks-rsa": "^3.2.2"
