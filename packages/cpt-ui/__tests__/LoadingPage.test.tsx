@@ -20,6 +20,7 @@ jest.mock("@/helpers/logger", () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn()
   }
 }))
@@ -48,7 +49,8 @@ let mockReturn = {
   sessionId: "session-1234",
   isSignedIn: true,
   isSigningIn: false,
-  isConcurrentSession: true
+  isConcurrentSession: true,
+  updateInvalidSessionCause: jest.fn()
 }
 
 describe("LoadingPage", () => {
@@ -72,7 +74,8 @@ describe("LoadingPage", () => {
       ...mockReturn,
       isSignedIn: true,
       isSigningOut: true,
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      updateInvalidSessionCause: jest.fn()
     }
     ;(mockUseAuth as jest.Mock).mockReturnValue({...mockReturnAdjusted})
 
@@ -112,7 +115,8 @@ describe("LoadingPage", () => {
       ...mockReturn,
       isSignedIn: true,
       isSigningOut: true,
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      updateInvalidSessionCause: jest.fn()
     }
     ;(mockUseAuth as jest.Mock).mockReturnValue({...mockReturnAdjusted})
 

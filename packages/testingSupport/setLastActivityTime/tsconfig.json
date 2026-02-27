@@ -1,0 +1,19 @@
+{
+  "extends": "../../../tsconfig.defaults.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "lib",
+    "baseUrl": ".",
+    "tsBuildInfoFile": "lib/tsconfig.tsbuildinfo"
+  },
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["node_modules"],
+  "references": [
+    {
+      "path": "../../common/middyErrorHandler"
+    },
+    {
+      "path": "../../common/dynamoFunctions"
+    }
+  ]
+}

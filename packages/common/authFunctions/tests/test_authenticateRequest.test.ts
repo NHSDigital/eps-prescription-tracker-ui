@@ -174,7 +174,7 @@ describe("authenticateRequest", () => {
     expect(mockRefreshApigeeAccessToken).not.toHaveBeenCalled()
   })
 
-  it("should return null if record was inactive for more than 15 minutes", async () => {
+  it("should return isTimeout: true if record was inactive for more than 15 minutes", async () => {
     const token = {
       username: "test-user",
       apigeeAccessToken: "existing-token",
@@ -198,7 +198,7 @@ describe("authenticateRequest", () => {
       false
     )
 
-    expect(result).toBeNull()
+    expect(result).toEqual({isTimeout: true})
 
     expect(mockDeleteTokenMapping).toHaveBeenCalledWith(
       documentClient,
