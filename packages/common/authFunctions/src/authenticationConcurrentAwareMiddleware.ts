@@ -90,7 +90,21 @@ export const authenticationConcurrentAwareMiddleware = (
       logger.error("Authentication failed returning restart login prompt", {error})
     }
 
-    if (authenticatedResult && "isTimeout" in authenticatedResult){
+    // Handle timeout responses
+    if (authenticatedResult && "isTimeout" in authenticatedResult) {
+      request.earlyResponse = {
+        statusCode: 401,
+        body: JSON.stringify({
+          message: "Session expired or invalid. Please log in again.",
+          restartLogin: true,
+          ...(invalidSessionCause && {invalidSessionCause})
+        })
+      }
+      return request.earlyResponse
+    }
+
+    // Handle authentication failures (no valid session found or auth failed)
+    if (!authenticatedResult || invalidSessionCause) {
       request.earlyResponse = {
         statusCode: 401,
         body: JSON.stringify({

@@ -95,7 +95,8 @@ const renderWithProviders = (
         <AccessContext.Provider value={{
           sessionTimeoutInfo: {showModal: false, timeLeft: 0},
           onStayLoggedIn: jest.fn(),
-          onLogOut: jest.fn()
+          onLogOut: jest.fn(),
+          onTimeout: jest.fn()
         }}>
           <SearchContext.Provider value={searchContext}>
             {ui}
@@ -178,7 +179,8 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
           <AccessContext.Provider value={{
             sessionTimeoutInfo: {showModal: false, timeLeft: 0},
             onStayLoggedIn: jest.fn(),
-            onLogOut: jest.fn()
+            onLogOut: jest.fn(),
+            onTimeout: jest.fn()
           }}>
             <SearchContext.Provider value={defaultSearchContext}>
               <SearchPrescriptionPage />
@@ -195,7 +197,8 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
           <AccessContext.Provider value={{
             sessionTimeoutInfo: {showModal: false, timeLeft: 0},
             onStayLoggedIn: jest.fn(),
-            onLogOut: jest.fn()
+            onLogOut: jest.fn(),
+            onTimeout: jest.fn()
           }}>
             <SearchContext.Provider value={defaultSearchContext}>
               <SearchPrescriptionPage />

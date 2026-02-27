@@ -89,7 +89,8 @@ const renderWithProviders = (
   const mockAccessContext = {
     sessionTimeoutInfo: {showModal: false, timeLeft: 0},
     onStayLoggedIn: jest.fn(),
-    onLogOut: jest.fn()
+    onLogOut: jest.fn(),
+    onTimeout: jest.fn()
   }
 
   return render(

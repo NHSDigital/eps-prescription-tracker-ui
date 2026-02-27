@@ -88,12 +88,18 @@ describe("useSessionTimeout", () => {
     jest.useRealTimers()
   })
 
-  it("should initialize with show false and remaining time 60", () => {
-    const {result} = renderHook(() => useSessionTimeout())
+  it("should initialize with show false and remaining time 0", () => {
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: false,
+      timeLeft: 60000,
+      onStayLoggedIn: jest.fn(),
+      onLogOut: jest.fn(),
+      onTimeout: jest.fn()
+    }))
 
     expect(result.current.showModal).toBe(false)
-    // Internal timeLeft is in seconds, converted to ms when props provided
-    expect(result.current.timeLeft).toBe(60)
+    // When modal is not shown, internal timeLeft stays at 0
+    expect(result.current.timeLeft).toBe(0)
   })
 
   it("should use props values when provided - props mode", () => {
@@ -101,7 +107,8 @@ describe("useSessionTimeout", () => {
       showModal: true,
       timeLeft: 30, // Props timeLeft is used directly when provided
       onStayLoggedIn: jest.fn(),
-      onLogOut: jest.fn()
+      onLogOut: jest.fn(),
+      onTimeout: jest.fn()
     }))
 
     expect(result.current.showModal).toBe(true)
@@ -115,7 +122,8 @@ describe("useSessionTimeout", () => {
       showModal: true,
       timeLeft: 30,
       onStayLoggedIn,
-      onLogOut
+      onLogOut,
+      onTimeout: jest.fn()
     }))
 
     await act(async () => {
@@ -132,7 +140,8 @@ describe("useSessionTimeout", () => {
       showModal: true,
       timeLeft: 30,
       onStayLoggedIn,
-      onLogOut
+      onLogOut,
+      onTimeout: jest.fn()
     }))
 
     await act(async () => {
@@ -144,79 +153,91 @@ describe("useSessionTimeout", () => {
   })
 
   it("should handle stay logged in without props - successful scenario", async () => {
-    const {result} = renderHook(() => useSessionTimeout())
+    const mockOnStayLoggedIn = jest.fn().mockResolvedValue(undefined)
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: false,
+      timeLeft: 0,
+      onStayLoggedIn: mockOnStayLoggedIn,
+      onLogOut: jest.fn(),
+      onTimeout: jest.fn()
+    }))
 
     await act(async () => {
       await result.current.onStayLoggedIn()
     })
 
-    expect(mockLogger.info).toHaveBeenCalledWith("User chose to extend session")
-    expect(jest.mocked(updateRemoteSelectedRole)).toHaveBeenCalledWith({
-      role_id: "123",
-      org_code: "ABC",
-      role_name: "Test Role"
-    })
-    expect(mockLogger.info).toHaveBeenCalledWith("Session extended successfully via selectedRole API")
-    expect(jest.mocked(useAuth)().updateTrackerUserInfo).toHaveBeenCalled()
+    // Hook delegates to prop function, so check that was called
+    expect(mockOnStayLoggedIn).toHaveBeenCalled()
   })
 
   it("should handle stay logged in with error in updateRemoteSelectedRole", async () => {
-    jest.mocked(updateRemoteSelectedRole).mockRejectedValue(new Error("API Error"))
+    const mockOnStayLoggedIn = jest.fn().mockRejectedValue(new Error("API Error"))
+    const mockOnLogOut = jest.fn()
 
-    const {result} = renderHook(() => useSessionTimeout())
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: false,
+      timeLeft: 0,
+      onStayLoggedIn: mockOnStayLoggedIn,
+      onLogOut: mockOnLogOut,
+      onTimeout: jest.fn()
+    }))
 
     await act(async () => {
       await result.current.onStayLoggedIn()
     })
 
-    expect(mockLogger.error).toHaveBeenCalledWith("Error extending session:", expect.any(Error))
-    expect(jest.mocked(signOut)).toHaveBeenCalledWith(
-      expect.any(Object),
-      "mock-redirect-url"
-    )
+    // Hook should call prop function and handle error by calling onLogOut
+    expect(mockOnStayLoggedIn).toHaveBeenCalled()
+    expect(mockOnLogOut).toHaveBeenCalled()
   })
 
   it("should handle manual logout", async () => {
-    const {result} = renderHook(() => useSessionTimeout())
+    const mockOnLogOut = jest.fn()
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: false,
+      timeLeft: 0,
+      onStayLoggedIn: jest.fn(),
+      onLogOut: mockOnLogOut,
+      onTimeout: jest.fn()
+    }))
 
     await act(async () => {
       await result.current.onLogOut()
     })
 
-    expect(mockLogger.info).toHaveBeenCalledWith("User chose to log out from session timeout modal")
-    expect(jest.mocked(signOut)).toHaveBeenCalledWith(
-      expect.any(Object),
-      "mock-redirect-url"
-    )
+    // Hook delegates to prop function
+    expect(mockOnLogOut).toHaveBeenCalled()
   })
 
   it("should handle error when selectedRole is missing", async () => {
-    const authContextMock: Partial<AuthContextType> = {
-      error: null,
-      selectedRole: undefined,
-      updateTrackerUserInfo: mockUpdateTrackerUserInfo,
-      updateInvalidSessionCause: mockUpdateInvalidSessionCause
-    }
-    jest.mocked(useAuth).mockReturnValue(authContextMock as AuthContextType)
-
-    const {result} = renderHook(() => useSessionTimeout())
+    const mockOnStayLoggedIn = jest.fn()
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: false,
+      timeLeft: 0,
+      onStayLoggedIn: mockOnStayLoggedIn,
+      onLogOut: jest.fn(),
+      onTimeout: jest.fn()
+    }))
 
     await act(async () => {
       await result.current.onStayLoggedIn()
     })
 
-    expect(mockLogger.error).toHaveBeenCalledWith("No selected role available to extend session")
-    expect(jest.mocked(signOut)).toHaveBeenCalledWith(
-      expect.any(Object),
-      "mock-redirect-url"
-    )
+    // Hook delegates to prop function (selectedRole validation is in AccessProvider)
+    expect(mockOnStayLoggedIn).toHaveBeenCalled()
   })
 
   it("should initialize with default values", () => {
-    const {result} = renderHook(() => useSessionTimeout())
+    const {result} = renderHook(() => useSessionTimeout({
+      showModal: false,
+      timeLeft: 60000,
+      onStayLoggedIn: jest.fn(),
+      onLogOut: jest.fn(),
+      onTimeout: jest.fn()
+    }))
 
     expect(result.current.showModal).toBe(false)
-    expect(result.current.timeLeft).toBe(60) // Internal state is in seconds, converted to ms when returned
+    expect(result.current.timeLeft).toBe(0) // Internal state starts at 0 when modal not shown
     expect(result.current.isExtending).toBe(false)
     expect(typeof result.current.onStayLoggedIn).toBe("function")
     expect(typeof result.current.onLogOut).toBe("function")

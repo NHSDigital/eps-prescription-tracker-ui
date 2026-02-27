@@ -95,7 +95,8 @@ const renderWithProviders = (
         <AccessContext.Provider value={{
           sessionTimeoutInfo: {showModal: false, timeLeft: 0},
           onStayLoggedIn: jest.fn(),
-          onLogOut: jest.fn()
+          onLogOut: jest.fn(),
+          onTimeout: jest.fn()
         }}>
           <SearchContext.Provider value={searchContext}>
             {ui}

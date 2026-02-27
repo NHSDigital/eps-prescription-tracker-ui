@@ -60,7 +60,8 @@ const defaultAuthContext: AuthContextType = {
 const defaultAccessContext = {
   sessionTimeoutInfo: {showModal: false, timeLeft: 0},
   onStayLoggedIn: jest.fn(),
-  onLogOut: jest.fn()
+  onLogOut: jest.fn(),
+  onTimeout: jest.fn()
 }
 
 const defaultSearchContext: SearchProviderContextType = {

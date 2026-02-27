@@ -38,7 +38,7 @@
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda",
         "packages/testingSupport/clearActiveSessions",
-        "packages/testingSupport/setLastActivityTimerLambda",
+        "packages/testingSupport/setLastActivityTime",
         "packages/sessionManagementLambda"
     ],
     "overrides": {
