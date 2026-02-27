@@ -6,6 +6,7 @@ import React from "react"
 import EpsHeader from "@/components/EpsHeader"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock the strings module
 jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
@@ -50,6 +51,7 @@ jest.mock("react-router-dom", () => ({
 
 // Default context values
 const defaultAuthContext: AuthContextType = {
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: false,
