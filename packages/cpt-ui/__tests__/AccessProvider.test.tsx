@@ -235,13 +235,14 @@ describe("AccessProvider", () => {
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn()
     })
-    mockLocationHook.mockReturnValue({pathname: "/"})
-    mockNormalizePathFn.mockReturnValue("/")
+    const path = "/"
+    mockLocationHook.mockReturnValue({pathname: path})
+    mockNormalizePathFn.mockReturnValue(path)
 
     renderWithProvider()
 
     expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-    expect(logger.info).toHaveBeenCalledWith("Authenticated user on root path - redirecting to search")
+    expect(logger.info).toHaveBeenCalledWith(`Signed-in user on ${path} - blocking render until redirect`)
   })
 
   describe("shouldBlockChildren", () => {

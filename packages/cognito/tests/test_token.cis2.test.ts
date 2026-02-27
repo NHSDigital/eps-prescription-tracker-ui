@@ -206,7 +206,11 @@ describe("cis2 token handler", () => {
     mockTryGetTokenMapping.mockImplementationOnce(() => {
       return Promise.resolve({
         username: `${CIS2_USER_POOL_IDP}_foo`,
-        lastActivityTime: Date.now() - (10 * 60 * 1000) // 10 minutes ago (less than 15)
+        lastActivityTime: Date.now() - (10 * 60 * 1000), // 10 minutes ago (less than 15)
+        sessionId: "session-id",
+        cis2AccessToken: "foo",
+        cis2IdToken: "bar",
+        cis2ExpiresIn: Date.now() - - (10 * 60 * 1000)
       })
     })
 
@@ -353,14 +357,18 @@ describe("cis2 token handler", () => {
 
   it("creates concurrent session when user exists and last activity exactly at 15 minute boundary", async () => {
     // Mock Date.now() to ensure consistent timing for boundary test
-    const fixedTime = 1000000000000 // Fixed timestamp
+    const fixedTime = 1000000 // Fixed timestamp
     const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(fixedTime)
 
     const fifteenMinutes = 15 * 60 * 1000
     mockTryGetTokenMapping.mockImplementationOnce(() => {
       return Promise.resolve({
         username: `${CIS2_USER_POOL_IDP}_foo`,
-        lastActivityTime: fixedTime - fifteenMinutes + 1 // Just barely within 15 minute window
+        lastActivityTime: fixedTime - fifteenMinutes + 1, // Just barely within 15 minute window
+        sessionId: "session-id",
+        cis2AccessToken: "foo",
+        cis2IdToken: "bar",
+        cis2ExpiresIn: fixedTime - fifteenMinutes + 1
       })
     })
 
