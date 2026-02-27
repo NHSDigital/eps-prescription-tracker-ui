@@ -6,7 +6,8 @@ import {useAuth as mockUseAuth} from "@/context/AuthProvider"
 import {useNavigate, useLocation, MemoryRouter} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {logger} from "@/helpers/logger"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import Layout from "@/Layout"
 import LoadingPage from "@/pages/LoadingPage"
 import {mockAuthState} from "./mocks/AuthStateMock"
@@ -63,6 +64,9 @@ jest.mock("@/constants/environment", () => ({
     COMMIT_ID: "test-commit",
     VERSION_NUMBER: "1.0.0"
   },
+  AUTH_CONFIG: {
+    REDIRECT_SIGN_OUT: "mock-signout"
+  },
   ENV_CONFIG: {
     RUM_ERROR_TIMER_INTERVAL: 10000
   }
@@ -72,7 +76,8 @@ jest.mock("@/helpers/logger", () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
-    error: jest.fn()
+    error: jest.fn(),
+    warn: jest.fn()
   }
 }))
 
@@ -80,6 +85,27 @@ jest.mock("@/helpers/logout", () => ({
   handleRestartLogin: jest.fn(),
   signOut: jest.fn()
 }))
+
+jest.mock("@/helpers/userInfo", () => ({
+  updateRemoteSelectedRole: jest.fn().mockResolvedValue({currentlySelectedRole: {}})
+}))
+
+interface MockAuthContext {
+  isSignedIn: boolean
+  isSigningIn?: boolean
+  selectedRole?: {name: string; role_id?: string} | null
+  updateTrackerUserInfo: jest.Mock
+  updateInvalidSessionCause?: jest.Mock
+}
+
+interface MockAccessContext {
+  sessionTimeoutInfo: {
+    showModal: boolean
+    timeLeft: number
+  }
+  onStayLoggedIn: () => Promise<void>
+  onLogOut: () => Promise<void>
+}
 
 const TestComponent = () => {
   useAccess() // Just to test the context
@@ -559,6 +585,280 @@ describe("AccessProvider", () => {
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(1)
       expect(handleRestartLogin).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("Session timeout handling", () => {
+    let mockUpdateTrackerUserInfo: jest.Mock
+    let authContext: MockAuthContext
+
+    beforeEach(() => {
+      mockUpdateTrackerUserInfo = jest.fn()
+      authContext = {
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: {name: "TestRole"},
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo,
+        updateInvalidSessionCause: jest.fn()
+      }
+    })
+
+    it("should show timeout modal when remaining time is 2 minutes or less", async () => {
+      const twoMinutes = 2 * 60 * 1000
+      mockUpdateTrackerUserInfo.mockResolvedValue({
+        error: null,
+        remainingSessionTime: twoMinutes - 1000 // 1 second less than 2 minutes
+      })
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        jest.advanceTimersByTime(60001) // Trigger interval
+      })
+
+      expect(logger.info).toHaveBeenCalledWith("Session timeout warning triggered - showing modal", {
+        remainingTime: twoMinutes - 1000,
+        remainingSeconds: Math.floor((twoMinutes - 1000) / 1000)
+      })
+      expect(accessContext!.sessionTimeoutInfo.showModal).toBe(true)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(twoMinutes - 1000)
+    })
+
+    it("should automatically log out when session time is expired", async () => {
+      mockUpdateTrackerUserInfo.mockResolvedValue({
+        error: null,
+        remainingSessionTime: 0
+      })
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      renderWithProvider()
+
+      await act(async () => {
+        jest.advanceTimersByTime(60001)
+      })
+
+      expect(logger.warn).toHaveBeenCalledWith("Session expired - automatically logging out user")
+      expect(authContext.updateInvalidSessionCause).toHaveBeenCalledWith("Timeout")
+      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "Timeout")
+    })
+
+    it("should hide modal when session is still valid", async () => {
+      const fiveMinutes = 5 * 60 * 1000
+      mockUpdateTrackerUserInfo.mockResolvedValue({
+        error: null,
+        remainingSessionTime: fiveMinutes
+      })
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        jest.advanceTimersByTime(60001)
+      })
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        "Session still valid - hiding modal if shown",
+        {remainingTime: fiveMinutes}
+      )
+      expect(accessContext!.sessionTimeoutInfo.showModal).toBe(false)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(fiveMinutes)
+    })
+
+    it("should hide modal when no remaining session time provided", async () => {
+      mockUpdateTrackerUserInfo.mockResolvedValue({
+        error: null,
+        remainingSessionTime: undefined
+      })
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        jest.advanceTimersByTime(60001)
+      })
+
+      expect(logger.debug).toHaveBeenCalledWith("No remainingSessionTime in response - hiding modal")
+      expect(accessContext!.sessionTimeoutInfo.showModal).toBe(false)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(0)
+    })
+
+    it("should call handleLogOut when onLogOut is triggered", async () => {
+      const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
+      mockSignOut.mockResolvedValue(undefined)
+
+      const authContext = {
+        isSignedIn: true,
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      }
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        accessContext.onLogOut()
+      })
+
+      expect(logger.info).toHaveBeenCalledWith("User chose to log out from session timeout modal")
+      expect(mockSignOut).toHaveBeenCalledWith(authContext, "mock-signout")
+    })
+
+    it("should handle session extension through handleStayLoggedIn", async () => {
+      const mockUpdateRemoteSelectedRole =
+       updateRemoteSelectedRole as jest.MockedFunction<typeof updateRemoteSelectedRole>
+      mockUpdateRemoteSelectedRole.mockResolvedValue({currentlySelectedRole: {}})
+      const mockUpdateTrackerUserInfo = jest.fn().mockResolvedValue({error: null})
+
+      const authContext = {
+        isSignedIn: true,
+        selectedRole: {name: "TestRole", role_id: "123"},
+        updateTrackerUserInfo: mockUpdateTrackerUserInfo
+      }
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        accessContext.onStayLoggedIn()
+      })
+
+      expect(logger.info).toHaveBeenCalledWith("User chose to extend session")
+      expect(mockUpdateRemoteSelectedRole).toHaveBeenCalledWith(authContext.selectedRole)
+      expect(logger.info).toHaveBeenCalledWith("Session extended successfully")
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
+    })
+
+    it("should handle error when no selected role available during session extension", async () => {
+      const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
+      mockSignOut.mockResolvedValue(undefined)
+
+      const authContext = {
+        isSignedIn: true,
+        selectedRole: null, // No selected role
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      }
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        accessContext.onStayLoggedIn()
+      })
+
+      expect(logger.error).toHaveBeenCalledWith("No selected role available to extend session")
+      expect(mockSignOut).toHaveBeenCalledWith(authContext, "mock-signout")
+    })
+
+    it("should handle errors during session extension", async () => {
+      const mockUpdateRemoteSelectedRole =
+      updateRemoteSelectedRole as jest.MockedFunction<typeof updateRemoteSelectedRole>
+      const testError = new Error("API Error")
+      mockUpdateRemoteSelectedRole.mockRejectedValue(testError)
+
+      const mockSignOut = signOut as jest.MockedFunction<typeof signOut>
+      mockSignOut.mockResolvedValue(undefined)
+
+      const authContext = {
+        isSignedIn: true,
+        selectedRole: {name: "TestRole", role_id: "123"},
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
+      }
+
+      mockAuthHook.mockReturnValue(authContext)
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+
+      let accessContext: MockAccessContext
+      const ContextConsumer = () => {
+        accessContext = useAccess()
+        return null
+      }
+
+      render(
+        <AccessProvider>
+          <ContextConsumer />
+        </AccessProvider>
+      )
+
+      await act(async () => {
+        accessContext.onStayLoggedIn()
+      })
+
+      expect(logger.error).toHaveBeenCalledWith("Error extending session:", testError)
+      expect(mockSignOut).toHaveBeenCalledWith(authContext, "mock-signout")
     })
   })
 })

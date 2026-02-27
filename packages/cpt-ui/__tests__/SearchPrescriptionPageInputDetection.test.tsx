@@ -51,7 +51,8 @@ const defaultAuthContext: AuthContextType = {
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 const defaultSearchContext: SearchProviderContextType = {
@@ -91,7 +92,11 @@ const renderWithProviders = (
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <AuthContext.Provider value={authContext}>
-        <AccessContext.Provider value={{}}>
+        <AccessContext.Provider value={{
+          sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+          onStayLoggedIn: jest.fn(),
+          onLogOut: jest.fn()
+        }}>
           <SearchContext.Provider value={searchContext}>
             {ui}
           </SearchContext.Provider>

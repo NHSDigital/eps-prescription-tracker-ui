@@ -31,7 +31,8 @@ const mockUseAuthReturnValue: AuthContextType = {
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
   isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 describe("YourSelectedRolePage", () => {

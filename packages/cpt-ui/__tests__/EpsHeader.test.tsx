@@ -69,7 +69,8 @@ const defaultAuthContext: AuthContextType = {
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
   isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 const renderWithProviders = (
@@ -85,9 +86,15 @@ const renderWithProviders = (
 
   const authValue = {...defaultAuthContext, ...authOverrides}
 
+  const mockAccessContext = {
+    sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+    onStayLoggedIn: jest.fn(),
+    onLogOut: jest.fn()
+  }
+
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={null}>
+      <AccessContext.Provider value={mockAccessContext}>
         <EpsHeader />
       </AccessContext.Provider>
     </AuthContext.Provider>

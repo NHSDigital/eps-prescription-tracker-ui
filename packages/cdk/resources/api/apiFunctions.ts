@@ -61,6 +61,7 @@ export class ApiFunctions extends Construct {
   public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
   public readonly clearActiveSessionLambda: NodejsFunction
+  public readonly setLastActivityTimerLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -287,6 +288,27 @@ export class ApiFunctions extends Construct {
       apiFunctionsPolicies.push(clearActiveSessionLambda.executeLambdaManagedPolicy)
 
       this.clearActiveSessionLambda = clearActiveSessionLambda.lambda
+
+      const setLastActivityTimerLambda = new LambdaFunction(this, "setLastActivityTimerLambda", {
+        serviceName: props.serviceName,
+        stackName: props.stackName,
+        lambdaName: `${props.stackName}-fake-timer`,
+        additionalPolicies: additionalPolicies,
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/testingSupport/setLastActivityTimerLambda",
+        entryPoint: "src/handler.ts",
+        lambdaEnvironmentVariables: {
+          ...commonLambdaEnv,
+          TokenMappingTableName: props.tokenMappingTable.tableName,
+          SessionManagementTableName: props.sessionManagementTable.tableName
+        }
+      })
+
+      // Add the policy to apiFunctionsPolicies
+      apiFunctionsPolicies.push(setLastActivityTimerLambda.executeLambdaManagedPolicy)
+
+      this.setLastActivityTimerLambda = setLastActivityTimerLambda.lambda
     }
 
     // Outputs

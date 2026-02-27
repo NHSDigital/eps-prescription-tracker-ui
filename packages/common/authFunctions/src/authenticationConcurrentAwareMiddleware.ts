@@ -1,7 +1,12 @@
 import {MiddlewareObj} from "@middy/core"
 import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
-import {authenticateRequest, AuthDependencies, AuthResult} from "./authenticateRequest"
+import {
+  authenticateRequest,
+  AuthDependencies,
+  AuthResult,
+  AuthTimeoutResult
+} from "./authenticateRequest"
 import {TokenMappingItem, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 
 export const authenticationConcurrentAwareMiddleware = (
@@ -17,7 +22,7 @@ export const authenticationConcurrentAwareMiddleware = (
     const {event} = request
 
     let invalidSessionCause: string | undefined = undefined
-    let authResult: AuthResult | null = null
+    let authenticatedResult: AuthResult | AuthTimeoutResult | null = null
 
     try {
       const username = getUsernameFromEvent(event)
@@ -51,7 +56,7 @@ export const authenticationConcurrentAwareMiddleware = (
       if (sessionManagementItem !== undefined && sessionManagementSessionId === sessionId) {
         logger.debug("Session ID matches the session management item, proceeding with authentication")
         isConcurrentSession = true
-        authResult = await authenticateRequest(
+        authenticatedResult = await authenticateRequest(
           username,
           {axiosInstance, ddbClient, logger, authOptions},
           sessionManagementItem,
@@ -61,7 +66,7 @@ export const authenticationConcurrentAwareMiddleware = (
       } else if (tokenMappingItem !== undefined && tokenMappingSessionId === sessionId) {
         logger.debug("Session ID matches the token mapping item, proceeding with authentication")
         isConcurrentSession = false
-        authResult = await authenticateRequest(
+        authenticatedResult = await authenticateRequest(
           username,
           {axiosInstance, ddbClient, logger, authOptions},
           tokenMappingItem,
@@ -78,15 +83,14 @@ export const authenticationConcurrentAwareMiddleware = (
         })
         invalidSessionCause = "InvalidSession"
       }
-
-      if (authResult) {
-        event.requestContext.authorizer = {...authResult, sessionId, isConcurrentSession}
+      if (authenticatedResult && !("isTimeout" in authenticatedResult)) {
+        event.requestContext.authorizer = {...(authenticatedResult as AuthResult), sessionId, isConcurrentSession}
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
     }
 
-    if (!authResult) {
+    if (authenticatedResult && "isTimeout" in authenticatedResult){
       request.earlyResponse = {
         statusCode: 401,
         body: JSON.stringify({

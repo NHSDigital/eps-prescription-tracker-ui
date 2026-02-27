@@ -39,7 +39,8 @@ const defaultAuthState: AuthContextType = {
   updateTrackerUserInfo: jest.fn().mockName("updateTrackerUserInfo"),
   updateInvalidSessionCause: jest.fn().mockName("updateInvalidSessionCause"),
   isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 const signedInAuthState: AuthContextType = {

@@ -53,10 +53,15 @@ const defaultAuthContext: AuthContextType = {
   updateSelectedRole: jest.fn(),
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
-const defaultAccessContext = {}
+const defaultAccessContext = {
+  sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+  onStayLoggedIn: jest.fn(),
+  onLogOut: jest.fn()
+}
 
 const defaultSearchContext: SearchProviderContextType = {
   prescriptionId: undefined,
