@@ -95,6 +95,7 @@ import NoPrescriptionsFoundPage from "@/pages/NoPrescriptionsFoundPage"
 import {AuthContextType, AuthContext} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Tell TypeScript that axios is a mocked version.
 const mockedAxios = axios as jest.Mocked<typeof axios>
@@ -132,6 +133,7 @@ const mockCognitoSignIn = jest.fn()
 const mockCognitoSignOut = jest.fn()
 
 const signedInAuthState: AuthContextType = {
+  ...mockAuthState,
   isSignedIn: true,
   isSigningIn: false,
   invalidSessionCause: undefined,

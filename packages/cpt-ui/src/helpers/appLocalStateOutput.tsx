@@ -13,7 +13,8 @@ export function returnLocalState(auth: AuthContextType) {
     sessionId: auth.sessionId,
     rolesWithAccessCount: auth.rolesWithAccess.length,
     rolesWithoutAccessCount: auth.rolesWithoutAccess.length,
-    selectedRole: auth.selectedRole || null
+    selectedRole: auth.selectedRole || null,
+    deviceId: auth.deviceId
   }
   return stateValues
 }

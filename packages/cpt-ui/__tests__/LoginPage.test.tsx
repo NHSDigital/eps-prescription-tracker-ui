@@ -5,6 +5,7 @@ import React, {useState} from "react"
 import {MemoryRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import LoginPage from "@/pages/LoginPage"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
@@ -82,6 +83,7 @@ jest.mock("@/context/configureAmplify", () => ({
 }))
 
 const defaultAuthState: AuthContextType = {
+  ...mockAuthState,
   isSignedIn: false,
   isSigningIn: false,
   invalidSessionCause: undefined,

@@ -5,6 +5,7 @@ import YourSelectedRolePage from "@/pages/YourSelectedRolePage"
 import {AuthContextType, useAuth} from "@/context/AuthProvider"
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
 import userEvent from "@testing-library/user-event"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock useAuth hook
 jest.mock("@/context/AuthProvider")
@@ -12,6 +13,7 @@ jest.mock("@/context/AuthProvider")
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
 
 const mockUseAuthReturnValue: AuthContextType = {
+  ...mockAuthState,
   selectedRole: undefined,
   error: null,
   user: null,

@@ -6,6 +6,7 @@ import {MemoryRouter} from "react-router-dom"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
 import SessionSelectionPage from "@/pages/SessionSelection"
 import {postSessionManagementUpdate} from "@/helpers/sessionManagement"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 const mockNavigate = jest.fn()
 
@@ -51,6 +52,7 @@ jest.mock("@/constants/environment", () => ({
 const mockUpdateTrackerUserInfo = jest.fn()
 
 export const defaultAuthState: AuthContextType = {
+  ...mockAuthState,
   isSignedIn: true,
   isSigningIn: false,
   invalidSessionCause: undefined,

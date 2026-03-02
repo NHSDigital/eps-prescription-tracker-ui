@@ -15,6 +15,7 @@ import {PRESCRIPTION_ID_SEARCH_STRINGS} from "@/constants/ui-strings/SearchForAP
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 const mockNavigationContext = {
   pushNavigation: jest.fn(),
@@ -33,6 +34,7 @@ jest.mock("@/context/NavigationProvider", () => ({
 }))
 
 const mockAuthContext: AuthContextType = {
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: true,

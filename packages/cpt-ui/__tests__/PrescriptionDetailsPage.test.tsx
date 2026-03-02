@@ -18,8 +18,10 @@ import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider
 import {NavigationProvider} from "@/context/NavigationProvider"
 
 import {AxiosError, AxiosHeaders} from "axios"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 const defaultAuthState: AuthContextType = {
+  ...mockAuthState,
   isSignedIn: false,
   isSigningIn: false,
   invalidSessionCause: undefined,

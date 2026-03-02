@@ -26,9 +26,11 @@ jest.mock("@/context/NavigationProvider", () => ({
   useNavigationContext: () => mockNavigationContext
 }))
 import {SearchProvider} from "@/context/SearchProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Default mock values for contexts
 const defaultAuthContext: AuthContextType = {
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: false,

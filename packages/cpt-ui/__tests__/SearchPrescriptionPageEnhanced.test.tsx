@@ -9,6 +9,7 @@ import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {AccessContext} from "@/context/AccessProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock the NavigationProvider's useNavigationContext hook
 const mockNavigationContext = {
@@ -29,6 +30,7 @@ jest.mock("@/context/NavigationProvider", () => ({
 
 // Default mock values for contexts
 const defaultAuthContext: AuthContextType = {
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: false,
