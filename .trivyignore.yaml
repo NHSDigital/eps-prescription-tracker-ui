@@ -29,3 +29,8 @@ vulnerabilities:
       - "package-lock.json"
     statement: Vulnerability in AWS dependency accepted as risk
     expired_at: 2026-06-01
+  - id: CVE-2026-27903
+    paths:
+      - "package-lock.json"
+    statement: Vulnerability in minimatch - waiting for depencency updates
+    expired_at: 2026-06-01
