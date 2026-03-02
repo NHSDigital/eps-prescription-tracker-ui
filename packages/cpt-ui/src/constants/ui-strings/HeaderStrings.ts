@@ -4,8 +4,6 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 export const HEADER_STRINGS = {
   CHANGE_ROLE_BUTTON: "Change role",
   CHANGE_ROLE_TARGET: FRONTEND_PATHS.CHANGE_YOUR_ROLE,
-  EXIT_BUTTON: "Exit",
-  EXIT_TARGET: "/",
   FEEDBACK_BUTTON: "Give feedback (opens in new tab)",
   FEEDBACK_TARGET: "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8",
   LOG_OUT_BUTTON: "Log out",
@@ -14,5 +12,6 @@ export const HEADER_STRINGS = {
   SELECT_YOUR_ROLE_BUTTON: "Select Your Role",
   SELECT_YOUR_ROLE_TARGET: FRONTEND_PATHS.SELECT_YOUR_ROLE,
   SERVICE: "Prescription Tracker (private beta)",
-  SKIP_TO_MAIN_CONTENT: "Skip to main content"
+  SKIP_TO_MAIN_CONTENT: "Skip to main content",
+  MORE: "More"
 }
