@@ -200,7 +200,7 @@ describe("AuthProvider", () => {
 
   // Error Handling
 
-  it("should log an error if signOut fails", async () => {
+  it("should throw an error if signOut fails", async () => {
     const loggerErrorSpy = jest.spyOn(logger, "error")
     const signOutError = new Error("Sign out failed");
     (signOut as jest.Mock).mockRejectedValue(signOutError as never)
@@ -223,13 +223,9 @@ describe("AuthProvider", () => {
     })
 
     await act(async () => {
-      await contextValue.cognitoSignOut()
+      await expect(contextValue.cognitoSignOut()).rejects.toThrow("Failed to sign out")
     })
 
-    expect(loggerErrorSpy).toHaveBeenCalledWith(
-      "Failed to sign out:",
-      signOutError
-    )
     loggerErrorSpy.mockRestore()
   })
 
@@ -352,6 +348,8 @@ describe("AuthProvider", () => {
   })
 
   it("should provide cognitoSignOut functions", async () => {
+    (signOut as jest.Mock).mockResolvedValue(undefined)
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contextValue: any
     const TestComponent = () => {

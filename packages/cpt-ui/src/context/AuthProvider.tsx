@@ -181,7 +181,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await http.get(CIS2SignOutEndpoint)
         logger.info("Successfully signed out of CIS2")
       } catch (err) {
-        logger.error("Error signing out of CIS2:", err)
+        logger.error("Failed to sign out of CIS2:", err)
       }
 
       if (signoutRedirectUrl) {

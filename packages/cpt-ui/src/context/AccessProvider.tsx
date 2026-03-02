@@ -132,6 +132,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       })
     }
 
+    logger.debug("No conditions met - not checking user info")
     return
   }
 

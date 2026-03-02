@@ -49,7 +49,8 @@ jest.mock("@/constants/environment", () => ({
     "/session-logged-out",
     "/cookies-selected",
     "/",
-    "/select-active-session"
+    "/select-active-session",
+    "/select-your-role"
   ],
   PUBLIC_PATHS: [
     "/login",
@@ -186,7 +187,7 @@ describe("AccessProvider", () => {
   it("skips redirection logic when signing in and on select-your-role path", () => {
     mockAuthHook.mockReturnValue({
       ...mockAuthState,
-      isSignedIn: false,
+      isSignedIn: true,
       isSigningIn: true,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn()
@@ -277,7 +278,8 @@ describe("AccessProvider", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
         isSignedIn: true,
         isConcurrentSession: true,
-        isSigningIn: false
+        isSigningIn: false,
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
       });
       (useLocation as jest.Mock).mockReturnValue({
         pathname: FRONTEND_PATHS.SESSION_SELECTION
@@ -394,7 +396,7 @@ describe("AccessProvider", () => {
       clearIntervalSpy.mockRestore()
     })
 
-    it("should skip user info check when isSigningIn is true", async () => {
+    it("shouldn't skip user info check when isSigningIn is true on protected page", async () => {
       mockAuthHook.mockReturnValue({
         ...mockAuthState,
         isSignedIn: true,
@@ -402,7 +404,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"}) // protected page
 
       renderWithProvider()
 
@@ -411,9 +413,9 @@ describe("AccessProvider", () => {
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
-        "Not checking user info"
+        "Refreshing user info"
       )
-      expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
     })
 
     it("should skip user info check when on allowed no-role paths", async () => {
@@ -501,7 +503,7 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(60001)
       })
 
-      expect(logger.debug).toHaveBeenCalledWith("Not checking user info")
+      expect(logger.debug).toHaveBeenCalledWith("No conditions met - not checking user info")
       expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
     })
 
