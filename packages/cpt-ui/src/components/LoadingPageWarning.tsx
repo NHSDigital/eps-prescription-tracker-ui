@@ -15,7 +15,7 @@ Please could you investigate this issue?`
   return (
     <WarningCallout>
       <WarningCallout.Label>
-                Information
+                Important
       </WarningCallout.Label>
       <p>
         {/* Using JSX spacing to overcome spacing not being respected when rendered. */}
