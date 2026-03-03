@@ -210,10 +210,16 @@ const PrescriptionsListTable = ({
   const renderTableCaption = () => {
     const {testid} = textContent
 
-    const intro =
-      PRESCRIPTION_LIST_TABLE_TEXT.CAPTION[
-        testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.CAPTION
-      ]
+    // Map testid to the correct caption key
+    const captionKeyMap: Record<string, keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.CAPTION> = {
+      current: "CURRENT",
+      future: "FUTURE",
+      past: "CLAIMED_EXPIRED",
+      claimedExpired: "CLAIMED_EXPIRED"
+    }
+
+    const captionKey = captionKeyMap[testid] || "CURRENT"
+    const intro = PRESCRIPTION_LIST_TABLE_TEXT.CAPTION[captionKey]
     const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.CAPTION.SHARED_TEXT
 
     return (
