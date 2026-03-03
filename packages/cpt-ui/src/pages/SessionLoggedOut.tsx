@@ -10,7 +10,9 @@ export default function SessionLoggedOutPage() {
 
   usePageTitle(auth.invalidSessionCause === "ConcurrentSession"
     ? EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION
-    : EpsLogoutStrings.PAGE_TITLE)
+    : auth.invalidSessionCause === "Timeout"
+      ? EpsLogoutStrings.PAGE_TITLE_WE_LOGGED_OUT
+      : EpsLogoutStrings.PAGE_TITLE)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
@@ -35,15 +37,32 @@ export default function SessionLoggedOutPage() {
       </main>
     )
   }
+
+  if (auth.invalidSessionCause === "Timeout") {
+    return (
+      <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-timeout">
+        <Container>
+          <Row>
+            <Col width="full">
+              <h1 data-testid="timeout-title">{EpsLogoutStrings.LOGOUT_TIMEOUT_TITLE}</h1>
+              <p data-testid="timeout-description">
+                {EpsLogoutStrings.LOGOUT_TIMEOUT_DESCRIPTION}</p>
+              <p data-testid="timeout-description2">{EpsLogoutStrings.LOGOUT_TIMEOUT_FURTHER}</p>
+              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    )
+  }
+
   return (
-    <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-timeout">
+    <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-default">
       <Container>
         <Row>
           <Col width="full">
-            <h1 data-testid="timeout-title">{EpsLogoutStrings.LOGOUT_TIMEOUT_TITLE}</h1>
-            <p data-testid="timeout-description">
-              {EpsLogoutStrings.LOGOUT_TIMEOUT_DESCRIPTION}</p>
-            <p data-testid="timeout-description2">{EpsLogoutStrings.LOGOUT_TIMEOUT_FURTHER}</p>
+            <h1>{EpsLogoutStrings.TITLE}</h1>
+            <p>{EpsLogoutStrings.BODY}</p>
             <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
           </Col>
         </Row>

@@ -51,6 +51,7 @@ const signedInAuthState: AuthContextType = {
   userDetails: undefined,
   isConcurrentSession: false,
   sessionId: "test-session-id",
+  remainingSessionTime: undefined,
   cognitoSignIn: mockCognitoSignIn,
   cognitoSignOut: mockCognitoSignOut,
   clearAuthState: mockClearAuthState,
