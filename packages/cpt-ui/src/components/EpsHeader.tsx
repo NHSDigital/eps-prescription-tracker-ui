@@ -19,7 +19,6 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
-  const [shouldShowExitButton, setShouldShowExitButton] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
@@ -50,12 +49,6 @@ export default function EpsHeader() {
     )
 
     setShouldShowLogoutLink(Boolean(auth?.isSignedIn))
-
-    setShouldShowExitButton(
-      (path === FRONTEND_PATHS.LOGOUT && !auth?.isSignedIn) ||
-      (path === FRONTEND_PATHS.SELECT_YOUR_ROLE && authContext.rolesWithAccess.length === 0) ||
-      (path === "/notfound")
-    )
   }, [location, auth, authContext])
 
   useEffect(() => {
@@ -168,21 +161,6 @@ export default function EpsHeader() {
                     <span className="text">{HEADER_STRINGS.LOG_OUT_BUTTON}</span>
                   </a>
                 )}
-
-                {shouldShowExitButton && (
-                  <a
-                    href="#"
-                    onClick={(e: React.MouseEvent) => {
-                      e.preventDefault()
-                      navigate(getHomeLink(false))
-                      setIsDropdownOpen(false)
-                    }}
-                    className="eps-header__nav-item"
-                    data-testid="eps_header_exit"
-                  >
-                    <span className="text">Exit</span>
-                  </a>
-                )}
               </div>
             )}
 
@@ -196,7 +174,7 @@ export default function EpsHeader() {
                   aria-label="Toggle navigation menu"
                   data-testid="eps_header_menuToggle"
                 >
-                  <span className="text">More</span>
+                  <span className="text">{HEADER_STRINGS.MORE}</span>
                   <svg
                     className="eps-header__menu-icon"
                     width="24"
@@ -269,21 +247,6 @@ export default function EpsHeader() {
                       data-testid="eps_header_logout_mobile"
                     >
                       <span className="text">{HEADER_STRINGS.LOG_OUT_BUTTON}</span>
-                    </a>
-                  )}
-
-                  {shouldShowExitButton && (
-                    <a
-                      href="#"
-                      onClick={(e: React.MouseEvent) => {
-                        e.preventDefault()
-                        navigate(getHomeLink(false))
-                        setIsDropdownOpen(false)
-                      }}
-                      className="eps-header__dropdown-item"
-                      data-testid="eps_header_exit_mobile"
-                    >
-                      <span className="text">Exit</span>
                     </a>
                   )}
                 </div>
