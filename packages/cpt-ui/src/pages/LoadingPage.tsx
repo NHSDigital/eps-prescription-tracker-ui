@@ -36,7 +36,7 @@ export default function LoadingPage() {
 
       <Container>
         <Fragment>
-          <h1>{LOADING_STRINGS.HEADER}</h1>
+          <h1 data-testid="loading-page-header">{LOADING_STRINGS.HEADER}</h1>
           <p>
             If you have not been redirected after 1 minute,{" "}
             <Link to="/logout">log out</Link>

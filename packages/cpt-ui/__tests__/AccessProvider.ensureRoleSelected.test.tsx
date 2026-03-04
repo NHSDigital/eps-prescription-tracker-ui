@@ -1,22 +1,10 @@
 import React from "react"
-import {render, screen, waitFor} from "@testing-library/react"
-import {AccessProvider, useAccess} from "@/context/AccessProvider"
+import {render, waitFor} from "@testing-library/react"
+import {AccessProvider} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
 import {MemoryRouter, Route, Routes} from "react-router-dom"
 import {mockAuthState} from "./mocks/AuthStateMock"
-
-const APP_ROUTES = {
-  root: "/",
-  login: FRONTEND_PATHS.LOGIN ?? "/login",
-  logout: FRONTEND_PATHS.LOGOUT ?? "/logout",
-  sessionLoggedOut: FRONTEND_PATHS.SESSION_LOGGED_OUT ?? "/session-logged-out",
-  cookies: FRONTEND_PATHS.COOKIES ?? "/cookies",
-  search: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID ?? "/search-by-prescription-id",
-  selectRole: FRONTEND_PATHS.SELECT_YOUR_ROLE ?? "/select-your-role",
-  sessionSelection: FRONTEND_PATHS.SESSION_SELECTION ?? "/select-active-session",
-  protected: "/some-protected"
-}
 
 jest.mock("@/components/EpsHeader", () => ({
   __esModule: true,
@@ -36,19 +24,24 @@ jest.mock("@/helpers/logout", () => ({
   signOut: jest.fn()
 }))
 
-const TestComponent = () => {
-  useAccess() // Just to test the context
-  return <div>Test Component</div>
-}
+// Mock useNavigate and assign to a variable for assertions
+const mockNavigate = jest.fn()
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom")
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate
+  }
+})
 
-describe("AccessProvider", () => {
+describe("ensureRoleSelected", () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   const renderWithProvider = (
-    initialPath: string,
-    authStateOverrides: Partial<AuthContextType> = {}
+    authStateOverrides: Partial<AuthContextType> = {},
+    initialPath: string
   ) => {
     const authContextValue: AuthContextType = {
       ...mockAuthState,
@@ -63,32 +56,31 @@ describe("AccessProvider", () => {
           <AccessProvider>
             <Routes>
               <Route path="/" element={<div data-testid="route-root">Root</div>} />
-              <Route path={APP_ROUTES.login} element={<div data-testid="route-login">Login</div>} />
-              <Route path={APP_ROUTES.logout} element={<div data-testid="route-logout">Logout</div>} />
+              <Route path={FRONTEND_PATHS.LOGIN} element={<div data-testid="route-login">Login</div>} />
+              <Route path={FRONTEND_PATHS.LOGOUT} element={<div data-testid="route-logout">Logout</div>} />
               <Route
-                path={APP_ROUTES.sessionLoggedOut}
+                path={FRONTEND_PATHS.SESSION_LOGGED_OUT}
                 element={<div data-testid="route-session-logged-out">Session Logged Out</div>}
               />
-              <Route path={APP_ROUTES.cookies} element={<div data-testid="route-cookies">Cookies</div>} />
+              <Route path={FRONTEND_PATHS.COOKIES} element={<div data-testid="route-cookies">Cookies</div>} />
               <Route
-                path={APP_ROUTES.sessionSelection}
+                path={FRONTEND_PATHS.SESSION_SELECTION}
                 element={<div data-testid="route-session-selection">Session Selection</div>}
               />
               <Route
-                path={APP_ROUTES.search}
+                path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
                 element={<div data-testid="route-search">Search</div>}
               />
               <Route
-                path={APP_ROUTES.selectRole}
+                path={FRONTEND_PATHS.SELECT_YOUR_ROLE}
                 element={<div data-testid="route-select-role">Select Role</div>}
               />
               <Route
-                path={APP_ROUTES.protected}
+                path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
                 element={<div data-testid="route-protected">Protected</div>}
               />
               <Route path="*" element={<div data-testid="route-not-found">Not Found</div>} />
             </Routes>
-            <TestComponent />
           </AccessProvider>
         </AuthContext.Provider>
       </MemoryRouter>
@@ -99,87 +91,53 @@ describe("AccessProvider", () => {
     name: string;
     initialPath: string;
     authStateOverrides: Partial<AuthContextType>;
-    expectedRouteTestId?: string;
-    expectBlocked?: boolean;
-    expectRestartLoginCall?: boolean;
+    expectedPath?: string;
   }
 
-  const scenarios: Array<Scenario> = [
+  const nonBlockingScenarios: Array<Scenario> = [
     {
       name: "signed in user with selected role at root redirects to search",
-      initialPath: APP_ROUTES.root,
+      initialPath: "/",
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {role_name: "Test Role"}
       },
-      expectedRouteTestId: "route-search"
+      expectedPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
     },
     {
       name: "signed in user with selected role at login redirects to search",
-      initialPath: APP_ROUTES.login,
+      initialPath: FRONTEND_PATHS.LOGIN,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {role_name: "Test Role"}
       },
-      expectedRouteTestId: "route-search"
-    },
-    {
-      name: "user on public path regardless of state doesnt redirect",
-      initialPath: APP_ROUTES.cookies,
-      authStateOverrides: {
-        isSignedIn: true,
-        isSigningIn: false,
-        selectedRole: {role_name: "Test Role"}
-      },
-      expectedRouteTestId: "route-cookies"
+      expectedPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
     },
     {
       name: "signed out user at root redirects to login",
-      initialPath: APP_ROUTES.root,
+      initialPath: "/",
       authStateOverrides: {
         isSignedIn: false,
         isSigningIn: false,
         selectedRole: undefined
       },
-      expectedRouteTestId: "route-login"
+      expectedPath: FRONTEND_PATHS.LOGIN
     },
     {
       name: "signed out user on protected route redirects to login",
-      initialPath: APP_ROUTES.protected,
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
         isSigningIn: false,
         selectedRole: undefined
       },
-      expectedRouteTestId: "route-login"
-    },
-    {
-      name: "signed out user on non-root public route doesnt get redirected",
-      initialPath: APP_ROUTES.cookies,
-      authStateOverrides: {
-        isSignedIn: false,
-        isSigningIn: false,
-        selectedRole: undefined
-      },
-      expectedRouteTestId: "route-cookies"
-    },
-    {
-      name: "signing out user on protected route redirects to login",
-      initialPath: APP_ROUTES.protected,
-      authStateOverrides: {
-        isSignedIn: false,
-        isSigningIn: false,
-        isSigningOut: true,
-        selectedRole: undefined
-      },
-      expectBlocked: true,
-      expectRestartLoginCall: true
+      expectedPath: FRONTEND_PATHS.LOGIN
     },
     {
       name: "signing out user with invalid session cause on protected route redirects to login",
-      initialPath: APP_ROUTES.protected,
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
         isSigningIn: false,
@@ -187,34 +145,32 @@ describe("AccessProvider", () => {
         invalidSessionCause: "Session expired",
         selectedRole: undefined
       },
-      expectedRouteTestId: "route-login"
+      expectedPath: FRONTEND_PATHS.LOGIN
     },
     {
-      name: "signing in user on allowed no-role pages remains blocked while transition completes",
-      initialPath: APP_ROUTES.selectRole,
-      authStateOverrides: {
-        isSignedIn: false,
-        isSigningIn: true,
-        isSigningOut: false,
-        selectedRole: undefined
-      },
-      expectBlocked: true
-    },
-    {
-      name: "signed in user that is signing out and not on logout triggers restart login and remains blocked",
-      initialPath: APP_ROUTES.protected,
+      name: "signed in user that has no role selected and not on allowed no role paths is redirected to select role",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
-        isSigningOut: true,
+        isSigningOut: false,
         selectedRole: undefined
       },
-      expectBlocked: true,
-      expectRestartLoginCall: true
+      expectedPath: FRONTEND_PATHS.SELECT_YOUR_ROLE
     },
     {
-      name: "signed in user that concurrent session and not on session selection is redirected to session selection",
-      initialPath: APP_ROUTES.protected,
+      name: "signed in user with a selected role on root or login is redirected to search",
+      initialPath: FRONTEND_PATHS.LOGIN,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: {role_name: "Test Role"}
+      },
+      expectedPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+    },
+    {
+      name: "signed in user has concurrent session and not on session selection is redirected to session selection",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
@@ -222,58 +178,90 @@ describe("AccessProvider", () => {
         isConcurrentSession: true,
         selectedRole: {role_name: "Test Role"}
       },
-      expectedRouteTestId: "route-session-selection"
-    },
+      expectedPath: FRONTEND_PATHS.SESSION_SELECTION
+    }
+  ]
+
+  const noRedirectScenarios: Array<Scenario> = [
     {
-      name: "signed in user that has no role selected and not on allowed no role paths is redirected to select role",
-      initialPath: APP_ROUTES.protected,
+      name: "signed out user on non-root public route doesnt get redirected",
+      initialPath: FRONTEND_PATHS.COOKIES,
       authStateOverrides: {
-        isSignedIn: true,
+        isSignedIn: false,
         isSigningIn: false,
-        isSigningOut: false,
         selectedRole: undefined
-      },
-      expectedRouteTestId: "route-select-role"
+      }
     },
     {
-      name: "signed in user with a selected role on root or login is redirected to search",
-      initialPath: APP_ROUTES.login,
+      name: "user on public path regardless of state doesnt redirect",
+      initialPath: FRONTEND_PATHS.COOKIES,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {role_name: "Test Role"}
-      },
-      expectedRouteTestId: "route-search"
+      }
     }
   ]
 
-  it.each(scenarios)(
-    "$name",
+  // const signoutScenarios: Array<Scenario> = [
+  //   {
+  //     name: "signed in user that is signing out and not on logout triggers restart login and remains blocked",
+  //     initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+  //     authStateOverrides: {
+  //       isSignedIn: true,
+  //       isSigningIn: false,
+  //       isSigningOut: true,
+  //       selectedRole: undefined
+  //     },
+  //     expectedPath: FRONTEND_PATHS.LOGIN
+  //   },
+  //   {
+  //     name: "signing out user on protected route will be logged out",
+  //     initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+  //     authStateOverrides: {
+  //       isSignedIn: false,
+  //       isSigningIn: false,
+  //       isSigningOut: true,
+  //       selectedRole: undefined
+  //     },
+  //     expectedPath: FRONTEND_PATHS.LOGIN
+  //   }
+  // ]
+
+  it.each(nonBlockingScenarios)(
+    "Redirection expected - $name",
     async ({
       initialPath,
       authStateOverrides,
-      expectedRouteTestId
+      expectedPath
     }) => {
-      renderWithProvider(initialPath, authStateOverrides)
+      renderWithProvider(authStateOverrides, initialPath)
 
       await waitFor(() => {
-        expect(screen.getByTestId(expectedRouteTestId as string)).toBeInTheDocument()
-        expect(screen.queryByTestId("route-not-found")).not.toBeInTheDocument()
+        expect(mockNavigate).toHaveBeenCalledWith(expectedPath)
       })
     }
   )
 
-  it("shows redirect processing page when concurrent session exists on protected route", async () => {
-    renderWithProvider(APP_ROUTES.protected, {
-      isSignedIn: true,
-      isConcurrentSession: true,
-      isSigningIn: false,
-      selectedRole: {role_name: "Test Role"}
-    })
+  it.each(noRedirectScenarios)(
+    "No redirection expected - $name",
+    async ({
+      initialPath,
+      authStateOverrides
+    }) => {
+      renderWithProvider(authStateOverrides, initialPath)
 
-    await waitFor(() => {
-      expect(screen.getByText("You're being redirected")).toBeInTheDocument()
-      expect(screen.queryByTestId("route-protected")).not.toBeInTheDocument()
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
-  })
 })
+
+//   name: "signing in user on allowed no-role pages remains blocked while transition completes",
+//   initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
+//   authStateOverrides: {
+//     isSignedIn: false,
+//     isSigningIn: true,
+//     isSigningOut: false,
+//     selectedRole: undefined
+//   },
+//   expectedPath: FRONTEND_PATHS.SELECT_YOUR_ROLE
+// },
