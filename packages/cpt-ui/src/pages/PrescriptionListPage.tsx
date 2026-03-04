@@ -75,12 +75,17 @@ export default function PrescriptionListPage() {
           logger.info("Using original prescription ID from navigation context", {
             prescriptionId: originalSearchParams.prescriptionId
           })
+        } else if ((originalSearchParams.firstName || originalSearchParams.lastName) &&
+                   !originalSearchParams.nhsNumber) {
+          // If we have basic details but no NHS number from original search, redirect to prescription search
+          logger.info("Basic details present but no NHS number - redirecting to prescription ID search")
+          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+          return
         }
         // For basic details search, we use nhsNumber which should be available if it was a successful search
       }
 
       if (!hasValidSearchCriteria) {
-        // Fallback to current search context (existing logic)
         if (searchContext.nhsNumber) {
           searchParams.append("nhsNumber", searchContext.nhsNumber)
           hasValidSearchCriteria = true

@@ -145,9 +145,8 @@ const PrescriptionsListTable = ({
     // Only set the prescription-specific parameters needed for the details page
     // Don't modify or mix with the original search parameters to avoid cross-contamination
     searchContext.setPrescriptionId(prescriptionId)
-    if (issueNumber) {
-      searchContext.setIssueNumber(issueNumber)
-    }
+    // Always set issueNumber (even if undefined) to clear any previous value from other prescriptions
+    searchContext.setIssueNumber(issueNumber)
   }
 
   const getSortedItems = () => {
