@@ -68,7 +68,7 @@ describe("shouldBlockChildren", () => {
 
   const blockingScenarios: Array<Scenario> = [
     {
-      name: "not signed in, not signing in, on non-public path",
+      name: "not signed in, not signing in, on protected path", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
@@ -77,7 +77,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "not signed in, signing in, on non-public path",
+      name: "not signed in, signing in, on protected path", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
@@ -86,7 +86,18 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, concurrent session, not on session selection page or public path",
+      name: "not signed in, signing out, has invalid session cause, on protected path", // has a redirection test
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: false,
+        isSigningOut: true,
+        invalidSessionCause: "Session expired",
+        selectedRole: undefined
+      }
+    },
+    {
+      name: "signed in, concurrent session, on protected page", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
@@ -97,7 +108,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, no selected role, not on allowed no-role path",
+      name: "signed in, no selected role, on protected path", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
@@ -108,7 +119,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, has selected role, on root path",
+      name: "signed in, has selected role, on root path", // has redirection test
       initialPath: "/",
       authStateOverrides: {
         isSignedIn: true,
@@ -119,7 +130,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, has selected role, on login",
+      name: "signed in, has selected role, on login", // has redirection test
       initialPath: FRONTEND_PATHS.LOGIN,
       authStateOverrides: {
         isSignedIn: true,
@@ -130,7 +141,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, is signing in, not on allowed no-role path",
+      name: "signed in, signing in, on protected path", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
@@ -141,7 +152,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, is signing out, not on allowed no-role path",
+      name: "signed in, signing out, on protected path", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
@@ -155,8 +166,17 @@ describe("shouldBlockChildren", () => {
 
   const nonBlockingScenarios: Array<Scenario> = [
     {
-      name: "not signed in, on public path",
+      name: "not signed in, on public path", // has a redirection test
       initialPath: FRONTEND_PATHS.COOKIES,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: false,
+        selectedRole: undefined
+      }
+    },
+    {
+      name: "not signed in, on root path", // has a redirection test
+      initialPath: "/",
       authStateOverrides: {
         isSignedIn: false,
         isSigningIn: false,
@@ -193,7 +213,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, with selected role, on public path",
+      name: "signed in, role selected, on public path", // has a redirection test
       initialPath: FRONTEND_PATHS.COOKIES,
       authStateOverrides: {
         isSignedIn: true,
@@ -202,7 +222,7 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, no selected role, on allowed no-role path",
+      name: "signed in, on allowed no-role path", // has a redirection test
       initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
       authStateOverrides: {
         isSignedIn: true,
@@ -211,8 +231,8 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, with selected role, on allowed no-role path",
-      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
+      name: "signed in, role selected, on protected path", // has a redirection test
+      initialPath: FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
@@ -220,12 +240,28 @@ describe("shouldBlockChildren", () => {
       }
     },
     {
-      name: "signed in, with selected role, on protected path",
-      initialPath: FRONTEND_PATHS.SEARCH_BY_NHS_NUMBER,
+      name: "signed in, role selected, on allowed no roles path, doesnt redirect", // has a redirection test
+      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
-        selectedRole: {"role_name": "Test Role"}
+        selectedRole: {role_name: "Test Role"}
+      }
+    },
+    {
+      name: "signed in, signing out, on public path, redirects to logout", // has a redirection test
+      initialPath: FRONTEND_PATHS.COOKIES,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: true
+      }
+    },
+    {
+      name: "signed in, signing out, on root path, redirects to logout", // has a redirection test
+      initialPath: "/",
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: true
       }
     }
   ]

@@ -31,24 +31,26 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
 
     if (auth.isSignedIn) {
-      if (auth.isConcurrentSession && (!PUBLIC_PATHS.includes(path) && path !== FRONTEND_PATHS.SESSION_SELECTION)) {
-        logger.info(`Concurrent session detected on ${path} - blocking render until redirect to session selection`)
-        return true
-      }
+      if ((path === "/" || path === FRONTEND_PATHS.LOGIN) || !PUBLIC_PATHS.includes(path)) {
+        if (auth.isConcurrentSession && (path !== FRONTEND_PATHS.SESSION_SELECTION)) {
+          logger.info(`Concurrent session detected on ${path} - blocking render until redirect to session selection`)
+          return true
+        }
 
-      if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
-        logger.info(`No role selected on ${path} - blocking render until redirect to select your role`)
-        return true
-      }
+        if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
+          logger.info(`No role selected on ${path} - blocking render until redirect to select your role`)
+          return true
+        }
 
-      if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
-        logger.info(`Signed-in user on ${path} - blocking render until redirect`)
-        return true
-      }
+        if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+          logger.info(`Signed-in user on ${path} - blocking render until redirect`)
+          return true
+        }
 
-      if (auth.isSigningOut || auth.isSigningIn) {
-        // Block render if a user is temporarily in a transition state
-        return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
+        if (auth.isSigningOut || auth.isSigningIn) {
+          // Block render if a user is temporarily in a transition state
+          return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
+        }
       }
     }
 
@@ -88,6 +90,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
 
       // Capture this case to prevent new login session being redirected
+      // Needs to be allowed no roles to allow select-your-role or concurrent session selection
+      // isSigned becomes true as auth hub receives SignedIn event
       if (auth.isSigningIn && ALLOWED_NO_ROLE_PATHS.includes(path)) {
         return
       }
@@ -97,7 +101,9 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
     // Signed in - check states in priority order
     if (auth.isSignedIn) {
-      if (auth.isSigningOut && path !== FRONTEND_PATHS.LOGOUT && !auth.invalidSessionCause) {
+      if (auth.isSigningOut &&
+        (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
+        // TODO: Check if && !auth.invalidSessionCause needed
         return handleRestartLogin(auth, auth.invalidSessionCause)
       }
 

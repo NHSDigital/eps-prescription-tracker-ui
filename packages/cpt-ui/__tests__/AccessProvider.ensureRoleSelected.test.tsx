@@ -19,10 +19,15 @@ jest.mock("@/helpers/logger", () => ({
   }
 }))
 
-jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
-  signOut: jest.fn()
-}))
+const mockHandleRestartLogin = jest.fn()
+jest.mock("@/helpers/logout", () => {
+  const actual = jest.requireActual("@/helpers/logout")
+  return {
+    ...actual,
+    handleRestartLogin: (...args: Array<unknown>) => mockHandleRestartLogin(...args),
+    signOut: jest.fn()
+  }
+})
 
 // Mock useNavigate and assign to a variable for assertions
 const mockNavigate = jest.fn()
@@ -67,9 +72,9 @@ describe("ensureRoleSelected", () => {
     expectedPath?: string;
   }
 
-  const nonBlockingScenarios: Array<Scenario> = [
+  const redirectScenarios: Array<Scenario> = [
     {
-      name: "signed in user with selected role at root redirects to search",
+      name: "signed in, has selected role, on root path, redirects to search", // has a render block test
       initialPath: "/",
       authStateOverrides: {
         isSignedIn: true,
@@ -79,7 +84,7 @@ describe("ensureRoleSelected", () => {
       expectedPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
     },
     {
-      name: "signed in user with selected role at login redirects to search",
+      name: "signed in, has selected role, on login, redirects to search", // has a render block test
       initialPath: FRONTEND_PATHS.LOGIN,
       authStateOverrides: {
         isSignedIn: true,
@@ -89,7 +94,7 @@ describe("ensureRoleSelected", () => {
       expectedPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
     },
     {
-      name: "signed out user at root redirects to login",
+      name: "not signed in, on root path, redirects to login", // has a render block test
       initialPath: "/",
       authStateOverrides: {
         isSignedIn: false,
@@ -99,7 +104,7 @@ describe("ensureRoleSelected", () => {
       expectedPath: FRONTEND_PATHS.LOGIN
     },
     {
-      name: "signed out user on protected route redirects to login",
+      name: "not signed in, not signing in, on non-public path, redirects to login", // has a render block test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
@@ -108,8 +113,8 @@ describe("ensureRoleSelected", () => {
       },
       expectedPath: FRONTEND_PATHS.LOGIN
     },
-    {
-      name: "signing out user with invalid session cause on protected route redirects to login",
+    { // has a render block test
+      name: "not signed in, signing out, has invalid session cause, on protected path, redirects to login",
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
@@ -120,8 +125,8 @@ describe("ensureRoleSelected", () => {
       },
       expectedPath: FRONTEND_PATHS.LOGIN
     },
-    {
-      name: "signed in user that has no role selected and not on allowed no role paths is redirected to select role",
+    { // has a render block test
+      name: "signed in, no selected role selected, on protected path, is redirected to select role",
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
@@ -131,18 +136,8 @@ describe("ensureRoleSelected", () => {
       },
       expectedPath: FRONTEND_PATHS.SELECT_YOUR_ROLE
     },
-    {
-      name: "signed in user with a selected role on root or login is redirected to search",
-      initialPath: FRONTEND_PATHS.LOGIN,
-      authStateOverrides: {
-        isSignedIn: true,
-        isSigningIn: false,
-        selectedRole: {role_name: "Test Role"}
-      },
-      expectedPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
-    },
-    {
-      name: "signed in user has concurrent session and not on session selection is redirected to session selection",
+    { // has a render block test
+      name: "signed in, concurrent session, on protected path, is redirected to session selection",
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: true,
@@ -152,12 +147,23 @@ describe("ensureRoleSelected", () => {
         selectedRole: {role_name: "Test Role"}
       },
       expectedPath: FRONTEND_PATHS.SESSION_SELECTION
+    },
+    { // has a render block test
+      name: "not signed in, signing in, on protected path, redirected to login",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: true,
+        isSigningOut: false,
+        selectedRole: undefined
+      },
+      expectedPath: FRONTEND_PATHS.LOGIN
     }
   ]
 
   const noRedirectScenarios: Array<Scenario> = [
     {
-      name: "signed out user on non-root public route doesnt get redirected",
+      name: "not signed in, on public path, doesnt redirect", // has a render block test
       initialPath: FRONTEND_PATHS.COOKIES,
       authStateOverrides: {
         isSignedIn: false,
@@ -166,42 +172,65 @@ describe("ensureRoleSelected", () => {
       }
     },
     {
-      name: "user on public path regardless of state doesnt redirect",
+      name: "signed in, role selected, on public path, doesnt redirect", // has a render block test
       initialPath: FRONTEND_PATHS.COOKIES,
       authStateOverrides: {
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {role_name: "Test Role"}
       }
+    },
+    {
+      name: "signed in, role selected, on allowed no roles path, doesnt redirect", // has a render block test
+      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningIn: false,
+        selectedRole: {role_name: "Test Role"}
+      }
+    },
+    { // has a render block test
+      name: "signed in, signing out, on public path, doesnt redirect",
+      initialPath: FRONTEND_PATHS.COOKIES,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: true
+      }
     }
   ]
 
-  // const signoutScenarios: Array<Scenario> = [
-  //   {
-  //     name: "signed in user that is signing out and not on logout triggers restart login and remains blocked",
-  //     initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-  //     authStateOverrides: {
-  //       isSignedIn: true,
-  //       isSigningIn: false,
-  //       isSigningOut: true,
-  //       selectedRole: undefined
-  //     },
-  //     expectedPath: FRONTEND_PATHS.LOGIN
-  //   },
-  //   {
-  //     name: "signing out user on protected route will be logged out",
-  //     initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-  //     authStateOverrides: {
-  //       isSignedIn: false,
-  //       isSigningIn: false,
-  //       isSigningOut: true,
-  //       selectedRole: undefined
-  //     },
-  //     expectedPath: FRONTEND_PATHS.LOGIN
-  //   }
-  // ]
+  const logoutScenarios: Array<Scenario> = [
+    { // has a render block test
+      name: "signed in, signing out, has invalid session cause, on protected path, redirects to session logged out",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: true,
+        invalidSessionCause: "Session expired"
+      },
+      expectedPath: FRONTEND_PATHS.SESSION_LOGGED_OUT
+    },
+    { // has a render block test
+      name: "signed in, signing out, on protected path, redirects to logout",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: true
+      },
+      expectedPath: FRONTEND_PATHS.LOGOUT
+    },
+    { // has a render block test
+      name: "signed in, signing out, on root path, redirects to logout",
+      initialPath: "/",
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: true
+      },
+      expectedPath: FRONTEND_PATHS.LOGOUT
+    }
+  ]
 
-  it.each(nonBlockingScenarios)(
+  it.each(redirectScenarios)(
     "Redirection expected - $name",
     async ({
       initialPath,
@@ -226,15 +255,21 @@ describe("ensureRoleSelected", () => {
 
       expect(mockNavigate).not.toHaveBeenCalled()
     })
-})
 
-//   name: "signing in user on allowed no-role pages remains blocked while transition completes",
-//   initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
-//   authStateOverrides: {
-//     isSignedIn: false,
-//     isSigningIn: true,
-//     isSigningOut: false,
-//     selectedRole: undefined
-//   },
-//   expectedPath: FRONTEND_PATHS.SELECT_YOUR_ROLE
-// },
+  it.each(logoutScenarios)(
+    "Logout expected - $name",
+    async ({
+      initialPath,
+      authStateOverrides
+    }) => {
+      renderWithProvider(authStateOverrides, initialPath)
+
+      await waitFor(() => {
+        expect(mockNavigate).not.toHaveBeenCalled()
+        expect(mockHandleRestartLogin).toHaveBeenCalledWith(
+          expect.objectContaining(authStateOverrides),
+          authStateOverrides.invalidSessionCause
+        )
+      })
+    })
+})
