@@ -312,10 +312,15 @@ export default function RoleSelectionPage({
     <>
       <style>
         {`
-          .eps-card--selected {
-            border: 4px solid #ff0000 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.7) !important;
+          .eps-card__org-name-text--selected {
+            background-color: #ffeb3b !important;
+            box-shadow: 0 -2px #ffeb3b, 0 4px #212b32 !important;
+            color: #212b32 !important;
+            outline: none !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
         `}
       </style>
@@ -376,24 +381,30 @@ export default function RoleSelectionPage({
                             key={roleCardProps.uuid}
                             data-testid="eps-card"
                             className={`nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4 
-                              ${isSelectingRole ? "nhsuk-card--disabled" : ""} 
-                            ${selectedCardUuid === roleCardProps.uuid ? "eps-card--selected" : ""}`}
+                              ${isSelectingRole ? "nhsuk-card--disabled" : ""}`}
                             tabIndex={isSelectingRole ? -1 : 0}
                             onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
                             onClick={(e) => handleCardClick(e, roleCardProps)}
                             onFocus={handleCardFocus}
+                            clickable={!isSelectingRole}
                             style={{
-                              cursor: isSelectingRole ? "not-allowed" : "pointer",
-                              opacity: isSelectingRole ? 0.6 : 1
+                              cursor: isSelectingRole ? "not-allowed" : "pointer"
+                              // opacity: isSelectingRole ? 0.6 : 1
                             }}
                           >
                             <Card.Content>
                               <div className="eps-card__layout">
                                 <div>
                                   <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                                    {roleCardProps.role.org_name || noOrgName}
+                                    <span className={selectedCardUuid === roleCardProps.uuid ?
+                                      "eps-card__org-name-text--selected" : ""}>
+                                      {roleCardProps.role.org_name || noOrgName}
+                                    </span>
                                     <br />
-                                  (ODS: {roleCardProps.role.org_code || noODSCode})
+                                    <span className={selectedCardUuid === roleCardProps.uuid ?
+                                      "eps-card__org-name-text--selected" : ""}>
+                                      (ODS: {roleCardProps.role.org_code || noODSCode})
+                                    </span>
                                   </Card.Heading>
                                   <Card.Description className="nhsuk-u-margin-top-2">
                                     {roleCardProps.role.role_name || noRoleName}
