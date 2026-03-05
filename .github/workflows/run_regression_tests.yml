@@ -3,6 +3,9 @@ name: Run Regression Tests
 on:
   workflow_call:
     inputs:
+      BRANCH_NAME:
+        required: true
+        type: string
       ENVIRONMENT:
         required: true
         type: string
@@ -11,23 +14,42 @@ on:
         type: string
       REGRESSION_TESTS_PEM:
         type: string
-        default: false
+        default: "false"
+      runtime_docker_image:
+        type: string
+        required: true
     secrets:
       REGRESSION_TESTS_PEM:
         required: true
 
 jobs:
+  verify_attestation:
+    uses: NHSDigital/eps-common-workflows/.github/workflows/verify-attestation.yml@36677e1d6bfaa010d7b78942a1ade12fbefecb80
+    with:
+      runtime_docker_image: "${{ inputs.runtime_docker_image }}"
+      verify_published_from_main_image: false
+
   run_regression_tests:
+    needs: verify_attestation
     runs-on: ubuntu-22.04
+    container:
+      image: ${{ needs.verify_attestation.outputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     permissions:
       id-token: write
       contents: write
 
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Checkout local github actions
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          ref: ${{ inputs.BRANCH_NAME }}
           fetch-depth: 0
 
       - name: Generate a token to authenticate regression testing

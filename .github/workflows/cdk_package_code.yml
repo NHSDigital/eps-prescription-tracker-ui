@@ -3,52 +3,51 @@ name: cdk package code
 on:
   workflow_call:
     inputs:
+      BRANCH_NAME:
+        required: true
+        type: string
       VERSION_NUMBER:
         required: true
         type: string
       COMMIT_ID:
         required: true
         type: string
+      runtime_docker_image:
+        required: true
+        type: string
+      verify_published_from_main_image:
+        type: boolean
+        required: true
 
 jobs:
+  verify_attestation:
+    uses: NHSDigital/eps-common-workflows/.github/workflows/verify-attestation.yml@36677e1d6bfaa010d7b78942a1ade12fbefecb80
+    with:
+      runtime_docker_image: "${{ inputs.runtime_docker_image }}"
+      verify_published_from_main_image: ${{ inputs.verify_published_from_main_image }}
+
   package_code:
     runs-on: ubuntu-22.04
+    needs: verify_attestation
+    container:
+      image: ${{ needs.verify_attestation.outputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     permissions:
       id-token: write
       contents: read
       packages: read
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
+
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
-
-      # using git commit sha for version of action to ensure we have stable version
-      - name: Get asdf version
-        id: asdf-version
-        run: echo "version=$(awk '!/^#/ && NF {print $1; exit}' .tool-versions.asdf)" >> "$GITHUB_OUTPUT"
-
-      # using git commit sha for version of action to ensure we have stable version
-      - name: Install asdf
-        uses: asdf-vm/actions/setup@b7bcd026f18772e44fe1026d729e1611cc435d47
-        with:
-          asdf_version: ${{ steps.asdf-version.outputs.version }}
-
-      - name: Cache asdf
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
-        with:
-          path: |
-            ~/.asdf
-          key: ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}-${{ steps.asdf-version.outputs.version }}
-          restore-keys: |
-            ${{ runner.os }}-asdf-${{ hashFiles('**/.tool-versions') }}-${{ steps.asdf-version.outputs.version }}
-
-      - name: Install asdf dependencies in .tool-versions
-        uses: asdf-vm/actions/install@b7bcd026f18772e44fe1026d729e1611cc435d47
-        with:
-          asdf_version: ${{ steps.asdf-version.outputs.version }}
-        env:
-          PYTHON_CONFIGURE_OPTS: --enable-shared
+          ref: ${{ inputs.BRANCH_NAME }}
 
       - name: make install
         run: |
@@ -58,7 +57,6 @@ jobs:
       - name: "Tar files"
         run: |
           tar -rf artifact.tar \
-            .tool-versions \
             packages \
             node_modules \
             package.json \

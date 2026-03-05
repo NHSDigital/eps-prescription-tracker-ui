@@ -4,7 +4,7 @@ guard-%:
 		exit 1; \
 	fi
 
-.PHONY: install build test publish release clean
+.PHONY: install compile test publish release clean lint
 
 install: install-node install-python install-hooks
 
@@ -43,13 +43,10 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/dynamoFunctions
 	npm run lint --workspace packages/testingSupport/clearActiveSessions
 
-lint-githubactions:
-	actionlint
-
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
 
-lint: lint-node lint-githubactions lint-githubaction-scripts react-lint
+lint: lint-node lint-githubaction-scripts react-lint
 
 test: compile
 	npm run test --workspace packages/cloudfrontFunctions
@@ -81,29 +78,6 @@ clean:
 deep-clean: clean
 	rm -rf .venv
 	find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
-
-check-licenses: check-licenses-node check-licenses-python
-
-check-licenses-node:
-	npm run check-licenses
-	npm run check-licenses --workspace packages/common/commonTypes
-	npm run check-licenses --workspace packages/cloudfrontFunctions
-	npm run check-licenses --workspace packages/cdk
-	npm run check-licenses --workspace packages/cpt-ui
-	npm run check-licenses --workspace packages/common/authFunctions
-	npm run check-licenses --workspace packages/common/doHSClient
-	npm run check-licenses --workspace packages/common/dynamoFunctions
-	npm run check-licenses --workspace packages/cognito
-	npm run check-licenses --workspace packages/prescriptionListLambda
-	npm run check-licenses --workspace packages/prescriptionDetailsLambda
-	npm run check-licenses --workspace packages/patientSearchLambda
-	npm run check-licenses --workspace packages/trackerUserInfoLambda
-	npm run check-licenses --workspace packages/sessionManagementLambda
-	npm run check-licenses --workspace packages/selectedRoleLambda
-	npm run check-licenses --workspace packages/CIS2SignOutLambda
-
-check-licenses-python:
-	scripts/check_python_licenses.sh
 
 aws-configure:
 	aws configure sso --region eu-west-2
