@@ -31,14 +31,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
 
     if (auth.isSignedIn) {
-      if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
+      if (auth.isConcurrentSession && (!PUBLIC_PATHS.includes(path) && path !== FRONTEND_PATHS.SESSION_SELECTION)) {
         logger.info(`Concurrent session detected on ${path} - blocking render until redirect to session selection`)
         return true
       }
 
       if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
         logger.info(`No role selected on ${path} - blocking render until redirect to select your role`)
-        return (![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path)))
+        return true
       }
 
       if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
@@ -141,7 +141,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     // Any placed here cause developer confusion.
 
     // Implementation notes: useNavigate as a dependency causes an infinite loop as redirects use it
-    logger.info("Ensure role selected")
     ensureRoleSelected()
   }, [
     auth.isSignedIn,

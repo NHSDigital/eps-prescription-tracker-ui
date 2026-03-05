@@ -3,7 +3,7 @@ import {render, waitFor} from "@testing-library/react"
 import {AccessProvider} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-import {MemoryRouter, Route, Routes} from "react-router-dom"
+import {MemoryRouter} from "react-router-dom"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
 jest.mock("@/components/EpsHeader", () => ({
@@ -53,34 +53,7 @@ describe("ensureRoleSelected", () => {
     render(
       <MemoryRouter initialEntries={[initialPath]}>
         <AuthContext.Provider value={authContextValue}>
-          <AccessProvider>
-            <Routes>
-              <Route path="/" element={<div data-testid="route-root">Root</div>} />
-              <Route path={FRONTEND_PATHS.LOGIN} element={<div data-testid="route-login">Login</div>} />
-              <Route path={FRONTEND_PATHS.LOGOUT} element={<div data-testid="route-logout">Logout</div>} />
-              <Route
-                path={FRONTEND_PATHS.SESSION_LOGGED_OUT}
-                element={<div data-testid="route-session-logged-out">Session Logged Out</div>}
-              />
-              <Route path={FRONTEND_PATHS.COOKIES} element={<div data-testid="route-cookies">Cookies</div>} />
-              <Route
-                path={FRONTEND_PATHS.SESSION_SELECTION}
-                element={<div data-testid="route-session-selection">Session Selection</div>}
-              />
-              <Route
-                path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
-                element={<div data-testid="route-search">Search</div>}
-              />
-              <Route
-                path={FRONTEND_PATHS.SELECT_YOUR_ROLE}
-                element={<div data-testid="route-select-role">Select Role</div>}
-              />
-              <Route
-                path={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
-                element={<div data-testid="route-protected">Protected</div>}
-              />
-              <Route path="*" element={<div data-testid="route-not-found">Not Found</div>} />
-            </Routes>
+          <AccessProvider><></>
           </AccessProvider>
         </AuthContext.Provider>
       </MemoryRouter>
