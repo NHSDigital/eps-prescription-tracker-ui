@@ -23,7 +23,7 @@
     "@aws-sdk/client-secrets-manager": "^3.1002.0",
     "@aws-sdk/lib-dynamodb": "^3.1002.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
-    "@middy/core": "^7.1.0",
+    "@middy/core": "^7.1.3",
     "aws-lambda": "^1.0.7",
     "jsonwebtoken": "^9.0.3",
     "jwks-rsa": "^4.0.1"
