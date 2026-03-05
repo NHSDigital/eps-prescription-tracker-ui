@@ -324,3 +324,6 @@ cdk-diff: guard-CDK_APP_NAME
 
 build-deployment-container-image:
 	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
+
+%:
+	@$(MAKE) -f /usr/local/share/eps/Mk/common.mk $@

@@ -72,6 +72,7 @@ jobs:
     with:
       runtime_docker_image: "${{ needs.get_config_values.outputs.devcontainer_image }}:githubactions-${{ needs.get_config_values.outputs.devcontainer_version }}"
       verify_published_from_main_image: true
+      BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
       SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: dev
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
@@ -117,6 +118,7 @@ jobs:
     with:
       runtime_docker_image: "${{ needs.get_config_values.outputs.devcontainer_image }}:githubactions-${{ needs.get_config_values.outputs.devcontainer_version }}"
       verify_published_from_main_image: true
+      BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
       SERVICE_NAME: cpt-ui
       TARGET_ENVIRONMENT: qa
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
