@@ -270,7 +270,9 @@ export class StatelessResourcesStack extends Stack {
       logLevel,
       jwtKid,
       apigeeApiKey: sharedSecrets.apigeeApiKey,
-      apigeeApiSecret: sharedSecrets.apigeeApiSecret
+      apigeeApiSecret: sharedSecrets.apigeeApiSecret,
+      version: props.version,
+      commitId: props.commit
     })
 
     // -- functions for API
@@ -311,7 +313,9 @@ export class StatelessResourcesStack extends Stack {
       jwtKid: jwtKid,
       roleId: roleId,
       apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint,
-      fullCloudfrontDomain: fullCloudfrontDomain
+      fullCloudfrontDomain: fullCloudfrontDomain,
+      version: props.version,
+      commitId: props.commit
     })
 
     const logGroups = new ukRegionLogGroups(this, "ukRegionLogGroups", {

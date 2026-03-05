@@ -1,10 +1,13 @@
 import {Construct} from "constructs"
-import {LambdaFunction} from "../LambdaFunction"
+import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
+import {resolve} from "path"
+
+const baseDir = resolve(__dirname, "../../../..")
 
 export interface OAuth2FunctionsProps {
   readonly serviceName: string
@@ -59,6 +62,8 @@ export interface OAuth2FunctionsProps {
   readonly jwtKid: string
   readonly apigeeApiKey: ISecret
   readonly apigeeApiSecret: ISecret
+  readonly version: string
+  readonly commitId: string
 }
 
 /**
@@ -91,10 +96,9 @@ export class OAuth2Functions extends Construct {
     }
 
     // Create the token Lambda function
-    const tokenLambda = new LambdaFunction(this, "TokenResources", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-token`,
+    const tokenLambda = new TypescriptLambdaFunction(this, "TokenResources", {
+      functionName: `${props.stackName}-token`,
+      projectBaseDir: baseDir,
       additionalPolicies: [
         props.tokenMappingTableWritePolicy,
         props.tokenMappingTableReadPolicy,
@@ -110,7 +114,7 @@ export class OAuth2Functions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         TokenMappingTableName: props.tokenMappingTable.tableName,
         SessionManagementTableName: props.sessionManagementTable.tableName,
         CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
@@ -121,14 +125,15 @@ export class OAuth2Functions extends Construct {
         CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
         jwtKid: props.jwtKid
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Create the login redirection `authorize` function
-    const authorizeLambda = new LambdaFunction(this, "AuthorizeLambdaResources", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-authorize`,
+    const authorizeLambda = new TypescriptLambdaFunction(this, "AuthorizeLambdaResources", {
+      functionName: `${props.stackName}-authorize`,
+      projectBaseDir: baseDir,
       additionalPolicies: [
         props.stateMappingTableWritePolicy,
         props.stateMappingTableReadPolicy,
@@ -139,20 +144,21 @@ export class OAuth2Functions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/cognito",
       entryPoint: "src/authorize.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
         OIDC_CLIENT_ID: props.primaryOidcClientId,
         COGNITO_CLIENT_ID: props.userPoolClientId,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
         StateMappingTableName: props.stateMappingTable.tableName
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // This proxy handles the return journey from the IdP login initiated by the authorize lambda
-    const callbackLambda = new LambdaFunction(this, "CallbackLambdaResources", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-callback`,
+    const callbackLambda = new TypescriptLambdaFunction(this, "CallbackLambdaResources", {
+      functionName: `${props.stackName}-callback`,
+      projectBaseDir: baseDir,
       additionalPolicies: [
         props.stateMappingTableWritePolicy,
         props.stateMappingTableReadPolicy,
@@ -163,24 +169,26 @@ export class OAuth2Functions extends Construct {
       logLevel: props.logLevel,
       packageBasePath: "packages/cognito",
       entryPoint: "src/callback.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         StateMappingTableName: props.stateMappingTable.tableName,
         COGNITO_CLIENT_ID: props.userPoolClientId,
         COGNITO_DOMAIN: props.fullCognitoDomain,
         MOCK_OIDC_ISSUER: mockOidcIssuer,
         PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Initialize policies
     const oauth2Policies: Array<IManagedPolicy> = [
-      authorizeLambda.executeLambdaManagedPolicy,
-      callbackLambda.executeLambdaManagedPolicy,
-      tokenLambda.executeLambdaManagedPolicy
+      authorizeLambda.executionPolicy,
+      callbackLambda.executionPolicy,
+      tokenLambda.executionPolicy
     ]
 
-    let mockAuthorizeLambda: LambdaFunction
-    let mockTokenLambda: LambdaFunction
+    let mockAuthorizeLambda: TypescriptLambdaFunction
+    let mockTokenLambda: TypescriptLambdaFunction
     if (props.useMockOidc) {
       if (
         !props.mockOidcjwksEndpoint ||
@@ -192,10 +200,9 @@ export class OAuth2Functions extends Construct {
         throw new Error("Missing mock OIDC configuration.")
       }
 
-      mockAuthorizeLambda = new LambdaFunction(this, "MockAuthorizeLambdaResources", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mock-authorize`,
+      mockAuthorizeLambda = new TypescriptLambdaFunction(this, "MockAuthorizeLambdaResources", {
+        functionName: `${props.stackName}-mock-authorize`,
+        projectBaseDir: baseDir,
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
@@ -209,7 +216,7 @@ export class OAuth2Functions extends Construct {
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
         entryPoint: "src/authorizeMock.ts",
-        lambdaEnvironmentVariables: {
+        environmentVariables: {
           IDP_AUTHORIZE_PATH: mockOidcAuthorizeEndpoint,
           OIDC_CLIENT_ID: mockOidcClientId,
           COGNITO_CLIENT_ID: props.userPoolClientId,
@@ -217,17 +224,18 @@ export class OAuth2Functions extends Construct {
           StateMappingTableName: props.stateMappingTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn
-        }
+        },
+        version: props.version,
+        commitId: props.commitId
       })
 
       oauth2Policies.push(
-        mockAuthorizeLambda.executeLambdaManagedPolicy
+        mockAuthorizeLambda.executionPolicy
       )
 
-      mockTokenLambda = new LambdaFunction(this, "MockTokenResources", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mock-token`,
+      mockTokenLambda = new TypescriptLambdaFunction(this, "MockTokenResources", {
+        functionName: `${props.stackName}-mock-token`,
+        projectBaseDir: baseDir,
         additionalPolicies: [
           props.tokenMappingTableWritePolicy,
           props.tokenMappingTableReadPolicy,
@@ -249,7 +257,7 @@ export class OAuth2Functions extends Construct {
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
         entryPoint: "src/tokenMock.ts",
-        lambdaEnvironmentVariables: {
+        environmentVariables: {
           TokenMappingTableName: props.tokenMappingTable.tableName,
           SessionManagementTableName: props.sessionManagementTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
@@ -266,17 +274,18 @@ export class OAuth2Functions extends Construct {
           jwtKid: props.jwtKid,
           APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
           APIGEE_API_SECRET_ARN: props.apigeeApiSecret.secretArn
-        }
+        },
+        version: props.version,
+        commitId: props.commitId
       })
 
       oauth2Policies.push(
-        mockTokenLambda.executeLambdaManagedPolicy
+        mockTokenLambda.executionPolicy
       )
 
-      const mockCallbackLambda = new LambdaFunction(this, "MockCallbackLambdaResources", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-mock-callback`,
+      const mockCallbackLambda = new TypescriptLambdaFunction(this, "MockCallbackLambdaResources", {
+        functionName: `${props.stackName}-mock-callback`,
+        projectBaseDir: baseDir,
         additionalPolicies: [
           props.stateMappingTableWritePolicy,
           props.stateMappingTableReadPolicy,
@@ -290,32 +299,34 @@ export class OAuth2Functions extends Construct {
         logLevel: props.logLevel,
         packageBasePath: "packages/cognito",
         entryPoint: "src/callbackMock.ts",
-        lambdaEnvironmentVariables: {
+        environmentVariables: {
           StateMappingTableName: props.stateMappingTable.tableName,
           SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           COGNITO_CLIENT_ID: props.userPoolClientId,
           COGNITO_DOMAIN: props.fullCognitoDomain,
           MOCK_OIDC_ISSUER: mockOidcIssuer,
           PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
-        }
+        },
+        version: props.version,
+        commitId: props.commitId
       })
 
       oauth2Policies.push(
-        mockCallbackLambda.executeLambdaManagedPolicy
+        mockCallbackLambda.executionPolicy
       )
 
       // Output
-      this.mockAuthorizeLambda = mockAuthorizeLambda.lambda
-      this.mockTokenLambda = mockTokenLambda.lambda
-      this.mockCallbackLambda = mockCallbackLambda.lambda
+      this.mockAuthorizeLambda = mockAuthorizeLambda.function
+      this.mockTokenLambda = mockTokenLambda.function
+      this.mockCallbackLambda = mockCallbackLambda.function
     }
 
     // Outputs
     this.oAuth2Policies = oauth2Policies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
-    this.authorizeLambda = authorizeLambda.lambda
-    this.callbackLambda = callbackLambda.lambda
-    this.tokenLambda = tokenLambda.lambda
+    this.authorizeLambda = authorizeLambda.function
+    this.callbackLambda = callbackLambda.function
+    this.tokenLambda = tokenLambda.function
   }
 }

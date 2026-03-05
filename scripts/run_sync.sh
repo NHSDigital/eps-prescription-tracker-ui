@@ -346,12 +346,11 @@ echo "Generating config for ${STATELESS_CONFIG}"
 sync_stateful_app() {
     echo "Starting sync stateful CDK app"
     echo "Stateful CDK app log file at ${STATEFUL_LOG}"
-    CONFIG_FILE_NAME="${STATEFUL_CONFIG}" npx cdk deploy \
-        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
-        --watch \
-        --all \
-        --ci true \
-        --require-approval never \
+    CONFIG_FILE_NAME="${STATEFUL_CONFIG}" \
+    CDK_APP_NAME="StatefulResourcesApp" \
+    REQUIRE_APPROVAL="never" \
+    npm run cdk-watch \
+        --workspace packages/cdk \
         --output .local_config/stateful_app.out/ \
         > $STATEFUL_LOG 2>&1
 }
@@ -359,12 +358,11 @@ sync_stateful_app() {
 sync_stateless_app() {
     echo "Starting sync stateless CDK app"
     echo "Stateless CDK app log file at ${STATELESS_LOG}"
-    CONFIG_FILE_NAME="${STATELESS_CONFIG}" npx cdk deploy \
-        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
-        --watch \
-        --all \
-        --ci true \
-        --require-approval never \
+    CONFIG_FILE_NAME="${STATELESS_CONFIG}" \
+    CDK_APP_NAME="StatelessResourcesApp" \
+    REQUIRE_APPROVAL="never" \
+    npm run cdk-watch \
+        --workspace packages/cdk \
         --output .local_config/stateless_app.out/ \
         > $STATELESS_LOG  2>&1
 }

@@ -1,10 +1,13 @@
 import {Construct} from "constructs"
-import {LambdaFunction} from "../LambdaFunction"
+import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
 import {SharedSecrets} from "../SharedSecrets"
 import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
+import {resolve} from "path"
+
+const baseDir = resolve(__dirname, "../../../..")
 
 // Interface for properties needed to create API functions
 export interface ApiFunctionsProps {
@@ -45,6 +48,8 @@ export interface ApiFunctionsProps {
   readonly logLevel: string
   readonly roleId: string
   readonly fullCloudfrontDomain: string
+  readonly version: string
+  readonly commitId: string
 }
 
 /**
@@ -116,92 +121,95 @@ export class ApiFunctions extends Construct {
     }
 
     // Prescription Search Lambda Function
-    const CIS2SignOutLambda = new LambdaFunction(this, "CIS2SignOut", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-CIS2SignOut`,
+    const CIS2SignOutLambda = new TypescriptLambdaFunction(this, "CIS2SignOut", {
+      functionName: `${props.stackName}-CIS2SignOut`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/CIS2SignOutLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: commonLambdaEnv
+      environmentVariables: commonLambdaEnv,
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(CIS2SignOutLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(CIS2SignOutLambda.executionPolicy)
 
     // Single Lambda for both real and mock scenarios
-    const trackerUserInfoLambda = new LambdaFunction(this, "TrackerUserInfo", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-TrkUsrInfo`,
+    const trackerUserInfoLambda = new TypescriptLambdaFunction(this, "TrackerUserInfo", {
+      functionName: `${props.stackName}-TrkUsrInfo`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/trackerUserInfoLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         ...commonLambdaEnv,
         jwtKid: props.jwtKid,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(trackerUserInfoLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(trackerUserInfoLambda.executionPolicy)
 
     // Single Lambda for both real and mock scenarios
-    const sessionManagementLambda = new LambdaFunction(this, "SessionMgmt", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-SessionMgmt`,
+    const sessionManagementLambda = new TypescriptLambdaFunction(this, "SessionMgmt", {
+      functionName: `${props.stackName}-SessionMgmt`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/sessionManagementLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         ...commonLambdaEnv
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(sessionManagementLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(sessionManagementLambda.executionPolicy)
 
     // Selected Role Lambda Function
-    const selectedRoleLambda = new LambdaFunction(this, "SelectedRole", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-selectedRole`,
+    const selectedRoleLambda = new TypescriptLambdaFunction(this, "SelectedRole", {
+      functionName: `${props.stackName}-selectedRole`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/selectedRoleLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         ...commonLambdaEnv,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(selectedRoleLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(selectedRoleLambda.executionPolicy)
 
     // Prescription List Lambda Function
-    const prescriptionListLambda = new LambdaFunction(this, "PrescriptionList", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-prescList`,
+    const prescriptionListLambda = new TypescriptLambdaFunction(this, "PrescriptionList", {
+      functionName: `${props.stackName}-prescList`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/prescriptionListLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         ...commonLambdaEnv,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
@@ -210,22 +218,23 @@ export class ApiFunctions extends Construct {
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         jwtKid: props.jwtKid,
         roleId: props.roleId
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(prescriptionListLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(prescriptionListLambda.executionPolicy)
 
-    const patientSearchLambda = new LambdaFunction(this, "PatientSearch", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-patientSearch`,
+    const patientSearchLambda = new TypescriptLambdaFunction(this, "PatientSearch", {
+      functionName: `${props.stackName}-patientSearch`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/patientSearchLambda",
       entryPoint: "src/index.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         ...commonLambdaEnv,
         TokenMappingTableName: props.tokenMappingTable.tableName,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
@@ -233,23 +242,24 @@ export class ApiFunctions extends Construct {
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         jwtKid: props.jwtKid
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(patientSearchLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(patientSearchLambda.executionPolicy)
 
     // Prescription Details Lambda Function
-    const prescriptionDetailsLambda = new LambdaFunction(this, "PrescriptionDetails", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      lambdaName: `${props.stackName}-prescDetails`,
+    const prescriptionDetailsLambda = new TypescriptLambdaFunction(this, "PrescriptionDetails", {
+      functionName: `${props.stackName}-prescDetails`,
+      projectBaseDir: baseDir,
       additionalPolicies: additionalPolicies,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       packageBasePath: "packages/prescriptionDetailsLambda",
       entryPoint: "src/handler.ts",
-      lambdaEnvironmentVariables: {
+      environmentVariables: {
         ...commonLambdaEnv,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
@@ -260,45 +270,48 @@ export class ApiFunctions extends Construct {
         jwtKid: props.jwtKid,
         roleId: props.roleId,
         APIGEE_DOHS_API_KEY_ARN: props.apigeeDoHSApiKey.secretArn
-      }
+      },
+      version: props.version,
+      commitId: props.commitId
     })
 
     // Add the policy to apiFunctionsPolicies
-    apiFunctionsPolicies.push(prescriptionDetailsLambda.executeLambdaManagedPolicy)
+    apiFunctionsPolicies.push(prescriptionDetailsLambda.executionPolicy)
 
     if (props.useMockOidc) {
-      const clearActiveSessionLambda = new LambdaFunction(this, "ClearActiveSessions", {
-        serviceName: props.serviceName,
-        stackName: props.stackName,
-        lambdaName: `${props.stackName}-clr-active`,
+      const clearActiveSessionLambda = new TypescriptLambdaFunction(this, "ClearActiveSessions", {
+        functionName: `${props.stackName}-clr-active`,
+        projectBaseDir: baseDir,
         additionalPolicies: additionalPolicies,
         logRetentionInDays: props.logRetentionInDays,
         logLevel: props.logLevel,
         packageBasePath: "packages/testingSupport/clearActiveSessions",
         entryPoint: "src/handler.ts",
-        lambdaEnvironmentVariables: {
+        environmentVariables: {
           ...commonLambdaEnv,
           TokenMappingTableName: props.tokenMappingTable.tableName,
           SessionManagementTableName: props.sessionManagementTable.tableName
-        }
+        },
+        version: props.version,
+        commitId: props.commitId
       })
 
       // Add the policy to apiFunctionsPolicies
-      apiFunctionsPolicies.push(clearActiveSessionLambda.executeLambdaManagedPolicy)
+      apiFunctionsPolicies.push(clearActiveSessionLambda.executionPolicy)
 
-      this.clearActiveSessionLambda = clearActiveSessionLambda.lambda
+      this.clearActiveSessionLambda = clearActiveSessionLambda.function
     }
 
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
     this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
 
-    this.CIS2SignOutLambda = CIS2SignOutLambda.lambda
-    this.prescriptionListLambda = prescriptionListLambda.lambda
-    this.prescriptionDetailsLambda = prescriptionDetailsLambda.lambda
-    this.trackerUserInfoLambda = trackerUserInfoLambda.lambda
-    this.sessionManagementLambda = sessionManagementLambda.lambda
-    this.selectedRoleLambda = selectedRoleLambda.lambda
-    this.patientSearchLambda = patientSearchLambda.lambda
+    this.CIS2SignOutLambda = CIS2SignOutLambda.function
+    this.prescriptionListLambda = prescriptionListLambda.function
+    this.prescriptionDetailsLambda = prescriptionDetailsLambda.function
+    this.trackerUserInfoLambda = trackerUserInfoLambda.function
+    this.sessionManagementLambda = sessionManagementLambda.function
+    this.selectedRoleLambda = selectedRoleLambda.function
+    this.patientSearchLambda = patientSearchLambda.function
   }
 }
