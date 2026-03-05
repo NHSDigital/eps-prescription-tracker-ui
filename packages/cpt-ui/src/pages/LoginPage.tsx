@@ -52,13 +52,6 @@ export default function LoginPage() {
       logger.info("performing auto login")
       const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
       signIn(autoLoginDetails?.loginMethod === "cis2" ? "Primary" : "Mock")
-      // if (autoLoginDetails?.loginMethod === "cis2") {
-      //   logger.info("Redirecting user to cis2 login")
-      //   cis2SignIn()
-      // } else {
-      //   logger.info("Redirecting user to mock login")
-      //   mockSignIn()
-      // }
     }
   }, [])
 

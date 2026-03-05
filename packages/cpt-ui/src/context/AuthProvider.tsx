@@ -151,7 +151,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
-          // setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
