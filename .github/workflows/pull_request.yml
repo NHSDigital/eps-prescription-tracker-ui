@@ -131,6 +131,7 @@ jobs:
       runtime_docker_image: "${{ needs.get_config_values.outputs.devcontainer_image }}:githubactions-${{ needs.get_config_values.outputs.devcontainer_version }}"
       branch_name: ${{ github.event.pull_request.head.ref }}
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
+      verify_published_from_main_image: false
     secrets: inherit
 
   get_commit_id:
