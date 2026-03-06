@@ -33,6 +33,7 @@ export interface AuthContextType {
   rolesWithoutAccess: Array<RoleDetails>
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
+  remainingSessionTime: number | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
@@ -76,7 +77,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "userDetails",
     undefined
   )
-
+  const [remainingSessionTime, setRemainingSessionTime] = useLocalStorageState<number | undefined>(
+    "remainingSessionTime",
+    "remainingSessionTime",
+    undefined
+  )
   /**
    * Fetch and update the auth tokens
    */
@@ -90,6 +95,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
+    setRemainingSessionTime(undefined)
     // updateTrackerUserInfo will set InvalidSessionCause to undefined
   }
 
@@ -103,6 +109,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setSessionId(trackerUserInfo.sessionId)
+    setRemainingSessionTime(trackerUserInfo.remainingSessionTime)
     setError(trackerUserInfo.error)
     setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
@@ -239,6 +246,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       isConcurrentSession,
       invalidSessionCause,
       sessionId,
+      remainingSessionTime,
       deviceId,
       cognitoSignIn,
       cognitoSignOut,
