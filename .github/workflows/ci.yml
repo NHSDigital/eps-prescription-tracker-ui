@@ -33,8 +33,6 @@ jobs:
     uses: ./.github/workflows/cdk_package_code.yml
     with:
       BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
-      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
-      COMMIT_ID: ${{github.sha}}
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
 
   release_dev:

@@ -6,12 +6,6 @@ on:
       BRANCH_NAME:
         required: true
         type: string
-      VERSION_NUMBER:
-        required: true
-        type: string
-      COMMIT_ID:
-        required: true
-        type: string
       pinned_image:
         type: string
         required: true

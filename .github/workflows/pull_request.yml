@@ -116,18 +116,8 @@ jobs:
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
     secrets: inherit
 
-  get_commit_id:
-    runs-on: ubuntu-22.04
-    outputs:
-      commit_id: ${{ steps.commit_id.outputs.commit_id }}
-    steps:
-      - name: Get Commit ID
-        id: commit_id
-        run: |
-          echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-
   package_code:
-    needs: [get_commit_id, quality_gate, get_config_values]
+    needs: [quality_gate, get_config_values]
     if: |
       always() &&
       ! contains(needs.*.result, 'failure') &&
@@ -136,8 +126,6 @@ jobs:
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-      VERSION_NUMBER: PR-${{ github.event.pull_request.number }}
-      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
 
   release_code:
     needs: [package_code, get_config_values]

@@ -32,8 +32,6 @@ jobs:
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
-      VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
-      COMMIT_ID: ${{github.sha}}
 
   release_dev:
     needs: [tag_release, package_code, get_config_values]
