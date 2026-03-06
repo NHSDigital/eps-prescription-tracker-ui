@@ -90,7 +90,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
-    // updateTrackerUserInfo will set InvalidSessionCause to undefined
+    setSessionId(undefined)
+    setInvalidSessionCause(undefined)
   }
 
   const updateTrackerUserInfo = async () => {
@@ -101,10 +102,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       setSelectedRole(trackerUserInfo.selectedRole)
       setUserDetails(trackerUserInfo.userDetails)
     }
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause) // Set first
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setSessionId(trackerUserInfo.sessionId)
     setError(trackerUserInfo.error)
-    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
   }
 
@@ -150,7 +151,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
-          setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
@@ -172,6 +172,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
     logger.info("Signing out in authProvider...")
+
     try {
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
@@ -197,9 +198,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
-      logger.error("Failed to sign out:", err)
       setError(String(err))
-      return false
+      throw new Error("Failed to sign out", {cause: err})
     }
   }
 
@@ -208,8 +208,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
-    await signInWithRedirect(input)
     setIsSigningIn(true)
+    setInvalidSessionCause(undefined)
+    await signInWithRedirect(input)
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {

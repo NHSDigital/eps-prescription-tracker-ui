@@ -99,11 +99,6 @@ export const ALLOWED_NO_ROLE_PATHS = [
   FRONTEND_PATHS.CHANGE_YOUR_ROLE
 ] as const
 
-export const ALLOWED_NO_REDIRECT_PATHS = [
-  ...PUBLIC_PATHS,
-  FRONTEND_PATHS.SESSION_LOGGED_OUT
-] as const
-
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
 

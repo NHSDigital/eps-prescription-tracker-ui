@@ -18,6 +18,16 @@ jest.mock("@/constants/environment", () => ({
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected"
   },
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/session-logged-out",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/notfound",
+    "/"
+  ],
   ALLOWED_NO_ROLE_PATHS: [
     "/login",
     "/logout",
@@ -81,7 +91,7 @@ const MockAuthProvider = ({
     clearAuthState: jest.fn(),
     hasSingleRoleAccess: jest.fn().mockReturnValue(false),
     updateSelectedRole: jest.fn(),
-    updateTrackerUserInfo: jest.fn(),
+    updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
     updateInvalidSessionCause: jest.fn(),
     isSigningOut: false,
     setIsSigningOut: jest.fn()
