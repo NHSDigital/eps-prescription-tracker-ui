@@ -12,6 +12,7 @@ import {logger} from "@/helpers/logger"
 import * as logoutHelpers from "@/helpers/logout"
 import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
 import {TreatmentType} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {mockAuthState, mockSearchState} from "./mocks/AuthStateMock"
 
 // Mock axios completely
 jest.mock("axios", () => ({
@@ -94,27 +95,11 @@ jest.mock("@/context/NavigationProvider", () => ({
 
 // Mock auth context
 const mockAuth = {
-  error: null,
+  ...mockAuthState,
   user: "mock-user",
   isSignedIn: true,
-  isSigningIn: false,
-  isSigningOut: false,
-  isConcurrentSession: false,
-  invalidSessionCause: undefined,
   sessionId: "mock-session-id",
-  deviceId: "mock-device-id",
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  selectedRole: undefined,
-  userDetails: undefined,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-  clearAuthState: jest.fn(),
-  hasSingleRoleAccess: jest.fn().mockReturnValue(false),
-  updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn(),
-  setIsSigningOut: jest.fn()
+  deviceId: "mock-device-id"
 }
 
 // Mock components that are not under test
@@ -170,8 +155,8 @@ interface SearchStateProps {
   prescriptionId?: string
   issueNumber?: string
   nhsNumber?: string
-  givenName?: string
-  familyName?: string
+  firstName?: string
+  lastName?: string
   dobDay?: string
   dobMonth?: string
   dobYear?: string
@@ -187,29 +172,7 @@ const TestWrapper = ({
   searchState?: Partial<SearchStateProps>
 }) => {
   const defaultSearchState = {
-    prescriptionId: undefined,
-    issueNumber: undefined,
-    nhsNumber: undefined,
-    givenName: undefined,
-    familyName: undefined,
-    dobDay: undefined,
-    dobMonth: undefined,
-    dobYear: undefined,
-    postcode: undefined,
-    searchType: undefined,
-    clearSearchParameters: jest.fn(),
-    setPrescriptionId: jest.fn(),
-    setIssueNumber: jest.fn(),
-    setFirstName: jest.fn(),
-    setLastName: jest.fn(),
-    setDobDay: jest.fn(),
-    setDobMonth: jest.fn(),
-    setDobYear: jest.fn(),
-    setPostcode: jest.fn(),
-    setNhsNumber: jest.fn(),
-    setSearchType: jest.fn(),
-    getAllSearchParameters: jest.fn(),
-    setAllSearchParameters: jest.fn(),
+    ...mockSearchState,
     ...searchState
   }
 

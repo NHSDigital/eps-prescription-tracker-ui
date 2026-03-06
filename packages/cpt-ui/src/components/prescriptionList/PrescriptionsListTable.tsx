@@ -405,7 +405,6 @@ const PrescriptionsListTable = ({
             return (
               <Table.Row key={uniqueKey} data-testid="eps-prescription-table-row">
                 {headings.map(({key}) => renderDataCell(row, key))}
-                {/* {console.log("Rendering row with key:", uniqueKey, "and data:", row)} */}
               </Table.Row>
             )
           })}

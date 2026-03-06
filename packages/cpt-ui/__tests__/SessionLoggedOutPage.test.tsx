@@ -123,6 +123,45 @@ describe("SessionLoggedOutPage", () => {
     ).toBeInTheDocument()
   })
 
+  it("renders session expired message for token_expired invalidSessionCause", () => {
+    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    adjustedState.invalidSessionCause = "token_expired"
+    renderWithProviders(<SessionLoggedOutPage />, adjustedState)
+
+    expect(screen.getByRole("main")).toBeInTheDocument()
+    expect(screen.getByTestId("session-logged-out-expired")).toBeInTheDocument()
+    expect(screen.getByText("Your session has expired")).toBeInTheDocument()
+    expect(screen.getByText(
+      "We have logged you out because your session has expired."
+    )).toBeInTheDocument()
+    expect(screen.getByText(
+      "This is to protect patient information."
+    )).toBeInTheDocument()
+  })
+
+  it("renders session expired message for InvalidSession invalidSessionCause", () => {
+    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    adjustedState.invalidSessionCause = "InvalidSession"
+    renderWithProviders(<SessionLoggedOutPage />, adjustedState)
+
+    expect(screen.getByRole("main")).toBeInTheDocument()
+    expect(screen.getByTestId("session-logged-out-expired")).toBeInTheDocument()
+    expect(screen.getByText("Your session has expired")).toBeInTheDocument()
+    expect(screen.getByText(
+      "We have logged you out because your session has expired."
+    )).toBeInTheDocument()
+  })
+
+  it("renders session expired message for session_expired invalidSessionCause", () => {
+    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    adjustedState.invalidSessionCause = "session_expired"
+    renderWithProviders(<SessionLoggedOutPage />, adjustedState)
+
+    expect(screen.getByRole("main")).toBeInTheDocument()
+    expect(screen.getByTestId("session-logged-out-expired")).toBeInTheDocument()
+    expect(screen.getByText("Your session has expired")).toBeInTheDocument()
+  })
+
   it("uses proper NHS UK styling and layout", () => {
     const {container} = renderWithProviders(<SessionSelectionPage />)
 
