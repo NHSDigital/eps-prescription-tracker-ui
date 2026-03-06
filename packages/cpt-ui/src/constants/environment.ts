@@ -104,6 +104,14 @@ export const ALLOWED_NO_REDIRECT_PATHS = [
   FRONTEND_PATHS.SESSION_LOGGED_OUT
 ] as const
 
+// pages where patient and prescription banners should be shown
+export const BANNER_ALLOWED_PATHS = [
+  FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
+  FRONTEND_PATHS.PRESCRIPTION_LIST_PAST,
+  FRONTEND_PATHS.PRESCRIPTION_LIST_FUTURE,
+  FRONTEND_PATHS.PRESCRIPTION_DETAILS_PAGE
+] as const
+
 // Type for environment
 export type MockAuthEnvironment = "dev" | "dev-pr" | "ref" | "qa"
 
