@@ -3,6 +3,9 @@ name: release all stacks
 on:
   workflow_call:
     inputs:
+      BRANCH_NAME:
+        required: true
+        type: string
       SERVICE_NAME:
         required: true
         type: string
@@ -93,18 +96,30 @@ on:
       FORWARD_CSOC_LOGS:
         type: boolean
         required: true
+      pinned_image:
+        type: string
+        required: true
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    container:
+      image: ${{ inputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     permissions:
       id-token: write
       contents: write
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Checkout local github actions
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          ref: ${{ inputs.BRANCH_NAME }}
           fetch-depth: 0
           sparse-checkout: |
             .github
@@ -623,7 +638,9 @@ jobs:
     if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
     needs: [release_all_code]
     with:
+      BRANCH_NAME: ${{ inputs.BRANCH_NAME }}
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      pinned_image: ${{ inputs.pinned_image }}
     secrets:
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}

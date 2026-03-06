@@ -9,8 +9,7 @@
     "build": "tsc --build && vite build",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "start": "vite preview",
-    "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage",
-    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+    "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage"
   },
   "dependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",

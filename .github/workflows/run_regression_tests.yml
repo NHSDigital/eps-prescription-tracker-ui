@@ -3,6 +3,9 @@ name: Run Regression Tests
 on:
   workflow_call:
     inputs:
+      BRANCH_NAME:
+        required: true
+        type: string
       ENVIRONMENT:
         required: true
         type: string
@@ -11,7 +14,10 @@ on:
         type: string
       REGRESSION_TESTS_PEM:
         type: string
-        default: false
+        default: "false"
+      pinned_image:
+        type: string
+        required: true
     secrets:
       REGRESSION_TESTS_PEM:
         required: true
@@ -19,15 +25,24 @@ on:
 jobs:
   run_regression_tests:
     runs-on: ubuntu-22.04
+    container:
+      image: ${{ inputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     permissions:
       id-token: write
       contents: write
 
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Checkout local github actions
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          ref: ${{ inputs.BRANCH_NAME }}
           fetch-depth: 0
 
       - name: Generate a token to authenticate regression testing
