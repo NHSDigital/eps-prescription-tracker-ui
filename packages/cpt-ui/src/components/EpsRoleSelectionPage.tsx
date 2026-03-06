@@ -322,6 +322,70 @@ export default function RoleSelectionPage({
             padding: 0 !important;
             margin: 0 !important;
           }
+          
+          .nhsuk-card .nhsuk-card__heading .eps-card__org-name-text--selected,
+          .nhsuk-card .nhsuk-card__heading .eps-card__org-name-text--selected:hover,
+          .nhsuk-card .nhsuk-card__heading .eps-card__org-name-text--selected:focus {
+            color: #212b32 !important;
+          }
+          
+          .nhsuk-card--disabled * {
+            cursor: not-allowed !important;
+          }
+          
+          .nhsuk-card--disabled {
+            pointer-events: auto !important;
+          }
+          
+          .nhsuk-card--disabled * {
+            pointer-events: none !important;
+          }
+          
+          /* Maintain blue color for non-selected card text on hover - comprehensive selectors */
+          .nhsuk-card.nhsuk-card--disabled .nhsuk-card__heading.eps-card__org-name:hover span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--disabled:hover .nhsuk-card__heading.eps-card__org-name span:
+          not(.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--disabled:hover .eps-card__org-name span:not(.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .nhsuk-card__heading.eps-card__org-name:hover span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled:hover .nhsuk-card__heading.eps-card__org-name span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled:hover .nhsuk-card__heading span:
+          not(.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .nhsuk-card__content:hover .nhsuk-card__heading span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .nhsuk-card__content:hover .eps-card__org-name span:not
+          (.eps-card__org-name-text--selected) {
+            color: #0075c4 !important;
+            text-decoration-color: #0075c4 !important;
+            border-bottom-color: #0075c4 !important;
+            -webkit-text-decoration-color: #0075c4 !important;
+          }
+          
+          /* Force blue underline for all non-selected card headings when cards are disabled */
+          .nhsuk-card--disabled .nhsuk-heading-s span:not(.eps-card__org-name-text--selected),
+          .nhsuk-card--disabled:hover .nhsuk-heading-s span:not(.eps-card__org-name-text--selected) {
+            color: #0075c4 !important;
+            text-decoration: underline !important;
+            text-decoration-color: #0075c4 !important;
+            -webkit-text-decoration-color: #0075c4 !important;
+          }
+          
+          /* Override any black color that might be applied */
+          .nhsuk-card--disabled:hover span:not(.eps-card__org-name-text--selected) * {
+            color: #0075c4 !important;
+          }
+          
+          .eps-card__org-name-text--selected,
+          .eps-card__org-name-text--selected:hover,
+          .nhsuk-card:hover .eps-card__org-name-text--selected,
+          .nhsuk-card--disabled:hover .eps-card__org-name-text--selected,
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled:hover .eps-card__org-name-text--selected,
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .eps-card__org-name-text--selected:hover {
+            color: #212b32 !important;
+            background-color: #ffeb3b !important;
+          }
         `}
       </style>
       <main
