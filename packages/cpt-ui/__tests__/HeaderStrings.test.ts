@@ -7,7 +7,6 @@ describe("HeaderStrings", () => {
     expect(HEADER_STRINGS.CHANGE_ROLE_BUTTON).toBe("Change role")
     expect(HEADER_STRINGS.SELECT_YOUR_ROLE_BUTTON).toBe("Select Your Role")
     expect(HEADER_STRINGS.PRESCRIPTION_SEARCH_BUTTON).toBe("Search for a prescription")
-    expect(HEADER_STRINGS.EXIT_BUTTON).toBe("Exit")
     expect(HEADER_STRINGS.FEEDBACK_BUTTON).toBe("Give feedback (opens in new tab)")
     expect(HEADER_STRINGS.LOG_OUT_BUTTON).toBe("Log out")
     expect(HEADER_STRINGS.SKIP_TO_MAIN_CONTENT).toBe("Skip to main content")
@@ -20,7 +19,6 @@ describe("HeaderStrings", () => {
   })
 
   it("has the correct target paths", () => {
-    expect(HEADER_STRINGS.EXIT_TARGET).toBe("/")
     expect(HEADER_STRINGS.CHANGE_ROLE_TARGET).toBe("/change-your-role")
     expect(HEADER_STRINGS.SELECT_YOUR_ROLE_TARGET).toBe("/select-your-role")
     expect(HEADER_STRINGS.PRESCRIPTION_SEARCH_TARGET).toBe("/search-by-prescription-id")

@@ -16,8 +16,8 @@
     "@aws-lambda-powertools/logger": "^2.31.0",
     "@aws-lambda-powertools/parameters": "^2.31.0",
     "@aws-sdk/client-dynamodb": "^3.995.0",
-    "@aws-sdk/client-secrets-manager": "^3.995.0",
-    "@aws-sdk/lib-dynamodb": "^3.994.0",
+    "@aws-sdk/client-secrets-manager": "^3.1002.0",
+    "@aws-sdk/lib-dynamodb": "^3.1002.0",
     "@cpt-ui-common/authFunctions": "^1.0.0",
     "@cpt-ui-common/dynamoFunctions": "^1.0.0",
     "@cpt-ui-common/lambdaUtils": "^1.0.0",
@@ -27,11 +27,10 @@
     "aws-lambda": "^1.0.7",
     "axios": "^1.13.5",
     "jsonwebtoken": "^9.0.3",
-    "jwks-rsa": "^3.2.2"
+    "jwks-rsa": "^4.0.1"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.159",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@types/aws-lambda": "^8.10.161",
     "mock-jwks": "^3.3.5",
     "vitest": "^4.0.18",
     "nock": "^14.0.11"
