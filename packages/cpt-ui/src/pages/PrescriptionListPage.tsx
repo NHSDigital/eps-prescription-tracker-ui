@@ -22,6 +22,7 @@ import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/s
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
@@ -30,6 +31,7 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 export default function PrescriptionListPage() {
   const {setPatientDetails, setPatientFallback} = usePatientDetails()
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
 
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -49,12 +51,51 @@ export default function PrescriptionListPage() {
 
       const searchParams = new URLSearchParams()
 
-      // determine which search page to go back to based on query parameters
-      if (searchContext.nhsNumber) {
-        searchParams.append("nhsNumber", searchContext.nhsNumber)
-      } else if (searchContext.prescriptionId) {
-        searchParams.append("prescriptionId", searchContext.prescriptionId)
-      } else {
+      // Check if we have original search parameters from navigation context first
+      // to avoid using contaminated search context from prescription details navigation
+      const originalSearchParams = navigationContext.getOriginalSearchParameters()
+
+      let hasValidSearchCriteria = false
+
+      if (originalSearchParams) {
+        // Use original search parameters if available
+        if (originalSearchParams.nhsNumber) {
+          searchParams.append("nhsNumber", originalSearchParams.nhsNumber)
+          hasValidSearchCriteria = true
+          logger.info("Using original NHS number from navigation context", {
+            nhsNumber: originalSearchParams.nhsNumber
+          })
+        } else if (originalSearchParams.prescriptionId &&
+                   !originalSearchParams.nhsNumber &&
+                   !originalSearchParams.firstName &&
+                   !originalSearchParams.lastName) {
+          // Only use prescriptionId if it was the original search (not from prescription details click)
+          searchParams.append("prescriptionId", originalSearchParams.prescriptionId)
+          hasValidSearchCriteria = true
+          logger.info("Using original prescription ID from navigation context", {
+            prescriptionId: originalSearchParams.prescriptionId
+          })
+        } else if ((originalSearchParams.firstName || originalSearchParams.lastName) &&
+                   !originalSearchParams.nhsNumber) {
+          // If we have basic details but no NHS number from original search, redirect to prescription search
+          logger.info("Basic details present but no NHS number - redirecting to prescription ID search")
+          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+          return
+        }
+        // For basic details search, we use nhsNumber which should be available if it was a successful search
+      }
+
+      if (!hasValidSearchCriteria) {
+        if (searchContext.nhsNumber) {
+          searchParams.append("nhsNumber", searchContext.nhsNumber)
+          hasValidSearchCriteria = true
+        } else if (searchContext.prescriptionId) {
+          searchParams.append("prescriptionId", searchContext.prescriptionId)
+          hasValidSearchCriteria = true
+        }
+      }
+
+      if (!hasValidSearchCriteria) {
         logger.info("No search parameter provided - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
