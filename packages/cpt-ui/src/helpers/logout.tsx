@@ -12,17 +12,19 @@ export const signOut = async (
   redirectUri?: string,
   navigate?: (path: string) => void
 ) => {
-  authParam.setIsSigningOut(true)
+  authParam.setStateForSignOut()
+
   const location = window.location.pathname
   const defaultUri = AUTH_CONFIG.REDIRECT_SIGN_OUT
 
-  logger.info(`Called signOut helper from ${location} with redirect of ${redirectUri ? redirectUri : defaultUri}`,
+  const targetUri = redirectUri ? redirectUri : defaultUri
+  logger.info(`Called signOut helper from ${location} with redirect of ${targetUri}`,
     authParam)
   try {
-    logger.info("Signing out with specified redirect path", redirectUri)
-    await authParam?.cognitoSignOut(redirectUri ? redirectUri : defaultUri)
+    logger.info("Signing out with specified redirect path", targetUri)
+    await authParam?.cognitoSignOut(targetUri)
   } catch (err) {
-    logger.error("Error during sign out with specified redirect path:", err)
+    logger.error(`Error during sign out with specified redirect path: ${targetUri}`, err)
     navigate?.(FRONTEND_PATHS.LOGOUT)
   }
   // Status hub will clear auth state

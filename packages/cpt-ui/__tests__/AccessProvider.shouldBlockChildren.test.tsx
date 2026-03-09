@@ -76,6 +76,22 @@ describe("shouldBlockChildren", () => {
         selectedRole: undefined
       }
     },
+    { // has a redirection test
+      name: "not signed in, signing in, on select your role, with no search params",
+      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: true
+      }
+    },
+    { // has a redirection test
+      name: "not signed in, signing in, on select your role, with search params",
+      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE + "?code=test",
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: true
+      }
+    },
     {
       name: "not signed in, signing in, on protected path", // has a redirection test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,

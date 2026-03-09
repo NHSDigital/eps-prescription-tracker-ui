@@ -41,6 +41,7 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
+  setStateForSignOut: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -167,6 +168,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
   }, [])
 
+  /** Sign out state helper */
+  const setStateForSignOut = async () => {
+    setIsSignedIn(false)
+    setIsSigningIn(false)
+    setIsSigningOut(true)
+  }
+
   /**
    * Sign out process.
    */
@@ -180,24 +188,20 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         await http.get(CIS2SignOutEndpoint)
         logger.info("Successfully signed out of CIS2")
       } catch (err) {
-        logger.error("Failed to sign out of CIS2:", err)
+        throw new Error("Failed to sign out of CIS2:", {cause: err})
       }
 
-      if (signoutRedirectUrl) {
-        logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
-        await signOut({
-          global: true,
-          oauth: {redirectUrl: signoutRedirectUrl}
-        })
-
-      } else {
-        logger.info("Calling Amplify Signout, no redirect URL")
-        await signOut({global: true})
-      }
+      // signOut helper always sets a redirection URL
+      logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
+      await signOut({
+        global: true,
+        oauth: {redirectUrl: signoutRedirectUrl}
+      })
 
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
+      // clearAuthState()
       setError(String(err))
       throw new Error("Failed to sign out", {cause: err})
     }
@@ -248,7 +252,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,
-      setIsSigningOut
+      setIsSigningOut,
+      setStateForSignOut
     }}>
       {children}
     </AuthContext.Provider>

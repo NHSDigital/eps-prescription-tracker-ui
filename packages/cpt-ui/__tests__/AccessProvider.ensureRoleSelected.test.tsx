@@ -196,10 +196,26 @@ describe("ensureRoleSelected", () => {
         isSignedIn: true,
         isSigningOut: true
       }
+    },
+    {
+      name: "not signed in, signing in, on select your role, with search params, doesnt redirect",
+      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE + "?code=test",
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: true
+      }
     }
   ]
 
   const logoutScenarios: Array<Scenario> = [
+    {
+      name: "not signed in, signing in, on select your role, with no search params, redirects to session logged out",
+      initialPath: FRONTEND_PATHS.SELECT_YOUR_ROLE,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: true
+      }
+    },
     { // has a render block test
       name: "signed in, signing out, has invalid session cause, on protected path, redirects to session logged out",
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
@@ -268,7 +284,7 @@ describe("ensureRoleSelected", () => {
         expect(mockNavigate).not.toHaveBeenCalled()
         expect(mockHandleRestartLogin).toHaveBeenCalledWith(
           expect.objectContaining(authStateOverrides),
-          authStateOverrides.invalidSessionCause
+          authStateOverrides.invalidSessionCause, mockNavigate
         )
       })
     })

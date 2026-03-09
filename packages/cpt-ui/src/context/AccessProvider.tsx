@@ -14,6 +14,7 @@ import {logger} from "@/helpers/logger"
 import {handleRestartLogin} from "@/helpers/logout"
 import LoadingPage from "@/pages/LoadingPage"
 import Layout from "@/Layout"
+import {getSearchParams} from "@/helpers/getSearchParams"
 
 export const AccessContext = createContext<Record<string, never> | null>(null)
 
@@ -86,14 +87,18 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
       if (auth.isSigningOut && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
-        return handleRestartLogin(auth, auth.invalidSessionCause)
+        return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
       }
 
       // Capture this case to prevent new login session being redirected
-      // Needs to be allowed no roles to allow select-your-role or concurrent session selection
-      // isSigned becomes true as auth hub receives SignedIn event
-      if (auth.isSigningIn && ALLOWED_NO_ROLE_PATHS.includes(path)) {
-        return
+      // If the path is select your role
+      if (auth.isSigningIn && path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+        const {codeParams, stateParams} = getSearchParams(window)
+        if (codeParams || stateParams) {
+          logger.info("User signing in with OAuth - allowing access to path with search params")
+          return
+        }
+        return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
       }
 
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
@@ -104,7 +109,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       if (auth.isSigningOut &&
         (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
         // TODO: Check if && !auth.invalidSessionCause needed
-        return handleRestartLogin(auth, auth.invalidSessionCause)
+        return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
       }
 
       if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
