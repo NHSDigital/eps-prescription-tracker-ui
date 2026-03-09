@@ -157,7 +157,7 @@ export default function RoleSelectionPage({
 
   const handleCardFocus = (e: React.FocusEvent) => {
     if (isSelectingRoleRef.current) {
-      e.target.blur()
+      (e.target as HTMLElement).blur()
     }
   }
 
