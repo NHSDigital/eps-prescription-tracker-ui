@@ -24,6 +24,7 @@ export type TrackerUserInfo = {
   multiple_sessions?: boolean
   is_concurrent_session?: boolean
   sessionId?: string
+  remainingSessionTime?: number
   error?: string | null
 };
 
@@ -35,5 +36,6 @@ export type TrackerUserInfoResult = {
   isConcurrentSession: boolean,
   invalidSessionCause: string | undefined,
   sessionId: string | undefined,
+  remainingSessionTime: number | undefined,
   error: string | null
 }

@@ -24,12 +24,18 @@ export const signOut = async (authParam: AuthContextType, redirectUri?: string) 
 
 export const handleRestartLogin = async (auth: AuthContextType, invalidSessionCause: string | undefined) => {
   logger.info("Handling restart login instruction from backend", invalidSessionCause)
+  logger.info("AUTH_CONFIG values:", {
+    REDIRECT_SIGN_OUT: AUTH_CONFIG.REDIRECT_SIGN_OUT,
+    REDIRECT_SESSION_SIGN_OUT: AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT
+  })
 
   if (invalidSessionCause) {
     logger.info(`Invalid session cause supplied, ${invalidSessionCause}`)
     await auth.updateInvalidSessionCause(invalidSessionCause)
+    logger.info("About to sign out with REDIRECT_SESSION_SIGN_OUT:", AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
     await signOut(auth, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
     return
   }
+  logger.info("No invalid session cause, using REDIRECT_SIGN_OUT:", AUTH_CONFIG.REDIRECT_SIGN_OUT)
   await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
 }
