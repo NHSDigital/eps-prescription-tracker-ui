@@ -1,5 +1,4 @@
 import {
-  StackProps,
   Stack,
   App,
   Fn,
@@ -7,6 +6,7 @@ import {
   Duration,
   ArnFormat
 } from "aws-cdk-lib"
+import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
 import {
   AccessLevel,
   AllowedMethods,
@@ -18,33 +18,59 @@ import {
   ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
-import {Bucket} from "aws-cdk-lib/aws-s3"
+import {IBucket} from "aws-cdk-lib/aws-s3"
 
 import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
-import {TableV2} from "aws-cdk-lib/aws-dynamodb"
-import {ManagedPolicy, Role} from "aws-cdk-lib/aws-iam"
+import {Role} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
 import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
-import {UserPool} from "aws-cdk-lib/aws-cognito"
 import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {RestApiGatewayMethods} from "../resources/RestApiGateway/RestApiGatewayMethods"
 import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGatewayMethods"
 import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
-import {HostedZone} from "aws-cdk-lib/aws-route53"
+import {IHostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
-import {WebACL} from "../resources/WebApplicationFirewall"
+import {AllowList, WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
 import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
 import {CustomSecurityHeadersPolicy} from "../resources/Cloudfront/CustomSecurityHeaders"
-export interface StatelessResourcesStackProps extends StackProps {
+import {Dynamodb} from "../resources/Dynamodb"
+import {Cognito, OidcConfig} from "../resources/Cognito"
+import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
+
+export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly serviceName: string
   readonly stackName: string
-  readonly version: string
-  readonly commit: string
+  readonly cloudfrontCert: Certificate
+  readonly dynamodb: Dynamodb
+  readonly hostedZone: IHostedZone
+  readonly useZoneApex: boolean
+  readonly fullCloudfrontDomain: string
+  readonly fullCognitoDomain: string
+  readonly logRetentionInDays: number
+  readonly logLevel: string
+  readonly primaryOidcConfig: OidcConfig
+  readonly mockOidcConfig?: OidcConfig
+  readonly apigeeApiKey: string
+  readonly apigeeApiSecret: string
+  readonly apigeeDoHSApiKey: string
+  readonly apigeeCIS2TokenEndpoint: string
+  readonly apigeeMockTokenEndpoint: string
+  readonly apigeePrescriptionsEndpoint: string
+  readonly apigeeDoHSEndpoint: string
+  readonly apigeePersonalDemographicsEndpoint: string
+  readonly jwtKid: string
+  readonly webAclUS: WebACL
+  readonly githubAllowList?: AllowList
+  readonly cloudfrontOriginCustomHeader: string
+  readonly csocUKWafDestination?: string
+  readonly staticContentBucket: IBucket
+  readonly cognito: Cognito
+  readonly logDelivery: CloudfrontLogDelivery
 }
 
 /**
@@ -56,154 +82,18 @@ export class StatelessResourcesStack extends Stack {
   public constructor(scope: App, id: string, props: StatelessResourcesStackProps) {
     super(scope, id, props)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const epsDomainName: string = this.node.tryGetContext("epsDomainName")
-    const epsHostedZoneId: string = this.node.tryGetContext("epsHostedZoneId")
-    const cloudfrontCertArn: string = this.node.tryGetContext("cloudfrontCertArn")
-    const shortCloudfrontDomain: string = this.node.tryGetContext("shortCloudfrontDomain")
-    const fullCloudfrontDomain: string = this.node.tryGetContext("fullCloudfrontDomain")
-    const fullCognitoDomain: string = this.node.tryGetContext("fullCognitoDomain")
-    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
-    const logLevel: string = this.node.tryGetContext("logLevel")
-    const primaryOidcClientId = this.node.tryGetContext("primaryOidcClientId")
-    const primaryOidcTokenEndpoint = this.node.tryGetContext("primaryOidcTokenEndpoint")
-    const primaryOidcAuthorizeEndpoint = this.node.tryGetContext("primaryOidcAuthorizeEndpoint")
-    const primaryOidcIssuer = this.node.tryGetContext("primaryOidcIssuer")
-    const primaryOidcUserInfoEndpoint = this.node.tryGetContext("primaryOidcUserInfoEndpoint")
-    const primaryOidcjwksEndpoint = this.node.tryGetContext("primaryOidcjwksEndpoint")
-
-    const mockOidcClientId = this.node.tryGetContext("mockOidcClientId")
-    const mockOidcTokenEndpoint = this.node.tryGetContext("mockOidcTokenEndpoint")
-    const mockOidcAuthorizeEndpoint = this.node.tryGetContext("mockOidcAuthorizeEndpoint")
-    const mockOidcIssuer = this.node.tryGetContext("mockOidcIssuer")
-    const mockOidcUserInfoEndpoint = this.node.tryGetContext("mockOidcUserInfoEndpoint")
-    const mockOidcjwksEndpoint = this.node.tryGetContext("mockOidcjwksEndpoint")
-
-    const useMockOidc: boolean = this.node.tryGetContext("useMockOidc")
-    const apigeeApiKey: string = this.node.tryGetContext("apigeeApiKey")
-    const apigeeApiSecret: string = this.node.tryGetContext("apigeeApiSecret")
-    const apigeeDoHSApiKey: string = this.node.tryGetContext("apigeeDoHSApiKey")
-    const apigeeCIS2TokenEndpoint = this.node.tryGetContext("apigeeCIS2TokenEndpoint")
-    const apigeeMockTokenEndpoint = this.node.tryGetContext("apigeeMockTokenEndpoint")
-    const apigeePrescriptionsEndpoint = this.node.tryGetContext("apigeePrescriptionsEndpoint")
-    const apigeeDoHSEndpoint = this.node.tryGetContext("apigeeDoHSEndpoint")
-    const apigeePersonalDemographicsEndpoint = this.node.tryGetContext("apigeePersonalDemographicsEndpoint")
-    const jwtKid: string = this.node.tryGetContext("jwtKid")
-    const roleId: string = this.node.tryGetContext("roleId")
-    const allowLocalhostAccess: boolean = this.node.tryGetContext("allowLocalhostAccess")
-    const webAclAttributeArn = this.node.tryGetContext("webAclAttributeArn")
-    const wafAllowGaRunnerConnectivity: boolean = this.node.tryGetContext("wafAllowGaRunnerConnectivity")
-    const githubAllowListIpv4 = this.node.tryGetContext("githubAllowListIpv4")
-    const githubAllowListIpv6 = this.node.tryGetContext("githubAllowListIpv6")
-    const cloudfrontOriginCustomHeader = this.node.tryGetContext("cloudfrontOriginCustomHeader")
-    const csocUKWafDestination: string = this.node.tryGetContext("csocUKWafDestination")
-    const forwardCsocLogs: boolean = this.node.tryGetContext("forwardCsocLogs")
+    const allowLocalhostAccess = props.environment === "dev" || props.isPullRequest
 
     // Imports
-    const baseImportPath = `${props.serviceName}-stateful-resources`
-
-    const staticContentBucketImport = Fn.importValue(`${baseImportPath}:StaticContentBucket:Arn`)
-
-    // CIS2 tokens and user info table
-    const tokenMappingTableImport = Fn.importValue(`${baseImportPath}:tokenMappingTable:Arn`)
-    const tokenMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableReadPolicy:Arn`)
-    const tokenMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:tokenMappingTableWritePolicy:Arn`)
-    const useTokensMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useTokensMappingKmsKeyPolicy:Arn`)
-
-    // Session management user info table
-    const sessionManagementTableImport = Fn.importValue(`${baseImportPath}:sessionManagementTable:Arn`)
-    const sessionManagementTableReadPolicyImport =
-    Fn.importValue(`${baseImportPath}:sessionManagementTableReadPolicy:Arn`)
-    const sessionManagementTableWritePolicyImport =
-    Fn.importValue(`${baseImportPath}:sessionManagementTableWritePolicy:Arn`)
-    const useSessionManagementKmsKeyPolicyImport =
-    Fn.importValue(`${baseImportPath}:useSessionManagementTableKmsKeyPolicy:Arn`)
-
-    // Login proxy state cache
-    const stateMappingTableImport = Fn.importValue(`${baseImportPath}:stateMappingTable:Arn`)
-    const stateMappingTableReadPolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableReadPolicy:Arn`)
-    const stateMappingTableWritePolicyImport = Fn.importValue(`${baseImportPath}:stateMappingTableWritePolicy:Arn`)
-    const useStateMappingKmsKeyPolicyImport = Fn.importValue(`${baseImportPath}:useStateMappingKmsKeyPolicy:Arn`)
-
-    const sessionStateMappingTableImport = Fn.importValue(`${baseImportPath}:sessionStateMappingTable:Arn`)
-    const sessionStateMappingTableReadPolicyImport = Fn.importValue(
-      `${baseImportPath}:sessionStateMappingTableReadPolicy:Arn`)
-    const sessionStateMappingTableWritePolicyImport = Fn.importValue(
-      `${baseImportPath}:sessionStateMappingTableWritePolicy:Arn`)
-    const useSessionStateMappingKmsKeyPolicyImport = Fn.importValue(
-      `${baseImportPath}:useSessionStateMappingKmsKeyPolicy:Arn`)
-
-    // User pool
-    const primaryPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:primaryPoolIdentityProvider:Name`)
-    const mockPoolIdentityProviderName = Fn.importValue(`${baseImportPath}:mockPoolIdentityProvider:Name`)
-    const userPoolImport = Fn.importValue(`${baseImportPath}:userPool:Arn`)
-    const userPoolClientId = Fn.importValue(`${baseImportPath}:userPoolClient:userPoolClientId`)
-
-    // Logging
-    const cloudwatchKmsKeyImport = Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn")
-    const splunkDeliveryStreamImport = Fn.importValue("lambda-resources:SplunkDeliveryStream")
-    const splunkSubscriptionFilterRoleImport = Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole")
-    const deploymentRoleImport = Fn.importValue("ci-resources:CloudFormationDeployRole")
-
-    // Coerce context and imports to relevant types
-    const staticContentBucket = Bucket.fromBucketArn(this, "StaticContentBucket", staticContentBucketImport)
-
-    // Token mapping table
-    const tokenMappingTable = TableV2.fromTableArn(this, "tokenMappingTable", tokenMappingTableImport)
-    const tokenMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "tokenMappingTableReadPolicy", tokenMappingTableReadPolicyImport)
-    const tokenMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "tokenMappingTableWritePolicy", tokenMappingTableWritePolicyImport)
-    const useTokensMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useTokensMappingKmsKeyPolicy", useTokensMappingKmsKeyPolicyImport)
-
-    // Session management table
-    const sessionManagementTable = TableV2.fromTableArn(this, "sessionManagementTable", sessionManagementTableImport)
-    const sessionManagementTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionManagementTableReadPolicy", sessionManagementTableReadPolicyImport)
-
-    const sessionManagementTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionManagementTableWritePolicy", sessionManagementTableWritePolicyImport)
-
-    const useSessionManagementKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useSessionManagementTableKmsKeyPolicy", useSessionManagementKmsKeyPolicyImport)
-
-    // State mapping table
-    const stateMappingTable = TableV2.fromTableArn(this, "stateMappingTable", stateMappingTableImport)
-    const stateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "stateMappingTableReadPolicy", stateMappingTableReadPolicyImport)
-    const stateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "stateMappingTableWritePolicy", stateMappingTableWritePolicyImport)
-    const useStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useStateMappingKmsKeyPolicy", useStateMappingKmsKeyPolicyImport)
-
-    // Session state mapping table
-    const sessionStateMappingTable = TableV2.fromTableArn(
-      this, "sessionStateMappingTable", sessionStateMappingTableImport)
-    const sessionStateMappingTableReadPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionStateMappingTableReadPolicy", sessionStateMappingTableReadPolicyImport)
-    const sessionStateMappingTableWritePolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "sessionStateMappingTableWritePolicy", sessionStateMappingTableWritePolicyImport)
-    const useSessionStateMappingKmsKeyPolicy = ManagedPolicy.fromManagedPolicyArn(
-      this, "useSessionStateMappingKmsKeyPolicy", useSessionStateMappingKmsKeyPolicyImport)
-
-    const userPool = UserPool.fromUserPoolArn(
-      this, "userPool", userPoolImport)
-
     const cloudwatchKmsKey = Key.fromKeyArn(
-      this, "cloudwatchKmsKey", cloudwatchKmsKeyImport)
+      this, "cloudwatchKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
     const splunkDeliveryStream = Stream.fromStreamArn(
-      this, "SplunkDeliveryStream", splunkDeliveryStreamImport)
+      this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
-      this, "splunkSubscriptionFilterRole", splunkSubscriptionFilterRoleImport)
+      this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
 
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: epsHostedZoneId,
-      zoneName: epsDomainName
-    })
-    const cloudfrontCert = Certificate.fromCertificateArn(this, "CloudfrontCert", cloudfrontCertArn)
-    const deploymentRole = Role.fromRoleArn(this, "deploymentRole", deploymentRoleImport)
+    const deploymentRole = Role.fromRoleArn(this, "deploymentRole",
+      Fn.importValue("ci-resources:CloudFormationDeployRole"))
 
     // Resources
 
@@ -211,123 +101,71 @@ export class StatelessResourcesStack extends Stack {
     const sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
       stackName: props.stackName,
       deploymentRole: deploymentRole,
-      useMockOidc: useMockOidc,
-      apigeeApiKey: apigeeApiKey,
-      apigeeDoHSApiKey: apigeeDoHSApiKey,
-      apigeeApiSecret: apigeeApiSecret
+      useMockOidc: !!props.mockOidcConfig,
+      apigeeApiKey: props.apigeeApiKey,
+      apigeeDoHSApiKey: props.apigeeDoHSApiKey,
+      apigeeApiSecret: props.apigeeApiSecret
     })
 
     // Functions for the login OAuth2 proxy lambdas
     const oauth2Functions = new OAuth2Functions(this, "OAuth2Functions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      fullCognitoDomain,
+      fullCognitoDomain: props.fullCognitoDomain,
 
-      fullCloudfrontDomain,
-      userPoolClientId,
-      primaryPoolIdentityProviderName,
-      mockPoolIdentityProviderName,
+      fullCloudfrontDomain: props.fullCloudfrontDomain,
+      cognito: props.cognito,
 
-      primaryOidcTokenEndpoint,
-      primaryOidcUserInfoEndpoint,
-      primaryOidcjwksEndpoint,
-      primaryOidcClientId,
-      primaryOidcIssuer,
-      primaryOidcAuthorizeEndpoint,
+      primaryOidcConfig: props.primaryOidcConfig,
+      mockOidcConfig: props.mockOidcConfig,
 
-      useMockOidc,
-
-      mockOidcTokenEndpoint,
-      mockOidcUserInfoEndpoint,
-      mockOidcjwksEndpoint,
-      mockOidcClientId,
-      mockOidcIssuer,
-      mockOidcAuthorizeEndpoint,
-
-      tokenMappingTable,
-      tokenMappingTableWritePolicy,
-      tokenMappingTableReadPolicy,
-      useTokensMappingKmsKeyPolicy,
-
-      sessionManagementTable,
-      sessionManagementTableWritePolicy,
-      sessionManagementTableReadPolicy,
-      useSessionManagementKmsKeyPolicy,
-
-      stateMappingTable,
-      stateMappingTableWritePolicy,
-      stateMappingTableReadPolicy,
-      useStateMappingKmsKeyPolicy,
-
-      sessionStateMappingTable,
-      sessionStateMappingTableWritePolicy,
-      sessionStateMappingTableReadPolicy,
-      useSessionStateMappingKmsKeyPolicy,
+      dynamodb: props.dynamodb,
 
       sharedSecrets,
 
-      logRetentionInDays,
-      logLevel,
-      jwtKid,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
+      jwtKid: props.jwtKid,
       apigeeApiKey: sharedSecrets.apigeeApiKey,
       apigeeApiSecret: sharedSecrets.apigeeApiSecret,
       version: props.version,
-      commitId: props.commit
+      commitId: props.commitId
     })
 
     // -- functions for API
     const apiFunctions = new ApiFunctions(this, "ApiFunctions", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      primaryOidcTokenEndpoint: primaryOidcTokenEndpoint,
-      primaryOidcUserInfoEndpoint: primaryOidcUserInfoEndpoint,
-      primaryOidcjwksEndpoint: primaryOidcjwksEndpoint,
-      primaryOidcClientId: primaryOidcClientId,
-      primaryOidcIssuer: primaryOidcIssuer,
-      useMockOidc: useMockOidc,
-      mockOidcTokenEndpoint: mockOidcTokenEndpoint,
-      mockOidcUserInfoEndpoint: mockOidcUserInfoEndpoint,
-      mockOidcjwksEndpoint: mockOidcjwksEndpoint,
-      mockOidcClientId: mockOidcClientId,
-      mockOidcIssuer: mockOidcIssuer,
-      tokenMappingTable: tokenMappingTable,
-      tokenMappingTableWritePolicy: tokenMappingTableWritePolicy,
-      tokenMappingTableReadPolicy: tokenMappingTableReadPolicy,
-      sessionManagementTable: sessionManagementTable,
-      sessionManagementTableWritePolicy: sessionManagementTableWritePolicy,
-      sessionManagementTableReadPolicy: sessionManagementTableReadPolicy,
-      useTokensMappingKmsKeyPolicy: useTokensMappingKmsKeyPolicy,
-      useSessionManagementKmsKeyPolicy: useSessionManagementKmsKeyPolicy,
-      primaryPoolIdentityProviderName: primaryPoolIdentityProviderName,
-      mockPoolIdentityProviderName: mockPoolIdentityProviderName,
-      logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel,
+      primaryOidcConfig: props.primaryOidcConfig,
+      mockOidcConfig: props.mockOidcConfig,
+      dynamodb: props.dynamodb,
+      cognito: props.cognito,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       sharedSecrets: sharedSecrets,
-      apigeeCIS2TokenEndpoint: apigeeCIS2TokenEndpoint,
-      apigeeMockTokenEndpoint: apigeeMockTokenEndpoint,
-      apigeePrescriptionsEndpoint: apigeePrescriptionsEndpoint,
-      apigeeDoHSEndpoint: apigeeDoHSEndpoint,
+      apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
+      apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
+      apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
+      apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
       apigeeApiKey: sharedSecrets.apigeeApiKey,
       apigeeDoHSApiKey: sharedSecrets.apigeeDoHSApiKey,
       apigeeApiSecret: sharedSecrets.apigeeApiSecret,
-      jwtKid: jwtKid,
-      roleId: roleId,
-      apigeePersonalDemographicsEndpoint: apigeePersonalDemographicsEndpoint,
-      fullCloudfrontDomain: fullCloudfrontDomain,
+      jwtKid: props.jwtKid,
+      apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
+      fullCloudfrontDomain: props.fullCloudfrontDomain,
       version: props.version,
-      commitId: props.commit
+      commitId: props.commitId
     })
 
     const logGroups = new ukRegionLogGroups(this, "ukRegionLogGroups", {
       cloudwatchKmsKey: cloudwatchKmsKey,
-      logRetentionInDays: logRetentionInDays,
+      logRetentionInDays: props.logRetentionInDays,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
       // waf log groups must start with aws-waf-logs-
       wafLogGroupName: `aws-waf-logs-${props.serviceName}-apigw`,
       stackName: this.stackName,
-      csocUKWafDestination: csocUKWafDestination,
-      forwardCsocLogs: forwardCsocLogs
+      csocUKWafDestination: props.csocUKWafDestination
     })
 
     // API Gateway WAF Web ACL
@@ -335,12 +173,10 @@ export class StatelessResourcesStack extends Stack {
       serviceName: props.serviceName,
       rateLimitTransactions: 3000, // 50 TPS
       rateLimitWindowSeconds: 60, // Minimum is 60 seconds
-      githubAllowListIpv4: githubAllowListIpv4,
-      githubAllowListIpv6: githubAllowListIpv6,
-      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity,
+      githubAllowList: props.githubAllowList,
       scope: "REGIONAL",
       allowedHeaders: new Map<string, string>([
-        ["X-Cloudfront-Origin-Secret", cloudfrontOriginCustomHeader]
+        ["X-Cloudfront-Origin-Secret", props.cloudfrontOriginCustomHeader]
       ]),
       // waf log destination must not have :* at the end
       // see https://stackoverflow.com/a/73372989/9294145
@@ -356,20 +192,20 @@ export class StatelessResourcesStack extends Stack {
     const apiGateway = new RestApiGateway(this, "ApiGateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
-      userPool: userPool
+      userPool: props.cognito.userPool
     })
 
     // OAuth2 endpoints get their own API Gateway (/oauth2/*)
     const oauth2Gateway = new RestApiGateway(this, "OAuth2Gateway", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      logRetentionInDays: logRetentionInDays,
-      logLevel: logLevel,
+      logRetentionInDays: props.logRetentionInDays,
+      logLevel: props.logLevel,
       cloudwatchKmsKey: cloudwatchKmsKey,
       splunkDeliveryStream: splunkDeliveryStream,
       splunkSubscriptionFilterRole: splunkSubscriptionFilterRole
@@ -403,7 +239,7 @@ export class StatelessResourcesStack extends Stack {
       patientSearchLambda: apiFunctions.patientSearchLambda,
       authorizer: apiGateway.authorizer,
       clearActiveSessionLambda: apiFunctions.clearActiveSessionLambda,
-      useMockOidc: useMockOidc
+      useMockOidc: !!props.mockOidcConfig
     })
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -419,13 +255,13 @@ export class StatelessResourcesStack extends Stack {
       mockAuthorizeLambda: oauth2Functions.mockAuthorizeLambda,
       callbackLambda: oauth2Functions.callbackLambda,
       mockCallbackLambda: oauth2Functions.mockCallbackLambda,
-      useMockOidc: useMockOidc
+      useMockOidc: !!props.mockOidcConfig
     })
 
     // - Cloudfront
     // --- Origins for bucket and api gateway
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
-      staticContentBucket,
+      props.staticContentBucket,
       {
         originAccessLevels: [AccessLevel.READ]
       }
@@ -434,14 +270,14 @@ export class StatelessResourcesStack extends Stack {
     const apiGatewayOrigin = new RestApiOrigin(apiGateway.apiGateway, {
       customHeaders: {
         "destination-api-apigw-id": apiGateway.apiGateway.restApiId, // for later apigw waf stuff
-        "X-Cloudfront-Origin-Secret": cloudfrontOriginCustomHeader // Sets custom header used by WAF
+        "X-Cloudfront-Origin-Secret": props.cloudfrontOriginCustomHeader // Sets custom header used by WAF
       }
     })
 
     const oauth2GatewayOrigin = new RestApiOrigin(oauth2Gateway.apiGateway, {
       customHeaders: {
         "destination-oauth2-apigw-id": oauth2Gateway.apiGateway.restApiId, // for later apigw waf stuff
-        "X-Cloudfront-Origin-Secret": cloudfrontOriginCustomHeader // Sets custom header used by WAF
+        "X-Cloudfront-Origin-Secret": props.cloudfrontOriginCustomHeader // Sets custom header used by WAF
       }
     })
 
@@ -464,7 +300,7 @@ export class StatelessResourcesStack extends Stack {
     // --- CloudfrontBehaviors
     const headersPolicy = new CustomSecurityHeadersPolicy(this, "DefaultBehaviourHeadersPolicy", {
       policyName: `${props.serviceName}-CustomSecurityHeaders`,
-      fullCognitoDomain: fullCognitoDomain
+      fullCognitoDomain: props.fullCognitoDomain
     })
 
     const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
@@ -475,17 +311,18 @@ export class StatelessResourcesStack extends Stack {
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
       staticContentBucketOrigin: staticContentBucketOrigin,
-      fullCognitoDomain: fullCognitoDomain
+      fullCognitoDomain: props.fullCognitoDomain
     })
 
     // --- Distribution
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      hostedZone: hostedZone,
-      cloudfrontCert: cloudfrontCert,
-      shortCloudfrontDomain: shortCloudfrontDomain,
-      fullCloudfrontDomain: fullCloudfrontDomain,
+      hostedZone: props.hostedZone,
+      cloudfrontCert: props.cloudfrontCert,
+      useZoneApex: props.useZoneApex,
+      fullCloudfrontDomain: props.fullCloudfrontDomain,
       defaultBehavior: {
         origin: staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
@@ -511,92 +348,59 @@ export class StatelessResourcesStack extends Stack {
           ttl: Duration.seconds(10)
         }
       ],
-      webAclAttributeArn: webAclAttributeArn,
-      wafAllowGaRunnerConnectivity: wafAllowGaRunnerConnectivity
+      webAcl: props.webAclUS,
+      wafAllowGaRunnerConnectivity: !!props.githubAllowList,
+      logDelivery: props.logDelivery
     })
 
     // Outputs
 
     // Exports
-    new CfnOutput(this, "CloudfrontDistributionId", {
-      value: cloudfrontDistribution.distribution.distributionId,
-      exportName: `${props.stackName}:cloudfrontDistribution:Id`
-    })
-    new CfnOutput(this, "CloudfrontDistributionArn", {
-      value: cloudfrontDistribution.distribution.distributionArn,
-      exportName: `${props.stackName}:cloudfrontDistribution:Arn`
-    })
-    new CfnOutput(this, "KeyValueStoreArn", {
-      value: cloudfrontBehaviors.keyValueStore.keyValueStoreArn,
-      exportName: `${props.stackName}:KeyValueStore:Arn`
-    })
-    new CfnOutput(this, "primaryJwtPrivateKeyArn", {
-      value: sharedSecrets.primaryJwtPrivateKey.secretArn,
-      exportName: `${props.stackName}:primaryJwtPrivateKey:Arn`
-    })
-    new CfnOutput(this, "primaryJwtPrivateKeyName", {
-      value: sharedSecrets.primaryJwtPrivateKey.secretName,
-      exportName: `${props.stackName}:primaryJwtPrivateKey:Name`
-    })
-    if (useMockOidc) {
-      new CfnOutput(this, "mockJwtPrivateKeyArn", {
-        value: sharedSecrets.mockJwtPrivateKey.secretArn,
-        exportName: `${props.stackName}:mockJwtPrivateKey:Arn`
-      })
-      new CfnOutput(this, "mockJwtPrivateKeyName", {
-        value: sharedSecrets.mockJwtPrivateKey.secretName,
-        exportName: `${props.stackName}:mockJwtPrivateKey:Name`
-      })
-    }
     if (allowLocalhostAccess) {
       new CfnOutput(this, "apigeeApiKey", {
-        value: apigeeApiKey,
+        value: props.apigeeApiKey,
         exportName: `${props.stackName}:local:apigeeApiKey`
       })
       new CfnOutput(this, "apigeeApiSecret", {
-        value: apigeeApiSecret,
+        value: props.apigeeApiSecret,
         exportName: `${props.stackName}:local:apigeeApiSecret`
       })
       new CfnOutput(this, "apigeeCIS2TokenEndpoint", {
-        value: apigeeCIS2TokenEndpoint,
+        value: props.apigeeCIS2TokenEndpoint,
         exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
       })
       new CfnOutput(this, "apigeeDoHSApiKey", {
-        value: apigeeDoHSApiKey,
+        value: props.apigeeDoHSApiKey,
         exportName: `${props.stackName}:local:apigeeDoHSApiKey`
       })
-      if (useMockOidc) {
+      if (props.mockOidcConfig) {
         new CfnOutput(this, "apigeeMockTokenEndpoint", {
-          value: apigeeMockTokenEndpoint,
+          value: props.apigeeMockTokenEndpoint,
           exportName: `${props.stackName}:local:apigeeMockTokenEndpoint`
         })
       }
       new CfnOutput(this, "apigeePrescriptionsEndpoint", {
-        value: apigeePrescriptionsEndpoint,
+        value: props.apigeePrescriptionsEndpoint,
         exportName: `${props.stackName}:local:apigeePrescriptionsEndpoint`
       })
       new CfnOutput(this, "apigeePersonalDemographicsEndpoint", {
-        value: apigeePersonalDemographicsEndpoint,
+        value: props.apigeePersonalDemographicsEndpoint,
         exportName: `${props.stackName}:local:apigeePersonalDemographicsEndpoint`
       })
       new CfnOutput(this, "apigeeDoHSEndpoint", {
-        value: apigeeDoHSEndpoint,
+        value: props.apigeeDoHSEndpoint,
         exportName: `${props.stackName}:local:apigeeDoHSEndpoint`
       })
       new CfnOutput(this, "jwtKid", {
-        value: jwtKid,
+        value: props.jwtKid,
         exportName: `${props.stackName}:local:jwtKid`
-      })
-      new CfnOutput(this, "roleId", {
-        value: roleId,
-        exportName: `${props.stackName}:local:roleId`
       })
       new CfnOutput(this, "VERSION_NUMBER", {
         value: props.version,
         exportName: `${props.stackName}:local:VERSION-NUMBER`
       })
       new CfnOutput(this, "COMMIT_ID", {
-        value: props.commit,
+        value: props.commitId,
         exportName: `${props.stackName}:local:COMMIT-ID`
       })
     }

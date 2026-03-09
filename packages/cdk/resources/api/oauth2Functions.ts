@@ -1,11 +1,12 @@
 import {Construct} from "constructs"
 import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
-import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
 import {resolve} from "path"
+import {Dynamodb} from "../Dynamodb"
+import {OidcConfig, Cognito} from "../Cognito"
 
 const baseDir = resolve(__dirname, "../../../..")
 
@@ -15,45 +16,12 @@ export interface OAuth2FunctionsProps {
   readonly fullCloudfrontDomain: string
 
   readonly fullCognitoDomain: string
-  readonly userPoolClientId: string
-  readonly primaryPoolIdentityProviderName: string
-  readonly mockPoolIdentityProviderName: string
+  readonly cognito: Cognito
 
-  readonly primaryOidcTokenEndpoint: string
-  readonly primaryOidcUserInfoEndpoint: string
-  readonly primaryOidcjwksEndpoint: string
-  readonly primaryOidcClientId: string
-  readonly primaryOidcIssuer: string
-  readonly primaryOidcAuthorizeEndpoint: string
+  readonly primaryOidcConfig: OidcConfig
+  readonly mockOidcConfig?: OidcConfig
 
-  readonly useMockOidc: boolean
-
-  readonly mockOidcTokenEndpoint?: string
-  readonly mockOidcUserInfoEndpoint?: string
-  readonly mockOidcjwksEndpoint?: string
-  readonly mockOidcClientId?: string
-  readonly mockOidcIssuer?: string
-  readonly mockOidcAuthorizeEndpoint?: string
-
-  readonly tokenMappingTable: ITableV2
-  readonly tokenMappingTableWritePolicy: IManagedPolicy
-  readonly tokenMappingTableReadPolicy: IManagedPolicy
-  readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
-
-  readonly sessionManagementTable: ITableV2
-  readonly sessionManagementTableWritePolicy: IManagedPolicy
-  readonly sessionManagementTableReadPolicy: IManagedPolicy
-  readonly useSessionManagementKmsKeyPolicy: IManagedPolicy
-
-  readonly stateMappingTable: ITableV2
-  readonly stateMappingTableWritePolicy: IManagedPolicy
-  readonly stateMappingTableReadPolicy: IManagedPolicy
-  readonly useStateMappingKmsKeyPolicy: IManagedPolicy
-
-  readonly sessionStateMappingTable: ITableV2
-  readonly sessionStateMappingTableWritePolicy: IManagedPolicy
-  readonly sessionStateMappingTableReadPolicy: IManagedPolicy
-  readonly useSessionStateMappingKmsKeyPolicy: IManagedPolicy
+  readonly dynamodb: Dynamodb
 
   readonly sharedSecrets: SharedSecrets
 
@@ -82,32 +50,19 @@ export class OAuth2Functions extends Construct {
   public constructor(scope: Construct, id: string, props: OAuth2FunctionsProps) {
     super(scope, id)
 
-    let mockOidcAuthorizeEndpoint
-    let mockOidcIssuer
-    let mockOidcClientId
-    if (props.useMockOidc) {
-      mockOidcIssuer = props.mockOidcIssuer as string
-      mockOidcAuthorizeEndpoint = props.mockOidcAuthorizeEndpoint as string
-      mockOidcClientId = props.mockOidcClientId as string
-    } else {
-      mockOidcAuthorizeEndpoint = ""
-      mockOidcIssuer = ""
-      mockOidcClientId = ""
-    }
-
     // Create the token Lambda function
     const tokenLambda = new TypescriptLambdaFunction(this, "TokenResources", {
       functionName: `${props.stackName}-token`,
       projectBaseDir: baseDir,
       additionalPolicies: [
-        props.tokenMappingTableWritePolicy,
-        props.tokenMappingTableReadPolicy,
-        props.useTokensMappingKmsKeyPolicy,
+        props.dynamodb.tokenMappingTableWritePolicy,
+        props.dynamodb.tokenMappingTableReadPolicy,
+        props.dynamodb.useTokensMappingKmsKeyPolicy,
         props.sharedSecrets.useJwtKmsKeyPolicy,
         props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
-        props.sessionManagementTableWritePolicy,
-        props.sessionManagementTableReadPolicy,
-        props.useSessionManagementKmsKeyPolicy,
+        props.dynamodb.sessionManagementTableWritePolicy,
+        props.dynamodb.sessionManagementTableReadPolicy,
+        props.dynamodb.useSessionManagementTableKmsKeyPolicy,
         props.sharedSecrets.getApigeeSecretsPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
@@ -115,14 +70,14 @@ export class OAuth2Functions extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/token.ts",
       environmentVariables: {
-        TokenMappingTableName: props.tokenMappingTable.tableName,
-        SessionManagementTableName: props.sessionManagementTable.tableName,
-        CIS2_IDP_TOKEN_PATH: props.primaryOidcTokenEndpoint,
-        CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
-        CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
+        TokenMappingTableName: props.dynamodb.tokenMappingTable.tableName,
+        SessionManagementTableName: props.dynamodb.sessionManagementTable.tableName,
+        CIS2_IDP_TOKEN_PATH: props.primaryOidcConfig.tokenEndpoint,
+        CIS2_USER_POOL_IDP: props.cognito.primaryPoolIdentityProvider.providerName,
+        CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcConfig.jwksEndpoint,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
-        CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
-        CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
+        CIS2_OIDC_CLIENT_ID: props.primaryOidcConfig.clientId,
+        CIS2_OIDC_ISSUER: props.primaryOidcConfig.issuer,
         FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
         jwtKid: props.jwtKid
       },
@@ -135,9 +90,6 @@ export class OAuth2Functions extends Construct {
       functionName: `${props.stackName}-authorize`,
       projectBaseDir: baseDir,
       additionalPolicies: [
-        props.stateMappingTableWritePolicy,
-        props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy,
         props.sharedSecrets.getApigeeSecretsPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
@@ -145,11 +97,10 @@ export class OAuth2Functions extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/authorize.ts",
       environmentVariables: {
-        IDP_AUTHORIZE_PATH: props.primaryOidcAuthorizeEndpoint,
-        OIDC_CLIENT_ID: props.primaryOidcClientId,
-        COGNITO_CLIENT_ID: props.userPoolClientId,
-        FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-        StateMappingTableName: props.stateMappingTable.tableName
+        IDP_AUTHORIZE_PATH: props.primaryOidcConfig.authorizeEndpoint,
+        OIDC_CLIENT_ID: props.primaryOidcConfig.clientId,
+        COGNITO_CLIENT_ID: props.cognito.userPoolClient.userPoolClientId,
+        FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain
       },
       version: props.version,
       commitId: props.commitId
@@ -160,9 +111,6 @@ export class OAuth2Functions extends Construct {
       functionName: `${props.stackName}-callback`,
       projectBaseDir: baseDir,
       additionalPolicies: [
-        props.stateMappingTableWritePolicy,
-        props.stateMappingTableReadPolicy,
-        props.useStateMappingKmsKeyPolicy,
         props.sharedSecrets.getApigeeSecretsPolicy
       ],
       logRetentionInDays: props.logRetentionInDays,
@@ -170,11 +118,10 @@ export class OAuth2Functions extends Construct {
       packageBasePath: "packages/cognito",
       entryPoint: "src/callback.ts",
       environmentVariables: {
-        StateMappingTableName: props.stateMappingTable.tableName,
-        COGNITO_CLIENT_ID: props.userPoolClientId,
+        COGNITO_CLIENT_ID: props.cognito.userPoolClient.userPoolClientId,
         COGNITO_DOMAIN: props.fullCognitoDomain,
-        MOCK_OIDC_ISSUER: mockOidcIssuer,
-        PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
+        MOCK_OIDC_ISSUER: props.mockOidcConfig?.issuer || "",
+        PRIMARY_OIDC_ISSUER: props.primaryOidcConfig.issuer
       },
       version: props.version,
       commitId: props.commitId
@@ -189,27 +136,11 @@ export class OAuth2Functions extends Construct {
 
     let mockAuthorizeLambda: TypescriptLambdaFunction
     let mockTokenLambda: TypescriptLambdaFunction
-    if (props.useMockOidc) {
-      if (
-        !props.mockOidcjwksEndpoint ||
-        !props.mockOidcTokenEndpoint ||
-        !props.mockOidcUserInfoEndpoint ||
-        !props.mockOidcClientId ||
-        !props.mockOidcIssuer
-      ) {
-        throw new Error("Missing mock OIDC configuration.")
-      }
-
+    if (props.mockOidcConfig) {
       mockAuthorizeLambda = new TypescriptLambdaFunction(this, "MockAuthorizeLambdaResources", {
         functionName: `${props.stackName}-mock-authorize`,
         projectBaseDir: baseDir,
         additionalPolicies: [
-          props.stateMappingTableWritePolicy,
-          props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy,
-          props.sessionStateMappingTableWritePolicy,
-          props.sessionStateMappingTableReadPolicy,
-          props.useSessionStateMappingKmsKeyPolicy,
           props.sharedSecrets.getApigeeSecretsPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
@@ -217,12 +148,10 @@ export class OAuth2Functions extends Construct {
         packageBasePath: "packages/cognito",
         entryPoint: "src/authorizeMock.ts",
         environmentVariables: {
-          IDP_AUTHORIZE_PATH: mockOidcAuthorizeEndpoint,
-          OIDC_CLIENT_ID: mockOidcClientId,
-          COGNITO_CLIENT_ID: props.userPoolClientId,
+          IDP_AUTHORIZE_PATH: props.mockOidcConfig.authorizeEndpoint,
+          OIDC_CLIENT_ID: props.mockOidcConfig.clientId,
+          COGNITO_CLIENT_ID: props.cognito.userPoolClient.userPoolClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          StateMappingTableName: props.stateMappingTable.tableName,
-          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
           APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn
         },
         version: props.version,
@@ -237,18 +166,12 @@ export class OAuth2Functions extends Construct {
         functionName: `${props.stackName}-mock-token`,
         projectBaseDir: baseDir,
         additionalPolicies: [
-          props.tokenMappingTableWritePolicy,
-          props.tokenMappingTableReadPolicy,
-          props.useTokensMappingKmsKeyPolicy,
-          props.sessionManagementTableWritePolicy,
-          props.sessionManagementTableReadPolicy,
-          props.useSessionManagementKmsKeyPolicy,
-          props.stateMappingTableReadPolicy,
-          props.stateMappingTableWritePolicy,
-          props.useStateMappingKmsKeyPolicy,
-          props.sessionStateMappingTableReadPolicy,
-          props.sessionStateMappingTableWritePolicy,
-          props.useSessionStateMappingKmsKeyPolicy,
+          props.dynamodb.tokenMappingTableWritePolicy,
+          props.dynamodb.tokenMappingTableReadPolicy,
+          props.dynamodb.useTokensMappingKmsKeyPolicy,
+          props.dynamodb.sessionManagementTableWritePolicy,
+          props.dynamodb.sessionManagementTableReadPolicy,
+          props.dynamodb.useSessionManagementTableKmsKeyPolicy,
           props.sharedSecrets.useJwtKmsKeyPolicy,
           props.sharedSecrets.getMockJwtPrivateKeyPolicy,
           props.sharedSecrets.getApigeeSecretsPolicy
@@ -258,18 +181,16 @@ export class OAuth2Functions extends Construct {
         packageBasePath: "packages/cognito",
         entryPoint: "src/tokenMock.ts",
         environmentVariables: {
-          TokenMappingTableName: props.tokenMappingTable.tableName,
-          SessionManagementTableName: props.sessionManagementTable.tableName,
-          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
-          StateMappingTableName: props.stateMappingTable.tableName,
-          MOCK_IDP_TOKEN_PATH: props.mockOidcTokenEndpoint,
-          MOCK_USER_POOL_IDP: props.mockPoolIdentityProviderName,
-          MOCK_OIDCJWKS_ENDPOINT: props.mockOidcjwksEndpoint,
+          TokenMappingTableName: props.dynamodb.tokenMappingTable.tableName,
+          SessionManagementTableName: props.dynamodb.sessionManagementTable.tableName,
+          MOCK_IDP_TOKEN_PATH: props.mockOidcConfig.tokenEndpoint,
+          MOCK_USER_POOL_IDP: props.cognito.mockPoolIdentityProvider!.providerName,
+          MOCK_OIDCJWKS_ENDPOINT: props.mockOidcConfig.jwksEndpoint,
           jwtPrivateKeyArn: props.sharedSecrets.mockJwtPrivateKey!.secretArn,
-          MOCK_OIDC_CLIENT_ID: props.mockOidcClientId,
-          MOCK_OIDC_TOKEN_ENDPOINT: props.mockOidcTokenEndpoint,
-          MOCK_USER_INFO_ENDPOINT: props.mockOidcUserInfoEndpoint,
-          MOCK_OIDC_ISSUER: props.mockOidcIssuer,
+          MOCK_OIDC_CLIENT_ID: props.mockOidcConfig.clientId,
+          MOCK_OIDC_TOKEN_ENDPOINT: props.mockOidcConfig.tokenEndpoint,
+          MOCK_USER_INFO_ENDPOINT: props.mockOidcConfig.userInfoEndpoint,
+          MOCK_OIDC_ISSUER: props.mockOidcConfig.issuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
           APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
@@ -287,12 +208,6 @@ export class OAuth2Functions extends Construct {
         functionName: `${props.stackName}-mock-callback`,
         projectBaseDir: baseDir,
         additionalPolicies: [
-          props.stateMappingTableWritePolicy,
-          props.stateMappingTableReadPolicy,
-          props.useStateMappingKmsKeyPolicy,
-          props.sessionStateMappingTableReadPolicy,
-          props.sessionStateMappingTableWritePolicy,
-          props.useSessionStateMappingKmsKeyPolicy,
           props.sharedSecrets.getApigeeSecretsPolicy
         ],
         logRetentionInDays: props.logRetentionInDays,
@@ -300,12 +215,10 @@ export class OAuth2Functions extends Construct {
         packageBasePath: "packages/cognito",
         entryPoint: "src/callbackMock.ts",
         environmentVariables: {
-          StateMappingTableName: props.stateMappingTable.tableName,
-          SessionStateMappingTableName: props.sessionStateMappingTable.tableName,
-          COGNITO_CLIENT_ID: props.userPoolClientId,
+          COGNITO_CLIENT_ID: props.cognito.userPoolClient.userPoolClientId,
           COGNITO_DOMAIN: props.fullCognitoDomain,
-          MOCK_OIDC_ISSUER: mockOidcIssuer,
-          PRIMARY_OIDC_ISSUER: props.primaryOidcIssuer
+          MOCK_OIDC_ISSUER: props.mockOidcConfig.issuer,
+          PRIMARY_OIDC_ISSUER: props.primaryOidcConfig.issuer
         },
         version: props.version,
         commitId: props.commitId

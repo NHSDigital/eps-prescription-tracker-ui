@@ -15,6 +15,10 @@ import {
 } from "aws-cdk-lib/aws-route53"
 import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
 import {Construct} from "constructs"
+import {WebACL} from "../resources/WebApplicationFirewall"
+import {CfnDelivery, CfnDeliverySource} from "aws-cdk-lib/aws-logs"
+import {Names} from "aws-cdk-lib"
+import {CloudfrontLogDelivery} from "./CloudfrontLogDelivery"
 
 /**
  * Cloudfront distribution and supporting resources
@@ -28,11 +32,12 @@ export interface CloudfrontDistributionProps {
   readonly additionalBehaviors: Record<string, BehaviorOptions>
   readonly errorResponses: Array<ErrorResponse>
   readonly hostedZone: IHostedZone
-  readonly shortCloudfrontDomain: string
+  readonly useZoneApex: boolean
   readonly fullCloudfrontDomain: string
   readonly cloudfrontCert: ICertificate
-  readonly webAclAttributeArn: string
+  readonly webAcl: WebACL
   readonly wafAllowGaRunnerConnectivity: boolean
+  readonly logDelivery: CloudfrontLogDelivery
 }
 
 /**
@@ -41,7 +46,7 @@ export interface CloudfrontDistributionProps {
  */
 
 export class CloudfrontDistribution extends Construct {
-  public readonly distribution
+  public readonly distribution: Distribution
 
   public constructor(scope: Construct, id: string, props: CloudfrontDistributionProps){
     super(scope, id)
@@ -63,10 +68,22 @@ export class CloudfrontDistribution extends Construct {
         locations: props.wafAllowGaRunnerConnectivity ? ["GB", "JE", "GG", "IM", "US"] : ["GB", "JE", "GG", "IM"],
         restrictionType: "whitelist"
       },
-      webAclId: props.webAclAttributeArn
+      webAclId: props.webAcl.attrArn
     })
 
-    if (props.shortCloudfrontDomain === "APEX_DOMAIN") {
+    const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
+      name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
+      logType: "ACCESS_LOGS",
+      resourceArn: cloudfrontDistribution.distributionArn
+    })
+
+    const delivery = new CfnDelivery(this, "DistributionDelivery", {
+      deliverySourceName: distDeliverySource.name,
+      deliveryDestinationArn: props.logDelivery.deliveryDestination.attrArn
+    })
+    delivery.node.addDependency(distDeliverySource)
+
+    if (props.useZoneApex) {
       new ARecord(this, "CloudFrontAliasIpv4Record", {
         zone: props.hostedZone,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
@@ -77,12 +94,12 @@ export class CloudfrontDistribution extends Construct {
     } else {
       new ARecord(this, "CloudFrontAliasIpv4Record", {
         zone: props.hostedZone,
-        recordName: props.shortCloudfrontDomain,
+        recordName: props.serviceName,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
 
       new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
         zone: props.hostedZone,
-        recordName: props.shortCloudfrontDomain,
+        recordName: props.serviceName,
         target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
     }
 

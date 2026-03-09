@@ -30,9 +30,8 @@ export interface RumProps {
   readonly cwLogEnabled: boolean
   readonly allowLocalhostAccess: boolean
   readonly staticContentBucket: IBucket
-  readonly uploadSourceMaps: boolean
-
 }
+
 export class Rum extends Construct {
   public readonly unauthenticatedRumRole: Role
   public readonly identityPool: CfnIdentityPool
@@ -110,20 +109,16 @@ export class Rum extends Construct {
     if (props.allowLocalhostAccess) {
       allowedDomains.push("localhost")
     }
-    let deobfuscationConfiguration = {}
-    if (props.uploadSourceMaps) {
-      deobfuscationConfiguration = {
-        javaScriptSourceMaps: {
-          status: "ENABLED",
-          s3Uri: `s3://${props.staticContentBucket.bucketName}/source_maps`
-        }
-      }
-    }
     const rumApp = new CfnAppMonitor(this, "RumApp", {
       name: props.appMonitorName,
       cwLogEnabled: props.cwLogEnabled,
       domainList: allowedDomains,
-      deobfuscationConfiguration: deobfuscationConfiguration,
+      deobfuscationConfiguration: {
+        javaScriptSourceMaps: {
+          status: "ENABLED",
+          s3Uri: `s3://${props.staticContentBucket.bucketName}/source_maps`
+        }
+      },
       appMonitorConfiguration: {
         ...baseAppMonitorConfiguration
       },

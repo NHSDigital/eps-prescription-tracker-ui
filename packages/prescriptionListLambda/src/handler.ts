@@ -34,7 +34,6 @@ TokenMappingTableName
 jwtPrivateKeyArn
 apigeeApiKey
 jwtKid
-roleId
 MOCK_MODE_ENABLED
 
 CIS2_OIDC_ISSUER

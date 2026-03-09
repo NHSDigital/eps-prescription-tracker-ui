@@ -1,11 +1,12 @@
 import {Construct} from "constructs"
 import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
 import {SharedSecrets} from "../SharedSecrets"
-import {ITableV2} from "aws-cdk-lib/aws-dynamodb"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {resolve} from "path"
+import {Dynamodb} from "../Dynamodb"
+import {Cognito, OidcConfig} from "../Cognito"
 
 const baseDir = resolve(__dirname, "../../../..")
 
@@ -13,27 +14,10 @@ const baseDir = resolve(__dirname, "../../../..")
 export interface ApiFunctionsProps {
   readonly serviceName: string
   readonly stackName: string
-  readonly primaryOidcTokenEndpoint: string
-  readonly primaryOidcUserInfoEndpoint: string
-  readonly primaryOidcjwksEndpoint: string
-  readonly primaryOidcClientId: string
-  readonly primaryOidcIssuer: string
-  readonly useMockOidc: boolean
-  readonly mockOidcTokenEndpoint?: string
-  readonly mockOidcUserInfoEndpoint?: string
-  readonly mockOidcjwksEndpoint?: string
-  readonly mockOidcClientId?: string
-  readonly mockOidcIssuer?: string
-  readonly tokenMappingTable: ITableV2
-  readonly tokenMappingTableWritePolicy: IManagedPolicy
-  readonly tokenMappingTableReadPolicy: IManagedPolicy
-  readonly useTokensMappingKmsKeyPolicy: IManagedPolicy
-  readonly sessionManagementTable: ITableV2
-  readonly sessionManagementTableWritePolicy: IManagedPolicy
-  readonly sessionManagementTableReadPolicy: IManagedPolicy
-  readonly useSessionManagementKmsKeyPolicy: IManagedPolicy
-  readonly primaryPoolIdentityProviderName: string
-  readonly mockPoolIdentityProviderName: string
+  readonly primaryOidcConfig: OidcConfig
+  readonly mockOidcConfig?: OidcConfig
+  readonly dynamodb: Dynamodb
+  readonly cognito: Cognito
   readonly logRetentionInDays: number
   readonly sharedSecrets: SharedSecrets
   readonly apigeeCIS2TokenEndpoint: string
@@ -46,7 +30,6 @@ export interface ApiFunctionsProps {
   readonly apigeeDoHSApiKey: ISecret
   readonly jwtKid: string
   readonly logLevel: string
-  readonly roleId: string
   readonly fullCloudfrontDomain: string
   readonly version: string
   readonly commitId: string
@@ -75,36 +58,36 @@ export class ApiFunctions extends Construct {
 
     // Combine policies
     const additionalPolicies = [
-      props.tokenMappingTableWritePolicy,
-      props.tokenMappingTableReadPolicy,
-      props.useTokensMappingKmsKeyPolicy,
-      props.sessionManagementTableWritePolicy,
-      props.sessionManagementTableReadPolicy,
-      props.useSessionManagementKmsKeyPolicy,
+      props.dynamodb.tokenMappingTableWritePolicy,
+      props.dynamodb.tokenMappingTableReadPolicy,
+      props.dynamodb.useTokensMappingKmsKeyPolicy,
+      props.dynamodb.sessionManagementTableWritePolicy,
+      props.dynamodb.sessionManagementTableReadPolicy,
+      props.dynamodb.useSessionManagementTableKmsKeyPolicy,
       props.sharedSecrets.useJwtKmsKeyPolicy,
       props.sharedSecrets.getPrimaryJwtPrivateKeyPolicy,
       props.sharedSecrets.getApigeeSecretsPolicy
     ]
 
-    if (props.useMockOidc && props.sharedSecrets.getMockJwtPrivateKeyPolicy) {
+    if (props.mockOidcConfig && props.sharedSecrets.getMockJwtPrivateKeyPolicy) {
       additionalPolicies.push(props.sharedSecrets.getMockJwtPrivateKeyPolicy)
     }
 
     // Environment variables
     // We pass in both sets of endpoints and keys. The Lambda code determines at runtime which to use.
     const commonLambdaEnv: {[key: string]: string} = {
-      TokenMappingTableName: props.tokenMappingTable.tableName,
-      SessionManagementTableName: props.sessionManagementTable.tableName,
+      TokenMappingTableName: props.dynamodb.tokenMappingTable.tableName,
+      SessionManagementTableName: props.dynamodb.sessionManagementTable.tableName,
 
       // Real endpoints/credentials
-      CIS2_USER_INFO_ENDPOINT: props.primaryOidcUserInfoEndpoint,
-      CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcjwksEndpoint,
-      CIS2_USER_POOL_IDP: props.primaryPoolIdentityProviderName,
-      CIS2_OIDC_CLIENT_ID: props.primaryOidcClientId,
-      CIS2_OIDC_ISSUER: props.primaryOidcIssuer,
+      CIS2_USER_INFO_ENDPOINT: props.primaryOidcConfig.userInfoEndpoint,
+      CIS2_OIDCJWKS_ENDPOINT: props.primaryOidcConfig.jwksEndpoint,
+      CIS2_USER_POOL_IDP: props.cognito.primaryPoolIdentityProvider.providerName,
+      CIS2_OIDC_CLIENT_ID: props.primaryOidcConfig.clientId,
+      CIS2_OIDC_ISSUER: props.primaryOidcConfig.issuer,
 
       // Indicate if mock mode is available
-      MOCK_MODE_ENABLED: props.useMockOidc ? "true" : "false",
+      MOCK_MODE_ENABLED: props.mockOidcConfig ? "true" : "false",
 
       APIGEE_API_SECRET_ARN: props.apigeeApiSecret.secretArn,
       APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
@@ -112,12 +95,12 @@ export class ApiFunctions extends Construct {
     }
 
     // If mock OIDC is enabled, add mock environment variables
-    if (props.useMockOidc && props.sharedSecrets.mockJwtPrivateKey.secretArn) {
-      commonLambdaEnv["MOCK_USER_INFO_ENDPOINT"] = props.mockOidcUserInfoEndpoint!
-      commonLambdaEnv["MOCK_OIDCJWKS_ENDPOINT"] = props.mockOidcjwksEndpoint!
-      commonLambdaEnv["MOCK_USER_POOL_IDP"] = props.mockPoolIdentityProviderName
-      commonLambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcClientId!
-      commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcIssuer!
+    if (props.mockOidcConfig && props.sharedSecrets.mockJwtPrivateKey.secretArn) {
+      commonLambdaEnv["MOCK_USER_INFO_ENDPOINT"] = props.mockOidcConfig.userInfoEndpoint
+      commonLambdaEnv["MOCK_OIDCJWKS_ENDPOINT"] = props.mockOidcConfig.jwksEndpoint
+      commonLambdaEnv["MOCK_USER_POOL_IDP"] = props.cognito.mockPoolIdentityProvider!.providerName
+      commonLambdaEnv["MOCK_OIDC_CLIENT_ID"] = props.mockOidcConfig.clientId
+      commonLambdaEnv["MOCK_OIDC_ISSUER"] = props.mockOidcConfig.issuer
     }
 
     // Prescription Search Lambda Function
@@ -216,8 +199,7 @@ export class ApiFunctions extends Construct {
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
         apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
-        jwtKid: props.jwtKid,
-        roleId: props.roleId
+        jwtKid: props.jwtKid
       },
       version: props.version,
       commitId: props.commitId
@@ -236,7 +218,7 @@ export class ApiFunctions extends Construct {
       entryPoint: "src/index.ts",
       environmentVariables: {
         ...commonLambdaEnv,
-        TokenMappingTableName: props.tokenMappingTable.tableName,
+        TokenMappingTableName: props.dynamodb.tokenMappingTable.tableName,
         jwtPrivateKeyArn: props.sharedSecrets.primaryJwtPrivateKey.secretArn,
         apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
         apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
@@ -268,7 +250,6 @@ export class ApiFunctions extends Construct {
         apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         jwtKid: props.jwtKid,
-        roleId: props.roleId,
         APIGEE_DOHS_API_KEY_ARN: props.apigeeDoHSApiKey.secretArn
       },
       version: props.version,
@@ -278,7 +259,7 @@ export class ApiFunctions extends Construct {
     // Add the policy to apiFunctionsPolicies
     apiFunctionsPolicies.push(prescriptionDetailsLambda.executionPolicy)
 
-    if (props.useMockOidc) {
+    if (props.mockOidcConfig) {
       const clearActiveSessionLambda = new TypescriptLambdaFunction(this, "ClearActiveSessions", {
         functionName: `${props.stackName}-clr-active`,
         projectBaseDir: baseDir,
@@ -289,8 +270,8 @@ export class ApiFunctions extends Construct {
         entryPoint: "src/handler.ts",
         environmentVariables: {
           ...commonLambdaEnv,
-          TokenMappingTableName: props.tokenMappingTable.tableName,
-          SessionManagementTableName: props.sessionManagementTable.tableName
+          TokenMappingTableName: props.dynamodb.tokenMappingTable.tableName,
+          SessionManagementTableName: props.dynamodb.sessionManagementTable.tableName
         },
         version: props.version,
         commitId: props.commitId
