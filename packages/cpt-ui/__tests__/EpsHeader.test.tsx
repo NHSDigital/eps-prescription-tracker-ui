@@ -13,8 +13,6 @@ jest.mock("@/constants/ui-strings/HeaderStrings", () => ({
   HEADER_STRINGS: {
     CHANGE_ROLE_BUTTON: "Change role",
     CHANGE_ROLE_TARGET: "/change-your-role",
-    EXIT_BUTTON: "Exit",
-    EXIT_TARGET: "/exit",
     FEEDBACK_BUTTON: "Give feedback (opens in new tab)",
     FEEDBACK_TARGET: "https://feedback.digital.nhs.uk/jfe/form/SV_ahG2dymAdr0oRz8",
     LOG_OUT_BUTTON: "Log out",
@@ -71,7 +69,8 @@ const defaultAuthContext: AuthContextType = {
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
   isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  setIsSigningOut: jest.fn(),
+  remainingSessionTime: undefined
 }
 
 const renderWithProviders = (
@@ -87,9 +86,16 @@ const renderWithProviders = (
 
   const authValue = {...defaultAuthContext, ...authOverrides}
 
+  const mockAccessContext = {
+    sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+    onStayLoggedIn: jest.fn(),
+    onLogOut: jest.fn(),
+    onTimeout: jest.fn()
+  }
+
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={null}>
+      <AccessContext.Provider value={mockAccessContext}>
         <EpsHeader />
       </AccessContext.Provider>
     </AuthContext.Provider>
@@ -150,10 +156,6 @@ describe("EpsHeader", () => {
       expect(screen.getByTestId("eps_header_logout")).toHaveTextContent(
         "Log out"
       )
-    })
-
-    it("does NOT display an 'Exit' button by default", () => {
-      expect(screen.queryByTestId("eps_header_exit")).not.toBeInTheDocument()
     })
   })
 

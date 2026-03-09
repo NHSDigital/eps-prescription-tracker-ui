@@ -31,6 +31,13 @@ export interface AuthResult {
 }
 
 /**
+ * Represents a timeout authentication result
+ */
+export interface AuthTimeoutResult {
+  isTimeout?: boolean
+}
+
+/**
  * Options for the authenticateRequest function
  */
 export interface AuthenticateRequestOptions {
@@ -136,7 +143,7 @@ export async function authenticateRequest(
   userRecord: TokenMappingItem,
   specifiedTokenTable: string,
   disableLastActivityUpdate: boolean
-): Promise<AuthResult | null> {
+): Promise<AuthResult | AuthTimeoutResult | null> {
   const {
     jwtPrivateKeyArn,
     apigeeApiKeyArn,
@@ -168,7 +175,7 @@ export async function authenticateRequest(
       logger
     )
 
-    return null
+    return {isTimeout: true}
   }
 
   // If token exists, check if we need to refresh it

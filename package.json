@@ -1,6 +1,7 @@
 {
     "name": "eps-prescription-tracker-ui",
     "version": "1.0.0",
+    "type": "module",
     "description": "![Build](https://github.com/NHSDigital/eps-prescription-tracker-ui/workflows/Build/badge.svg?branch=main)",
     "scripts": {
         "test": "jest",
@@ -37,15 +38,27 @@
         "packages/CIS2SignOutLambda",
         "packages/selectedRoleLambda",
         "packages/testingSupport/clearActiveSessions",
+        "packages/testingSupport/setLastActivityTime",
         "packages/sessionManagementLambda"
     ],
+    "overrides": {
+        "fast-xml-parser": ">=5.3.6",
+        "lodash": ">=4.17.23",
+        "aws-sdk": ">=2.1691.0",
+        "@aws-sdk/core": ">=3.994.0",
+        "@aws-sdk/xml-builder": ">=3.994.0",
+        "aws-amplify": ">=6.16.3",
+        "fhir": {
+            "lodash": ">=4.17.23"
+        }
+    },
     "devDependencies": {
         "@eslint/js": "^9.38.0",
         "@jest/globals": "^30.1.1",
         "@types/jest": "^30.0.0",
-        "@types/node": "^25.3.0",
-        "@typescript-eslint/eslint-plugin": "^8.56.0",
-        "@typescript-eslint/parser": "^8.56.0",
+        "@types/node": "^25.3.5",
+        "@typescript-eslint/eslint-plugin": "^8.56.1",
+        "@typescript-eslint/parser": "^8.56.1",
         "@vitest/coverage-v8": "^4.0.18",
         "aws-sdk-client-mock": "^4.1.0",
         "eslint": "^9.39.2",
@@ -53,7 +66,7 @@
         "eslint-plugin-import-newlines": "^1.3.4",
         "eslint-plugin-prettier": "^5.5.4",
         "eslint-plugin-react": "^7.37.5",
-        "globals": "^17.3.0",
+        "globals": "^17.4.0",
         "jest": "^30.2.0",
         "jest-environment-jsdom": "^30.1.2",
         "jest-junit": "^16.0.0",
@@ -61,11 +74,11 @@
         "ts-jest": "^29.4.6",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.56.0",
+        "typescript-eslint": "^8.56.1",
         "vitest": "^4.0.18"
     },
     "dependencies": {
-        "conventional-changelog-eslint": "^6.0.0",
+        "conventional-changelog-eslint": "^6.1.0",
         "esbuild": "^0.27.3"
     }
 }

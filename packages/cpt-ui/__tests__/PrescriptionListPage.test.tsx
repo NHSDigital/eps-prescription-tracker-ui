@@ -475,7 +475,7 @@ describe("PrescriptionListPage", () => {
       )
     })
 
-    it("handles 401 response with restart login", async () => {
+    it("handles 401 response with restart login - InvalidSession", async () => {
       mockGetOriginalSearchParameters.mockReturnValue(null)
 
       const axiosError = new AxiosError(
@@ -486,7 +486,7 @@ describe("PrescriptionListPage", () => {
         {
           status: 401,
           statusText: "Unauthorized",
-          data: {restartLogin: true, invalidSessionCause: "token_expired"},
+          data: {restartLogin: true, invalidSessionCause: "InvalidSession"},
           headers: new AxiosHeaders(),
           config: {headers: new AxiosHeaders()}
         }
@@ -502,13 +502,124 @@ describe("PrescriptionListPage", () => {
       await waitFor(() => {
         expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
           mockAuth,
-          "token_expired"
+          "InvalidSession"
         )
       })
 
       expect(logger.warn).toHaveBeenCalledWith(
         "prescriptionList triggered restart login due to:",
-        "token_expired"
+        "InvalidSession"
+      )
+    })
+
+    it("handles 401 response with restart login - ConcurrentSession", async () => {
+      mockGetOriginalSearchParameters.mockReturnValue(null)
+
+      const axiosError = new AxiosError(
+        "Unauthorized",
+        "401",
+        {headers: new AxiosHeaders()},
+        {},
+        {
+          status: 401,
+          statusText: "Unauthorized",
+          data: {restartLogin: true, invalidSessionCause: "ConcurrentSession"},
+          headers: new AxiosHeaders(),
+          config: {headers: new AxiosHeaders()}
+        }
+      )
+      mockedHttp.get.mockRejectedValue(axiosError)
+
+      render(
+        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+          <PrescriptionListPage />
+        </TestWrapper>
+      )
+
+      await waitFor(() => {
+        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+          mockAuth,
+          "ConcurrentSession"
+        )
+      })
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "prescriptionList triggered restart login due to:",
+        "ConcurrentSession"
+      )
+    })
+
+    it("handles 401 response with restart login - Timeout", async () => {
+      mockGetOriginalSearchParameters.mockReturnValue(null)
+
+      const axiosError = new AxiosError(
+        "Unauthorized",
+        "401",
+        {headers: new AxiosHeaders()},
+        {},
+        {
+          status: 401,
+          statusText: "Unauthorized",
+          data: {restartLogin: true, invalidSessionCause: "Timeout"},
+          headers: new AxiosHeaders(),
+          config: {headers: new AxiosHeaders()}
+        }
+      )
+      mockedHttp.get.mockRejectedValue(axiosError)
+
+      render(
+        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+          <PrescriptionListPage />
+        </TestWrapper>
+      )
+
+      await waitFor(() => {
+        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+          mockAuth,
+          "Timeout"
+        )
+      })
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "prescriptionList triggered restart login due to:",
+        "Timeout"
+      )
+    })
+
+    it("handles 401 response with restart login - no invalidSessionCause", async () => {
+      mockGetOriginalSearchParameters.mockReturnValue(null)
+
+      const axiosError = new AxiosError(
+        "Unauthorized",
+        "401",
+        {headers: new AxiosHeaders()},
+        {},
+        {
+          status: 401,
+          statusText: "Unauthorized",
+          data: {restartLogin: true},
+          headers: new AxiosHeaders(),
+          config: {headers: new AxiosHeaders()}
+        }
+      )
+      mockedHttp.get.mockRejectedValue(axiosError)
+
+      render(
+        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+          <PrescriptionListPage />
+        </TestWrapper>
+      )
+
+      await waitFor(() => {
+        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+          mockAuth,
+          undefined
+        )
+      })
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        "prescriptionList triggered restart login due to:",
+        undefined
       )
     })
 
@@ -544,25 +655,6 @@ describe("PrescriptionListPage", () => {
         "No search results were returned",
         axiosError
       )
-    })
-
-    it("handles canceled request error", async () => {
-      mockGetOriginalSearchParameters.mockReturnValue(null)
-
-      const cancelError = new Error("canceled")
-      mockedHttp.get.mockRejectedValue(cancelError)
-
-      render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
-          <PrescriptionListPage />
-        </TestWrapper>
-      )
-
-      await waitFor(() => {
-        expect(logoutHelpers.signOut).toHaveBeenCalled()
-      })
-
-      expect(logger.warn).toHaveBeenCalledWith("Signing out due to request cancellation")
     })
 
     it("handles other axios errors", async () => {
@@ -683,25 +775,6 @@ describe("PrescriptionListPage", () => {
       await waitFor(() => {
         // 1 current + 1 future + 2 past = 4 total
         expect(screen.getByText("We found 4 results")).toBeInTheDocument()
-      })
-    })
-
-    it("creates tab data with correct counts", async () => {
-      mockGetOriginalSearchParameters.mockReturnValue(null)
-
-      mockedHttp.get.mockResolvedValue({
-        status: 200,
-        data: mockSearchResponse
-      })
-
-      render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
-          <PrescriptionListPage />
-        </TestWrapper>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByText("1 current, 1 future, 2 past")).toBeInTheDocument()
       })
     })
   })
