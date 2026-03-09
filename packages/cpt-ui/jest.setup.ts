@@ -96,7 +96,12 @@ jest.mock("@/constants/environment", () => ({
     SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
     SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
     SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
+    PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
+    PATIENT_SEARCH_RESULTS: "/patient-search-results",
     TOO_MANY_SEARCH_RESULTS: "/too-many-search-results",
+    PATIENT_NOT_FOUND: "/patient-not-found",
+    NO_PATIENT_FOUND: "/no-patient-found",
+    NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected",
     NOT_FOUND: "/notfound"
@@ -112,6 +117,28 @@ jest.mock("@/constants/environment", () => ({
     "/select-active-session",
     "/select-your-role",
     "/change-your-role"
+  ],
+  ALLOWED_NO_REDIRECT_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/session-logged-out",
+    "/cookies-selected",
+    "/",
+    "/session-logged-out"
+  ],
+  BANNER_ALLOWED_PATHS: [
+    "/prescription-list-current",
+    "/prescription-list-past",
+    "/prescription-list-future",
+    "/prescription-details"
+  ],
+  AUTO_LOGIN_ENVIRONMENTS: [
+    {environment: "dev", loginMethod: "mock"},
+    {environment: "dev-pr", loginMethod: "mock"},
+    {environment: "int", loginMethod: "cis2"},
+    {environment: "prod", loginMethod: "cis2"}
   ],
   PUBLIC_PATHS: [
     "/login",
