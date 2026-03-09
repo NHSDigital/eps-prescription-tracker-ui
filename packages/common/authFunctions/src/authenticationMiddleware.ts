@@ -1,7 +1,12 @@
 import {MiddlewareObj} from "@middy/core"
 import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {getUsernameFromEvent, getSessionIdFromEvent} from "./event"
-import {authenticateRequest, AuthDependencies, AuthResult} from "./authenticateRequest"
+import {
+  authenticateRequest,
+  AuthDependencies,
+  AuthResult,
+  AuthTimeoutResult
+} from "./authenticateRequest"
 import {getTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 export const authenticationMiddleware = ({
@@ -16,7 +21,7 @@ export const authenticationMiddleware = ({
     logger.info("Using standard authentication middleware")
 
     let invalidSessionCause: string | undefined = undefined
-    let authResult: AuthResult | null = null
+    let authenticatedResult: AuthResult | AuthTimeoutResult | null = null
 
     try {
       const username = getUsernameFromEvent(event)
@@ -34,13 +39,18 @@ export const authenticationMiddleware = ({
       if (tokenMappingItem !== undefined && tokenMappingSessionId === sessionId) {
         // Feed the token mapping item to authenticateRequest
         logger.info("Session ID matches the token mapping item, proceeding with authentication")
-        authResult = await authenticateRequest(
+        authenticatedResult = await authenticateRequest(
           username,
           {axiosInstance, ddbClient, logger, authOptions},
           tokenMappingItem,
           authOptions.tokenMappingTableName,
           false
         )
+
+        if (authenticatedResult && "isTimeout" in authenticatedResult) {
+          invalidSessionCause = "Timeout"
+          authenticatedResult = null
+        }
       } else if (tokenMappingItem !== undefined) {
         logger.info("A session is active but does not match the requestors sessionId", {username, sessionId})
         invalidSessionCause = "ConcurrentSession"
@@ -53,7 +63,7 @@ export const authenticationMiddleware = ({
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
     }
-    if (!authResult) {
+    if (!authenticatedResult || "isTimeout" in authenticatedResult) {
       request.earlyResponse = {
         statusCode: 401,
         body: JSON.stringify({
@@ -64,6 +74,6 @@ export const authenticationMiddleware = ({
       }
       return request.earlyResponse
     }
-    event.requestContext.authorizer = authResult
+    event.requestContext.authorizer = authenticatedResult as AuthResult
   }
 } satisfies MiddlewareObj<APIGatewayProxyEventBase<AuthResult>, APIGatewayProxyResult, Error>)

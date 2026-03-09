@@ -39,3 +39,6 @@ vulnerabilities:
       - "package-lock.json"
     statement: Vulnerability in minimatch - waiting for depencency updates
     expired_at: 2026-06-01
+  - id: CVE-2026-29063
+    statement: fixed - waiting for dependency updates
+    expired_at: 2026-06-01

@@ -31,9 +31,29 @@ import NoPatientsFoundPage from "@/pages/NoPatientsFoundPage"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import SessionLoggedOutPage from "./pages/SessionLoggedOut"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
+import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
+import {useSessionTimeout} from "@/hooks/useSessionTimeout"
+import {useAccess} from "@/context/AccessProvider"
 
 function AppContent() {
   const location = useLocation()
+  const accessContext = useAccess()
+
+  const sessionTimeoutProps = {
+    showModal: accessContext.sessionTimeoutInfo.showModal,
+    timeLeft: accessContext.sessionTimeoutInfo.timeLeft,
+    onStayLoggedIn: accessContext.onStayLoggedIn,
+    onLogOut: accessContext.onLogOut,
+    onTimeout: accessContext.onTimeout
+  }
+
+  const {
+    showModal,
+    timeLeft,
+    onStayLoggedIn,
+    onLogOut,
+    isExtending
+  } = useSessionTimeout(sessionTimeoutProps)
 
   // Use the refactored focus management hook
   useFocusManagement()
@@ -101,6 +121,13 @@ function AppContent() {
             </NavigationProvider>
           </SearchProvider>
         </PrescriptionInformationProvider>
+        <SessionTimeoutModal
+          isOpen={showModal}
+          timeLeft={timeLeft}
+          onStayLoggedIn={onStayLoggedIn}
+          onLogOut={onLogOut}
+          isExtending={isExtending}
+        />
       </PatientDetailsProvider>
     </>
   )
