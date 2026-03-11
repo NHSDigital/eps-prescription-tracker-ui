@@ -125,6 +125,7 @@ describe("AccessProvider", () => {
     jest.useFakeTimers()
 
     mockNavigateHook.mockReturnValue(navigate)
+    mockNormalizePathFn.mockImplementation((path: string) => path)
   })
 
   afterEach(() => {
@@ -629,9 +630,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -683,9 +686,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -716,9 +721,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -736,7 +743,9 @@ describe("AccessProvider", () => {
       mockSignOut.mockResolvedValue(undefined)
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
+        selectedRole: {name: "TestRole", role_id: "123"},
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
         updateInvalidSessionCause: jest.fn()
       }
@@ -751,9 +760,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -771,6 +782,7 @@ describe("AccessProvider", () => {
       const mockUpdateTrackerUserInfo = jest.fn().mockResolvedValue({error: null})
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         selectedRole: {name: "TestRole", role_id: "123"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo,
@@ -787,9 +799,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -807,6 +821,7 @@ describe("AccessProvider", () => {
       mockSignOut.mockResolvedValue(undefined)
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         selectedRole: null, // No selected role
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -814,7 +829,7 @@ describe("AccessProvider", () => {
       }
 
       mockAuthHook.mockReturnValue(authContext)
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SELECT_YOUR_ROLE})
 
       let accessContext: MockAccessContext
       const ContextConsumer = () => {
@@ -823,9 +838,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -846,6 +863,7 @@ describe("AccessProvider", () => {
       mockSignOut.mockResolvedValue(undefined)
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         selectedRole: {name: "TestRole", role_id: "123"},
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -862,9 +880,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
