@@ -47,7 +47,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     timeLeft: number
   }>({showModal: false, timeLeft: 0})
 
-  const LOGOUT_MARKER_MAX_AGE_MS = 30000
+  const LOGOUT_MARKER_MAX_AGE_MS = 3000
 
   const hasRecentLogoutMarker = () => {
     if (typeof window === "undefined") {
