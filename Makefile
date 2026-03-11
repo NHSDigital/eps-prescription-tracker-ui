@@ -4,7 +4,7 @@ guard-%:
 		exit 1; \
 	fi
 
-.PHONY: install build test publish release clean
+.PHONY: install build test publish release clean lint compile
 
 install: install-node install-python install-hooks
 
