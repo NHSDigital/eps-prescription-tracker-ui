@@ -25,7 +25,7 @@ import LoadingPage from "@/pages/LoadingPage"
 import Layout from "@/Layout"
 
 export const AccessContext = createContext<{
-  sessionTimeoutInfo: { showModal: boolean; timeLeft: number }
+  sessionTimeoutInfo: { showModal: boolean; timeLeft: number; isExtending: boolean }
   onStayLoggedIn:() => Promise<void>
   onLogOut: () => Promise<void>
   onTimeout: () => Promise<void>
@@ -39,7 +39,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const [sessionTimeoutInfo, setSessionTimeoutInfo] = useState<{
     showModal: boolean
     timeLeft: number
-  }>({showModal: false, timeLeft: 0})
+    isExtending: boolean
+  }>({showModal: false, timeLeft: 0, isExtending: false})
 
   const shouldBlockChildren = () => {
     // TODO: Investigate moving 'ensureRoleSelected' functionality into this blockChildren
@@ -115,8 +116,15 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }
 
   const handleStayLoggedIn = useCallback(async () => {
+    // Prevent multiple simultaneous extension attempts
+    if (sessionTimeoutInfo.isExtending) {
+      logger.info("Session extension already in progress, ignoring duplicate request")
+      return
+    }
+
     try {
       logger.info("User chose to extend session")
+      setSessionTimeoutInfo(prev => ({...prev, isExtending: true}))
 
       // Call the selectedRole API with current role to refresh session
       if (auth.selectedRole) {
@@ -124,27 +132,29 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         logger.info("Session extended successfully")
 
         // Hide modal and refresh user info
-        setSessionTimeoutInfo({showModal: false, timeLeft: 0})
+        setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false})
         await auth.updateTrackerUserInfo()
       } else {
         logger.error("No selected role available to extend session")
+        setSessionTimeoutInfo(prev => ({...prev, isExtending: false}))
         await handleLogOut()
       }
     } catch (error) {
       logger.error("Error extending session:", error)
+      setSessionTimeoutInfo(prev => ({...prev, isExtending: false}))
       await handleLogOut()
     }
-  }, [auth])
+  }, [auth, sessionTimeoutInfo.isExtending])
 
   const handleLogOut = useCallback(async () => {
     logger.info("User chose to log out from session timeout modal")
-    setSessionTimeoutInfo({showModal: false, timeLeft: 0})
+    setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false})
     await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }, [auth])
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
-    setSessionTimeoutInfo({showModal: false, timeLeft: 0})
+    setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false})
     auth.updateInvalidSessionCause("Timeout")
     await handleRestartLogin(auth, "Timeout")
   }, [auth])
@@ -166,7 +176,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         } else {
           const remainingTime = response.remainingSessionTime
           if (remainingTime !== undefined) {
-            const twoMinutes = 2 * 60 * 1000
+            const twoMinutes = 14 * 60 * 1000
 
             logger.debug("Session time check", {
               remainingTime,
@@ -182,7 +192,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
               })
               setSessionTimeoutInfo({
                 showModal: true,
-                timeLeft: remainingTime
+                timeLeft: remainingTime,
+                isExtending: false
               })
             } else if (remainingTime <= 0) {
               logger.warn("Session expired - automatically logging out user")
@@ -193,7 +204,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
               setSessionTimeoutInfo({
                 showModal: false,
-                timeLeft: remainingTime
+                timeLeft: remainingTime,
+                isExtending: false
               })
             }
           } else {
