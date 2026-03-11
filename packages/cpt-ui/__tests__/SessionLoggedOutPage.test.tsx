@@ -104,7 +104,7 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders without crashing with ConcurrentSession invalidSessionCause state", () => {
-    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    let adjustedState = structuredClone(defaultAuthState)
     adjustedState.invalidSessionCause = "ConcurrentSession"
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
@@ -123,7 +123,7 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders session expired message for token_expired invalidSessionCause", () => {
-    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    let adjustedState = structuredClone(defaultAuthState)
     adjustedState.invalidSessionCause = "token_expired"
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
@@ -139,7 +139,7 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders session expired message for InvalidSession invalidSessionCause", () => {
-    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    let adjustedState = structuredClone(defaultAuthState)
     adjustedState.invalidSessionCause = "InvalidSession"
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
@@ -152,7 +152,7 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders session expired message for session_expired invalidSessionCause", () => {
-    let adjustedState = JSON.parse(JSON.stringify(defaultAuthState))
+    let adjustedState = structuredClone(defaultAuthState)
     adjustedState.invalidSessionCause = "session_expired"
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
