@@ -309,6 +309,7 @@ describe("AccessProvider", () => {
 
     it("allows children when concurrent session exists but user is on session selection page", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isConcurrentSession: true,
         isSigningIn: false,
@@ -602,6 +603,7 @@ describe("AccessProvider", () => {
     beforeEach(() => {
       mockUpdateTrackerUserInfo = jest.fn()
       authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
