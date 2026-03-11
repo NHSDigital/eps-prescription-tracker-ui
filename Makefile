@@ -106,17 +106,6 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/testingSupport/clearActiveSessions
 	npm run check-licenses --workspace packages/testingSupport/setLastActivityTime
 
-check-licenses-python:
-	scripts/check_python_licenses.sh
-
-aws-configure:
-	aws configure sso --region eu-west-2
-
-aws-login:
-	aws sso login --sso-session sso-session
-
-cfn-guard:
-	./scripts/run_cfn_guard.sh
 
 react-dev:
 	npm run dev --workspace packages/cpt-ui
@@ -352,5 +341,5 @@ cdk-diff: guard-CDK_APP_NAME
 		--context VERSION_NUMBER=$$VERSION_NUMBER \
 		--context COMMIT_ID=$$COMMIT_ID
 
-build-deployment-container-image:
-	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
+%:
+	@$(MAKE) -f /usr/local/share/eps/Mk/common.mk $@
