@@ -11,7 +11,13 @@ import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut} from "aws-amplify/auth"
 
-import {AuthContext, AuthContextType, AuthProvider} from "@/context/AuthProvider"
+import {
+  AuthContext,
+  AuthContextType,
+  AuthProvider,
+  LOGOUT_MARKER_STORAGE_GROUP,
+  LOGOUT_MARKER_STORAGE_KEY
+} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
@@ -371,6 +377,37 @@ describe("AuthProvider", () => {
       await contextValue.cognitoSignOut()
     })
     expect(signOut).toHaveBeenCalled()
+  })
+
+  it("should set logout marker when setStateForSignOut is called", async () => {
+    let contextValue: AuthContextType | null = null
+
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext)
+      return null
+    }
+
+    localStorage.removeItem(LOGOUT_MARKER_STORAGE_GROUP)
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </MemoryRouter>
+      )
+    })
+
+    await act(async () => {
+      await contextValue?.setStateForSignOut()
+    })
+
+    const markerGroup = JSON.parse(localStorage.getItem(LOGOUT_MARKER_STORAGE_GROUP) ?? "{}")
+    expect(markerGroup[LOGOUT_MARKER_STORAGE_KEY]).toEqual(
+      expect.objectContaining({reason: "signOut"})
+    )
+    expect(typeof markerGroup[LOGOUT_MARKER_STORAGE_KEY].timestamp).toBe("number")
   })
 
   it(

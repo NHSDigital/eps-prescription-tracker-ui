@@ -15,6 +15,7 @@ jest.mock("@/helpers/logger", () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn()
   }
 }))
@@ -37,6 +38,7 @@ jest.mock("react-router-dom", () => {
 describe("shouldBlockChildren", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    localStorage.clear()
   })
 
   const renderWithProvider = (
@@ -74,6 +76,32 @@ describe("shouldBlockChildren", () => {
         isSignedIn: false,
         isSigningIn: false,
         selectedRole: undefined
+      }
+    },
+    {
+      name: "not signed in, not signing in, on protected path, with logout marker", // has a redirection test
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: false,
+        selectedRole: undefined,
+        logoutMarker: {
+          timestamp: Date.now(),
+          reason: "signOut"
+        }
+      }
+    },
+    {
+      name: "not signed in, not signing in, on protected path, with stale logout marker", // has a redirection test
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: false,
+        selectedRole: undefined,
+        logoutMarker: {
+          timestamp: Date.now() - 60000,
+          reason: "signOut"
+        }
       }
     },
     { // has a redirection test

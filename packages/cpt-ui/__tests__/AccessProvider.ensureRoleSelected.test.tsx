@@ -2,7 +2,7 @@ import React from "react"
 import {render, waitFor} from "@testing-library/react"
 import {AccessProvider} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {AuthContext, AuthContextType, LogoutMarker} from "@/context/AuthProvider"
 import {MemoryRouter} from "react-router-dom"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
@@ -15,6 +15,7 @@ jest.mock("@/helpers/logger", () => ({
   logger: {
     debug: jest.fn(),
     info: jest.fn(),
+    warn: jest.fn(),
     error: jest.fn()
   }
 }))
@@ -42,6 +43,7 @@ jest.mock("react-router-dom", () => {
 describe("ensureRoleSelected", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    localStorage.clear()
   })
 
   const renderWithProvider = (
@@ -70,6 +72,7 @@ describe("ensureRoleSelected", () => {
     initialPath: string;
     authStateOverrides: Partial<AuthContextType>;
     expectedPath?: string;
+    logoutMarker?: LogoutMarker
   }
 
   const redirectScenarios: Array<Scenario> = [
@@ -104,7 +107,7 @@ describe("ensureRoleSelected", () => {
       expectedPath: FRONTEND_PATHS.LOGIN
     },
     {
-      name: "not signed in, not signing in, on non-public path, redirects to login", // has a render block test
+      name: "not signed in, not signing in, on protected path, redirects to login", // has a render block test
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides: {
         isSignedIn: false,
@@ -122,6 +125,36 @@ describe("ensureRoleSelected", () => {
         isSigningOut: true,
         invalidSessionCause: "Session expired",
         selectedRole: undefined
+      },
+      expectedPath: FRONTEND_PATHS.LOGIN
+    },
+    { // has render block test
+      name: "not signed in, on protected path, other tab logs out, redirects to logout",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides:     {
+        isSignedIn: false,
+        isSigningIn: false,
+        isSigningOut: false,
+        selectedRole: undefined,
+        logoutMarker: {
+          timestamp: Date.now(),
+          reason: "signOut"
+        }
+      },
+      expectedPath: FRONTEND_PATHS.LOGOUT
+    },
+    { // has render block test
+      name: "not signed in, on protected path, stale logout marker, redirects to login",
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: false,
+        isSigningIn: false,
+        isSigningOut: false,
+        selectedRole: undefined,
+        logoutMarker: {
+          timestamp: Date.now() - 60000,
+          reason: "signOut"
+        }
       },
       expectedPath: FRONTEND_PATHS.LOGIN
     },

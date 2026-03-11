@@ -9,7 +9,7 @@ import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
-import {useLocalStorageState} from "@/helpers/useLocalStorageState"
+import {readItemGroupFromLocalStorage, useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
 
 import http from "@/helpers/axios"
@@ -18,6 +18,13 @@ import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
+export const LOGOUT_MARKER_STORAGE_KEY = "logoutMarker"
+export const LOGOUT_MARKER_STORAGE_GROUP = "logoutMarker"
+
+export type LogoutMarker = {
+  timestamp: number
+  reason: "signOut"
+}
 
 export interface AuthContextType {
   error: string | null
@@ -34,6 +41,7 @@ export interface AuthContextType {
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   remainingSessionTime: number | undefined
+  logoutMarker: LogoutMarker | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
@@ -81,6 +89,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [remainingSessionTime, setRemainingSessionTime] = useLocalStorageState<number | undefined>(
     "remainingSessionTime",
     "remainingSessionTime",
+    undefined
+  )
+  const [logoutMarker, setLogoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
+    LOGOUT_MARKER_STORAGE_KEY,
+    LOGOUT_MARKER_STORAGE_GROUP,
     undefined
   )
   /**
@@ -177,6 +190,17 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
   /** Sign out state helper */
   const setStateForSignOut = async () => {
+    const marker: LogoutMarker = {timestamp: Date.now(), reason: "signOut"}
+    if (typeof window !== "undefined") {
+      try {
+        const markerGroup = readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP)
+        markerGroup[LOGOUT_MARKER_STORAGE_KEY] = marker
+        window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+      } catch (error) {
+        logger.error("Unable to synchronously write logout marker", error)
+      }
+    }
+    setLogoutMarker(marker)
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsSigningOut(true)
@@ -219,6 +243,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
+    setLogoutMarker(undefined)
     setIsSigningIn(true)
     setInvalidSessionCause(undefined)
     await signInWithRedirect(input)
@@ -253,6 +278,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       sessionId,
       remainingSessionTime,
       deviceId,
+      logoutMarker,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,

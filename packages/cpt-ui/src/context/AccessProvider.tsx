@@ -9,7 +9,12 @@ import React, {
 import {useLocation, useNavigate} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
-import {useAuth} from "./AuthProvider"
+import {
+  useAuth,
+  type LogoutMarker,
+  LOGOUT_MARKER_STORAGE_GROUP,
+  LOGOUT_MARKER_STORAGE_KEY
+} from "./AuthProvider"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {signOut} from "@/helpers/logout"
 
@@ -41,6 +46,36 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     showModal: boolean
     timeLeft: number
   }>({showModal: false, timeLeft: 0})
+
+  const LOGOUT_MARKER_MAX_AGE_MS = 30000
+
+  const hasRecentLogoutMarker = () => {
+    if (typeof window === "undefined") {
+      return false
+    }
+
+    try {
+      // Don't rely on React local storage state handling as it's slower
+      // Causing potential race condition where the marker isn't set by the primary tab in time
+      const markerGroupRaw = window.localStorage.getItem(LOGOUT_MARKER_STORAGE_GROUP)
+      if (markerGroupRaw) {
+        const markerGroup = JSON.parse(markerGroupRaw) as Record<string, LogoutMarker | undefined>
+        const marker = markerGroup[LOGOUT_MARKER_STORAGE_KEY]
+
+        if (marker && typeof marker.timestamp === "number") {
+          return Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+        }
+      }
+    } catch (error) {
+      logger.debug("Unable to read logout marker from localStorage", error)
+    }
+
+    if (auth.logoutMarker && typeof auth.logoutMarker.timestamp === "number") {
+      return Date.now() - auth.logoutMarker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+    }
+
+    return false
+  }
 
   const shouldBlockChildren = () => {
     const path = normalizePath(location.pathname)
@@ -102,6 +137,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       if (path === "/") {
         logger.info("User at root path - redirecting to login page")
         return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
+      }
+
+      // If another tab has signed out, other tabs will run the redirection logic independently
+      // Check if a logout has occurred elsewhere and forward all tabs to logout equally
+      // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
+      if (hasRecentLogoutMarker()) {
+        return redirect(FRONTEND_PATHS.LOGOUT, "Recent cross-tab logout detected - redirecting to logout page")
       }
 
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
