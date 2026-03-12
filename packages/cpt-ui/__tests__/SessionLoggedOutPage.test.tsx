@@ -104,8 +104,10 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders without crashing with ConcurrentSession invalidSessionCause state", () => {
-    let adjustedState = structuredClone(defaultAuthState)
-    adjustedState.invalidSessionCause = "ConcurrentSession"
+    let adjustedState = {
+      ...defaultAuthState,
+      invalidSessionCause: "ConcurrentSession"
+    }
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
     expect(screen.getByRole("main")).toBeInTheDocument()
@@ -123,8 +125,10 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders session expired message for token_expired invalidSessionCause", () => {
-    let adjustedState = structuredClone(defaultAuthState)
-    adjustedState.invalidSessionCause = "token_expired"
+    let adjustedState = {
+      ...defaultAuthState,
+      invalidSessionCause: "token_expired"
+    }
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
     expect(screen.getByRole("main")).toBeInTheDocument()
@@ -139,8 +143,10 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders session expired message for InvalidSession invalidSessionCause", () => {
-    let adjustedState = structuredClone(defaultAuthState)
-    adjustedState.invalidSessionCause = "InvalidSession"
+    let adjustedState = {
+      ...defaultAuthState,
+      invalidSessionCause: "InvalidSession"
+    }
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
     expect(screen.getByRole("main")).toBeInTheDocument()
@@ -152,8 +158,10 @@ describe("SessionLoggedOutPage", () => {
   })
 
   it("renders session expired message for session_expired invalidSessionCause", () => {
-    let adjustedState = structuredClone(defaultAuthState)
-    adjustedState.invalidSessionCause = "session_expired"
+    let adjustedState = {
+      ...defaultAuthState,
+      invalidSessionCause: "session_expired"
+    }
     renderWithProviders(<SessionLoggedOutPage />, adjustedState)
 
     expect(screen.getByRole("main")).toBeInTheDocument()
