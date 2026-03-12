@@ -2,7 +2,13 @@ import React from "react"
 import {render, waitFor} from "@testing-library/react"
 import {AccessProvider} from "@/context/AccessProvider"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {AuthContext, AuthContextType, LogoutMarker} from "@/context/AuthProvider"
+import {
+  AuthContext,
+  AuthContextType,
+  LOGOUT_MARKER_STORAGE_GROUP,
+  LOGOUT_MARKER_STORAGE_KEY,
+  TAB_ID_SESSION_KEY
+} from "@/context/AuthProvider"
 import {MemoryRouter} from "react-router-dom"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
@@ -44,6 +50,7 @@ describe("ensureRoleSelected", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     localStorage.clear()
+    sessionStorage.clear()
   })
 
   const renderWithProvider = (
@@ -129,7 +136,7 @@ describe("ensureRoleSelected", () => {
       expectedPath: FRONTEND_PATHS.LOGIN
     },
     { // has render block test
-      name: "not signed in, on protected path, other tab logs out, redirects to logout",
+      name: "not signed in, on protected path, marker in state only, redirects to login",
       initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
       authStateOverrides:     {
         isSignedIn: false,
@@ -138,10 +145,11 @@ describe("ensureRoleSelected", () => {
         selectedRole: undefined,
         logoutMarker: {
           timestamp: Date.now(),
-          reason: "signOut"
+          reason: "signOut",
+          initiatedByTabId: "tab-a"
         }
       },
-      expectedPath: FRONTEND_PATHS.LOGOUT
+      expectedPath: FRONTEND_PATHS.LOGIN
     },
     { // has render block test
       name: "not signed in, on protected path, stale logout marker, redirects to login",
@@ -153,7 +161,8 @@ describe("ensureRoleSelected", () => {
         selectedRole: undefined,
         logoutMarker: {
           timestamp: Date.now() - 60000,
-          reason: "signOut"
+          reason: "signOut",
+          initiatedByTabId: "tab-a"
         }
       },
       expectedPath: FRONTEND_PATHS.LOGIN
@@ -321,4 +330,63 @@ describe("ensureRoleSelected", () => {
         )
       })
     })
+
+  it("redirects to logout for non-initiating tab when recent logout marker exists and multiple tabs are open",
+    async () => {
+      sessionStorage.setItem(TAB_ID_SESSION_KEY, "tab-b")
+      localStorage.setItem("openTabIds", JSON.stringify(["tab-a", "tab-b"]))
+      localStorage.setItem(
+        LOGOUT_MARKER_STORAGE_GROUP,
+        JSON.stringify({
+          [LOGOUT_MARKER_STORAGE_KEY]: {
+            timestamp: Date.now(),
+            reason: "signOut",
+            initiatedByTabId: "tab-a"
+          }
+        })
+      )
+
+      renderWithProvider(
+        {
+          isSignedIn: false,
+          isSigningIn: false,
+          isSigningOut: false,
+          selectedRole: undefined
+        },
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+      )
+
+      await waitFor(() => {
+        expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGOUT)
+      })
+    })
+
+  it("does not force logout redirect for initiating tab even when marker is recent", async () => {
+    sessionStorage.setItem(TAB_ID_SESSION_KEY, "tab-a")
+    localStorage.setItem("openTabIds", JSON.stringify(["tab-a", "tab-b"]))
+    localStorage.setItem(
+      LOGOUT_MARKER_STORAGE_GROUP,
+      JSON.stringify({
+        [LOGOUT_MARKER_STORAGE_KEY]: {
+          timestamp: Date.now(),
+          reason: "signOut",
+          initiatedByTabId: "tab-a"
+        }
+      })
+    )
+
+    renderWithProvider(
+      {
+        isSignedIn: false,
+        isSigningIn: false,
+        isSigningOut: false,
+        selectedRole: undefined
+      },
+      FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
+    )
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGIN)
+    })
+  })
 })

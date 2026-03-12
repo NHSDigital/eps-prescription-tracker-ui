@@ -11,6 +11,7 @@ import {authConfig} from "./configureAmplify"
 
 import {readItemGroupFromLocalStorage, useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
+import {getOrCreateTabId, TAB_ID_SESSION_KEY as TAB_ID_SESSION_KEY_VALUE} from "@/helpers/tabHelpers"
 
 import http from "@/helpers/axios"
 import {RoleDetails, TrackerUserInfoResult, UserDetails} from "@cpt-ui-common/common-types"
@@ -18,12 +19,18 @@ import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
+// Logout idempotency and tab awareness
 export const LOGOUT_MARKER_STORAGE_KEY = "logoutMarker"
 export const LOGOUT_MARKER_STORAGE_GROUP = "logoutMarker"
+export const TAB_ID_SESSION_KEY = TAB_ID_SESSION_KEY_VALUE
+export const LOGOUT_MARKER_MAX_AGE_MS = 10000
+export const COGNITO_SIGNOUT_DEDUPE_WINDOW_MS = 60000
 
 export type LogoutMarker = {
   timestamp: number
   reason: "signOut"
+  initiatedByTabId: string
+  cognitoSignOutStartedAt?: number
 }
 
 export interface AuthContextType {
@@ -96,6 +103,23 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     LOGOUT_MARKER_STORAGE_GROUP,
     undefined
   )
+
+  const readLogoutMarker = () => {
+    const markerGroup =
+    readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
+    return markerGroup[LOGOUT_MARKER_STORAGE_KEY]
+  }
+
+  const writeLogoutMarker = (marker: LogoutMarker) => {
+    const markerGroup =
+    readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
+    markerGroup[LOGOUT_MARKER_STORAGE_KEY] = marker
+    window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+  }
+
+  const isRecentMarker = (marker: LogoutMarker | undefined) => {
+    return !!marker && Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+  }
   /**
    * Fetch and update the auth tokens
    */
@@ -188,14 +212,26 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
   }, [])
 
-  /** Sign out state helper */
-  const setStateForSignOut = async () => {
-    const marker: LogoutMarker = {timestamp: Date.now(), reason: "signOut"}
+  /** Sign out state helper
+  * Sets logout marker in local storage with timestamp and tab ID
+  * Timestamp - used to validate recency in redirection rules
+  * Tab ID - used to ensure primary / secondary tabs behave differently
+  */
+  const setStateForSignOut = () => {
+    const currentTabId = getOrCreateTabId()
+    const existingMarker = readLogoutMarker()
+
+    const marker: LogoutMarker = isRecentMarker(existingMarker)
+      ? existingMarker!
+      : {
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: currentTabId
+      }
+
     if (typeof window !== "undefined") {
       try {
-        const markerGroup = readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP)
-        markerGroup[LOGOUT_MARKER_STORAGE_KEY] = marker
-        window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+        writeLogoutMarker(marker)
       } catch (error) {
         logger.error("Unable to synchronously write logout marker", error)
       }
@@ -213,6 +249,27 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     logger.info("Signing out in authProvider...")
 
     try {
+      const now = Date.now()
+      const existingMarker = readLogoutMarker()
+
+      if (
+        existingMarker?.cognitoSignOutStartedAt &&
+        now - existingMarker.cognitoSignOutStartedAt <= COGNITO_SIGNOUT_DEDUPE_WINDOW_MS
+      ) {
+        logger.info("Skipping duplicate cognitoSignOut call due to in-progress marker")
+        return true
+      }
+
+      const markerToUpdate: LogoutMarker = existingMarker ?? {
+        timestamp: now,
+        reason: "signOut",
+        initiatedByTabId: getOrCreateTabId()
+      }
+
+      markerToUpdate.cognitoSignOutStartedAt = now
+      writeLogoutMarker(markerToUpdate)
+      setLogoutMarker(markerToUpdate)
+
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
       try {

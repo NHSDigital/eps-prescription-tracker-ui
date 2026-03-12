@@ -13,8 +13,10 @@ import {
   useAuth,
   type LogoutMarker,
   LOGOUT_MARKER_STORAGE_GROUP,
-  LOGOUT_MARKER_STORAGE_KEY
+  LOGOUT_MARKER_STORAGE_KEY,
+  LOGOUT_MARKER_MAX_AGE_MS
 } from "./AuthProvider"
+import {getOpenTabCount, getOrCreateTabId, updateOpenTabs} from "@/helpers/tabHelpers"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {signOut} from "@/helpers/logout"
 
@@ -47,11 +49,25 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     timeLeft: number
   }>({showModal: false, timeLeft: 0})
 
-  const LOGOUT_MARKER_MAX_AGE_MS = 3000
+  useEffect(() => {
+    const tabId = getOrCreateTabId()
 
-  const hasRecentLogoutMarker = () => {
+    updateOpenTabs(tabId, "add")
+
+    const onBeforeUnload = () => {
+      updateOpenTabs(tabId, "remove")
+    }
+
+    window.addEventListener("beforeunload", onBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload)
+      updateOpenTabs(tabId, "remove")
+    }
+  }, [])
+
+  const getRecentLogoutMarker = () => {
     if (typeof window === "undefined") {
-      return false
+      return undefined
     }
 
     try {
@@ -63,7 +79,10 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         const marker = markerGroup[LOGOUT_MARKER_STORAGE_KEY]
 
         if (marker && typeof marker.timestamp === "number") {
-          return Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+          if (Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS) {
+            return marker
+          }
+          return undefined
         }
       }
     } catch (error) {
@@ -71,10 +90,26 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
 
     if (auth.logoutMarker && typeof auth.logoutMarker.timestamp === "number") {
-      return Date.now() - auth.logoutMarker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+      if (Date.now() - auth.logoutMarker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS) {
+        return auth.logoutMarker
+      }
     }
 
-    return false
+    return undefined
+  }
+
+  const shouldRedirectDueToCrossTabLogout = () => {
+    const marker = getRecentLogoutMarker()
+    if (!marker) {
+      return false
+    }
+
+    const currentTabId = getOrCreateTabId()
+    if (marker.initiatedByTabId === currentTabId) {
+      return false
+    }
+
+    return getOpenTabCount() > 1
   }
 
   const shouldBlockChildren = () => {
@@ -142,7 +177,11 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       // If another tab has signed out, other tabs will run the redirection logic independently
       // Check if a logout has occurred elsewhere and forward all tabs to logout equally
       // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
-      if (hasRecentLogoutMarker()) {
+      if (
+        path !== FRONTEND_PATHS.LOGOUT &&
+        path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
+        shouldRedirectDueToCrossTabLogout()
+      ) {
         return redirect(FRONTEND_PATHS.LOGOUT, "Recent cross-tab logout detected - redirecting to logout page")
       }
 

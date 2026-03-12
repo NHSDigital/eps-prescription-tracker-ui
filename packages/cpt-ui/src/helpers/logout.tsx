@@ -35,11 +35,7 @@ export const handleRestartLogin = async (
   invalidSessionCause: string | undefined,
   navigate?: (path: string) => void
 ) => {
-  logger.info("Handling restart login instruction from backend", invalidSessionCause)
-  logger.info("AUTH_CONFIG values:", {
-    REDIRECT_SIGN_OUT: AUTH_CONFIG.REDIRECT_SIGN_OUT,
-    REDIRECT_SESSION_SIGN_OUT: AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT
-  })
+  logger.info("Handling restart login instruction from backend", auth)
 
   if (invalidSessionCause) {
     logger.info(`Invalid session cause supplied, ${invalidSessionCause}`)
