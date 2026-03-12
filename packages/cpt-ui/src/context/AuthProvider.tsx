@@ -23,8 +23,8 @@ const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 export const LOGOUT_MARKER_STORAGE_KEY = "logoutMarker"
 export const LOGOUT_MARKER_STORAGE_GROUP = "logoutMarker"
 export const TAB_ID_SESSION_KEY = TAB_ID_SESSION_KEY_VALUE
-export const LOGOUT_MARKER_MAX_AGE_MS = 10000
-export const COGNITO_SIGNOUT_DEDUPE_WINDOW_MS = 60000
+export const LOGOUT_MARKER_MAX_AGE_MS = 3000
+export const COGNITO_SIGNOUT_DEDUPE_WINDOW_MS = 3000
 
 export type LogoutMarker = {
   timestamp: number
@@ -117,6 +117,14 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
   }
 
+  const clearLogoutMarkerFromStorage = () => {
+    if (typeof window === "undefined") return
+    const markerGroup =
+    readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
+    delete markerGroup[LOGOUT_MARKER_STORAGE_KEY]
+    window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+  }
+
   const isRecentMarker = (marker: LogoutMarker | undefined) => {
     return !!marker && Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
   }
@@ -136,6 +144,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRemainingSessionTime(undefined)
     setSessionId(undefined)
     setInvalidSessionCause(undefined)
+    clearLogoutMarkerFromStorage()
   }
 
   const updateTrackerUserInfo = async () => {
@@ -252,13 +261,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       const now = Date.now()
       const existingMarker = readLogoutMarker()
 
-      if (
-        existingMarker?.cognitoSignOutStartedAt &&
-        now - existingMarker.cognitoSignOutStartedAt <= COGNITO_SIGNOUT_DEDUPE_WINDOW_MS
-      ) {
-        logger.info("Skipping duplicate cognitoSignOut call due to in-progress marker")
-        return true
-      }
+      // if (
+      //   !isSigningIn && existingMarker?.cognitoSignOutStartedAt &&
+      //   now - existingMarker.cognitoSignOutStartedAt <= COGNITO_SIGNOUT_DEDUPE_WINDOW_MS
+      // ) {
+      //   logger.info("Skipping duplicate cognitoSignOut call due to in-progress marker")
+      //   return true
+      // }
 
       const markerToUpdate: LogoutMarker = existingMarker ?? {
         timestamp: now,
@@ -300,9 +309,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
+    clearLogoutMarkerFromStorage()
     setLogoutMarker(undefined)
     setIsSigningIn(true)
     setInvalidSessionCause(undefined)
+
     await signInWithRedirect(input)
   }
 

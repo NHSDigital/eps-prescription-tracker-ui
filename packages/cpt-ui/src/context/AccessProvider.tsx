@@ -174,17 +174,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
       }
 
-      // If another tab has signed out, other tabs will run the redirection logic independently
-      // Check if a logout has occurred elsewhere and forward all tabs to logout equally
-      // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
-      if (
-        path !== FRONTEND_PATHS.LOGOUT &&
-        path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
-        shouldRedirectDueToCrossTabLogout()
-      ) {
-        return redirect(FRONTEND_PATHS.LOGOUT, "Recent cross-tab logout detected - redirecting to logout page")
-      }
-
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
       if (auth.isSigningOut && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
         return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
@@ -199,6 +188,17 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
           return
         }
         return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
+      }
+
+      // If another tab has signed out, other tabs will run the redirection logic independently
+      // Check if a logout has occurred elsewhere and forward all tabs to logout equally
+      // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
+      if (
+        path !== FRONTEND_PATHS.LOGOUT &&
+        path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
+        shouldRedirectDueToCrossTabLogout()
+      ) {
+        return redirect(FRONTEND_PATHS.LOGOUT, "Recent cross-tab logout detected - redirecting to logout page")
       }
 
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
