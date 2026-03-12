@@ -87,7 +87,17 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
       given_name: string
     },
     is_concurrent_session?: boolean,
-    sessionId?: string
+    sessionId?: string,
+    remainingSessionTime?: number
+  }
+
+  // Calculate remaining session time based on lastActivityTime
+  const fifteenMinutes = 15 * 60 * 1000
+  let remainingSessionTime: number | undefined = undefined
+
+  if (tokenDetails?.lastActivityTime) {
+    const timeSinceLastActivity = Date.now() - tokenDetails.lastActivityTime
+    remainingSessionTime = Math.max(0, fifteenMinutes - timeSinceLastActivity)
   }
 
   const cachedUserInfo: CachedUserInfo = {
@@ -96,7 +106,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
     currently_selected_role: tokenDetails?.currentlySelectedRole || undefined,
     user_details: tokenDetails?.userDetails || {family_name: "", given_name: ""},
     is_concurrent_session: isConcurrentSession,
-    sessionId: sessionId
+    sessionId: sessionId,
+    remainingSessionTime: remainingSessionTime
   }
 
   if (
@@ -150,6 +161,9 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
   }
   await updateTokenMapping(documentClient, tokenMappingTableName, item, logger)
 
+  // For fresh responses, user just made a request so they have full 15 minutes
+  const freshremainingSessionTime = 15 * 60 * 1000 // Full 15 minutes
+
   return {
     statusCode: 200,
     body: JSON.stringify({
@@ -157,7 +171,8 @@ const lambdaHandler = async (event: APIGatewayProxyEventBase<AuthResult>): Promi
       userInfo: {
         ...userInfoResponse,
         is_concurrent_session: isConcurrentSession,
-        sessionId: sessionId
+        sessionId: sessionId,
+        remainingSessionTime: freshremainingSessionTime
       }
     })
   }

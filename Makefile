@@ -42,6 +42,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/doHSClient
 	npm run lint --workspace packages/common/dynamoFunctions
 	npm run lint --workspace packages/testingSupport/clearActiveSessions
+	npm run lint --workspace packages/testingSupport/setLastActivityTime
 
 lint-githubactions:
 	actionlint
@@ -70,6 +71,7 @@ test: compile
 	npm run test --workspace packages/common/doHSClient
 	npm run test --workspace packages/common/dynamoFunctions
 	npm run test --workspace packages/testingSupport/clearActiveSessions
+	npm run test --workspace packages/testingSupport/setLastActivityTime
 
 clean:
 	find . -name 'coverage' -type d -prune -exec rm -rf '{}' +
@@ -101,6 +103,8 @@ check-licenses-node:
 	npm run check-licenses --workspace packages/sessionManagementLambda
 	npm run check-licenses --workspace packages/selectedRoleLambda
 	npm run check-licenses --workspace packages/CIS2SignOutLambda
+	npm run check-licenses --workspace packages/testingSupport/clearActiveSessions
+	npm run check-licenses --workspace packages/testingSupport/setLastActivityTime
 
 check-licenses-python:
 	scripts/check_python_licenses.sh

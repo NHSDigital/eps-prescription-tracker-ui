@@ -73,6 +73,7 @@ const mockAuthContext: AuthContextType = {
   userDetails: undefined,
   isConcurrentSession: false,
   sessionId: undefined,
+  remainingSessionTime: undefined,
   cognitoSignIn: jest.fn(),
   cognitoSignOut: jest.fn(),
   clearAuthState: jest.fn(),

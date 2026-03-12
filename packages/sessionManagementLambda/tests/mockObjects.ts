@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 export const mockAPIGatewayProxyEvent = {
   httpMethod: "POST",
-  body: "",
+  body: "" as string | null,
   headers: {
     "nhsd-nhslogin-user": "P9:9912003071",
     "nhsd-correlation-id": "test-request-id.test-correlation-id.rrt-5789322914740101037-b-aet2-20145-482635-2",
