@@ -3,8 +3,26 @@
 #########################################################################
 
 version: 2
+registries:
+  npm-github:
+    type: npm-registry
+    url: https://npm.pkg.github.com
+    token: ${{secrets.DEPENDABOT_TOKEN}}
 
 updates:
+  ###################################
+  # Poetry  #########################
+  ###################################
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "18:00" #UTC
+    versioning-strategy: increase
+    open-pull-requests-limit: 20  
+    commit-message:
+      prefix: "Upgrade: [dependabot] - "
   - package-ecosystem: "github-actions"
     # Workflow files stored in the
     # default location of `.github/workflows`
@@ -12,8 +30,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "friday"
-      time: "18:00" # UTC
-    open-pull-requests-limit: 20
+      time: "21:00" #UTC
+    open-pull-requests-limit: 20  
     commit-message:
       prefix: "Upgrade: [dependabot] - "
 
@@ -24,23 +42,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "friday"
-      time: "18:00"
-    open-pull-requests-limit: 20
+      day: "saturday"
+      time: "00:01" #UTC
     versioning-strategy: increase
+    open-pull-requests-limit: 20
     commit-message:
       prefix: "Upgrade: [dependabot] - "
-
-  ###################################
-  # Poetry  #########################
-  ###################################
-  - package-ecosystem: "pip"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "friday"
-      time: "18:00"
-    open-pull-requests-limit: 20
-    versioning-strategy: increase
-    commit-message:
-      prefix: "Upgrade: [dependabot] - "
+    registries:
+      - npm-github
