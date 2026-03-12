@@ -379,7 +379,7 @@ describe("SessionTimeoutModal", () => {
     it("sets correct aria-describedby attribute", () => {
       render(<SessionTimeoutModal {...defaultProps} />)
       const modal = screen.getByTestId("eps-modal")
-      expect(modal).toHaveAttribute("aria-describedby", "session-timeout-title timeout-description")
+      expect(modal).toHaveAttribute("aria-describedby", "session-timeout-title")
     })
 
     it("positions aria-live region off screen", () => {

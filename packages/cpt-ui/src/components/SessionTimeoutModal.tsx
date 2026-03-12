@@ -120,7 +120,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     <EpsModal
       isOpen={isOpen}
       ariaLabelledBy="session-timeout-title"
-      ariaDescribedBy="session-timeout-title timeout-description"
+      ariaDescribedBy="session-timeout-title"
       onClose={onStayLoggedIn}
     >
       <Container data-testid="session-timeout-modal">
