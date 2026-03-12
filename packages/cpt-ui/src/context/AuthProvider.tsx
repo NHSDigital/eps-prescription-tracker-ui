@@ -57,7 +57,7 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
-  setStateForSignOut: () => Promise<void>
+  setStateForSignOut: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)

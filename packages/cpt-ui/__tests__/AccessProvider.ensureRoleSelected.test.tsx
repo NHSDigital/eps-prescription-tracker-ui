@@ -5,6 +5,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {
   AuthContext,
   AuthContextType,
+  LogoutMarker,
   LOGOUT_MARKER_STORAGE_GROUP,
   LOGOUT_MARKER_STORAGE_KEY,
   TAB_ID_SESSION_KEY
@@ -79,7 +80,7 @@ describe("ensureRoleSelected", () => {
     initialPath: string;
     authStateOverrides: Partial<AuthContextType>;
     expectedPath?: string;
-    logoutMarker?: LogoutMarker
+    logoutMarker?: Partial<LogoutMarker>
   }
 
   const redirectScenarios: Array<Scenario> = [

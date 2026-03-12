@@ -87,7 +87,8 @@ describe("shouldBlockChildren", () => {
         selectedRole: undefined,
         logoutMarker: {
           timestamp: Date.now(),
-          reason: "signOut"
+          reason: "signOut",
+          initiatedByTabId: "tab-a"
         }
       }
     },
@@ -100,7 +101,8 @@ describe("shouldBlockChildren", () => {
         selectedRole: undefined,
         logoutMarker: {
           timestamp: Date.now() - 60000,
-          reason: "signOut"
+          reason: "signOut",
+          initiatedByTabId: "tab-a"
         }
       }
     },
