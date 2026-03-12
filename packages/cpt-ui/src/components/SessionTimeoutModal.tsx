@@ -14,16 +14,42 @@ interface SessionTimeoutModalProps {
   isLoggingOut?: boolean
 }
 
-export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
-  isOpen,
-  timeLeft,
-  onStayLoggedIn,
-  onLogOut,
-  isExtending,
-  isLoggingOut = false
-}) => {
-  const liveRegionRef = useRef<HTMLDivElement>(null)
+// Helper functions moved outside component to reduce cognitive complexity
+const formatPlural = (count: number, word: string): string => {
+  if (count === 1) {
+    return word
+  }
+  return `${word}s`
+}
 
+const formatTimeAnnouncement = (minutes: number, seconds: number): string => {
+  if (minutes > 0) {
+    const minuteText = `${minutes} ${formatPlural(minutes, "minute")}`
+    if (seconds > 0) {
+      const secondText = `${seconds} ${formatPlural(seconds, "second")}`
+      return `${minuteText} and ${secondText}`
+    }
+    return minuteText
+  }
+  return `${seconds} ${formatPlural(seconds, "second")}`
+}
+
+const shouldAnnounceAtTime = (timeLeft: number): boolean => {
+  if (timeLeft <= 20) {
+    const criticalTimes = [20, 15, 10, 5, 3, 2, 1]
+    return criticalTimes.includes(timeLeft)
+  }
+  return timeLeft % 15 === 0
+}
+
+const updateLiveRegion = (liveRegionRef: React.RefObject<HTMLDivElement>, announcement: string): void => {
+  if (liveRegionRef.current) {
+    liveRegionRef.current.innerHTML = `You will be logged out in ${announcement}.`
+  }
+}
+
+// Custom hooks to further reduce cognitive complexity
+const useModalFocus = (isOpen: boolean) => {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -34,60 +60,52 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
       return () => clearTimeout(timer)
     }
   }, [isOpen])
+}
 
+const useAriaLiveAnnouncements = (
+  isOpen: boolean,
+  timeLeft: number,
+  liveRegionRef: React.RefObject<HTMLDivElement>
+) => {
   // Initialize aria-live region when modal first opens
   useEffect(() => {
-    if (isOpen && timeLeft > 0 && liveRegionRef.current) {
+    const shouldInitialize = isOpen && timeLeft > 0 && liveRegionRef.current
+    if (shouldInitialize) {
       const minutes = Math.floor(timeLeft / 60)
       const seconds = timeLeft % 60
-
-      let announcement = ""
-      if (minutes > 0) {
-        announcement = seconds > 0
-          ? `${minutes} minute${minutes !== 1 ? "s" : ""} and ${seconds} second${seconds !== 1 ? "s" : ""}`
-          : `${minutes} minute${minutes !== 1 ? "s" : ""}`
-      } else {
-        announcement = `${seconds} second${seconds !== 1 ? "s" : ""}`
-      }
-
-      liveRegionRef.current.innerHTML = `You will be logged out in ${announcement}.`
+      const announcement = formatTimeAnnouncement(minutes, seconds)
+      updateLiveRegion(liveRegionRef, announcement)
     }
   }, [isOpen]) // Only run when modal opens
 
   // Handle periodic announcements for screen readers
   useEffect(() => {
-    if (!isOpen || timeLeft <= 0) {
+    const shouldSkip = !isOpen || timeLeft <= 0
+    if (shouldSkip) {
       return
     }
 
-    //announce every 15 seconds, then every 5 seconds in the last 20 seconds, and at 10, 5, 3, 2, 1 seconds
-    const shouldAnnounce = () => {
-      if (timeLeft <= 20) {
-        return timeLeft === 20 || timeLeft === 15 ||
-        timeLeft === 10 || timeLeft === 5 || timeLeft === 3 || timeLeft === 2 || timeLeft === 1
-      } else {
-        return timeLeft % 15 === 0
-      }
-    }
-
-    if (shouldAnnounce()) {
+    if (shouldAnnounceAtTime(timeLeft)) {
       const minutes = Math.floor(timeLeft / 60)
       const seconds = timeLeft % 60
-
-      let announcement = ""
-      if (minutes > 0) {
-        announcement = seconds > 0
-          ? `${minutes} minute${minutes !== 1 ? "s" : ""} and ${seconds} second${seconds !== 1 ? "s" : ""}`
-          : `${minutes} minute${minutes !== 1 ? "s" : ""}`
-      } else {
-        announcement = `${seconds} second${seconds !== 1 ? "s" : ""}`
-      }
-
-      if (liveRegionRef.current) {
-        liveRegionRef.current.innerHTML = `You will be logged out in ${announcement}.`
-      }
+      const announcement = formatTimeAnnouncement(minutes, seconds)
+      updateLiveRegion(liveRegionRef, announcement)
     }
   }, [timeLeft, isOpen])
+}
+
+export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
+  isOpen,
+  timeLeft,
+  onStayLoggedIn,
+  onLogOut,
+  isExtending,
+  isLoggingOut = false
+}) => {
+  const liveRegionRef = useRef<HTMLDivElement>(null)
+
+  useModalFocus(isOpen)
+  useAriaLiveAnnouncements(isOpen, timeLeft, liveRegionRef)
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Escape") {

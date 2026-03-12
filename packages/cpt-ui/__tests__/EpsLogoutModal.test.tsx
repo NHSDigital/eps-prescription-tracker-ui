@@ -15,7 +15,6 @@ jest.mock("@/components/EpsModal", () => {
     }: {
       children: React.ReactNode
       isOpen: boolean
-      onClose: () => void
       ariaLabelledBy?: string
     }) =>
       isOpen ? (
