@@ -127,6 +127,7 @@ function AppContent() {
           onStayLoggedIn={onStayLoggedIn}
           onLogOut={onLogOut}
           isExtending={isExtending}
+          isLoggingOut={accessContext.sessionTimeoutInfo.isLoggingOut}
         />
       </PatientDetailsProvider>
     </>

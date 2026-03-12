@@ -25,13 +25,13 @@ import LoadingPage from "@/pages/LoadingPage"
 import Layout from "@/Layout"
 
 export const AccessContext = createContext<{
-  sessionTimeoutInfo: { showModal: boolean; timeLeft: number; isExtending: boolean }
+  sessionTimeoutInfo: {showModal: boolean; timeLeft: number; isExtending: boolean; isLoggingOut: boolean}
   onStayLoggedIn:() => Promise<void>
   onLogOut: () => Promise<void>
   onTimeout: () => Promise<void>
     } | null>(null)
 
-export const AccessProvider = ({children}: { children: ReactNode }) => {
+export const AccessProvider = ({children}: {children: ReactNode}) => {
   const auth = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -40,7 +40,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     showModal: boolean
     timeLeft: number
     isExtending: boolean
-  }>({showModal: false, timeLeft: 0, isExtending: false})
+    isLoggingOut: boolean
+  }>({showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false})
 
   const shouldBlockChildren = () => {
     // TODO: Investigate moving 'ensureRoleSelected' functionality into this blockChildren
@@ -132,7 +133,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         logger.info("Session extended successfully")
 
         // Hide modal and refresh user info
-        setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false})
+        setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false})
         await auth.updateTrackerUserInfo()
       } else {
         logger.error("No selected role available to extend session")
@@ -148,13 +149,13 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   const handleLogOut = useCallback(async () => {
     logger.info("User chose to log out from session timeout modal")
-    setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false})
+    setSessionTimeoutInfo(prev => ({...prev, isLoggingOut: true}))
     await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }, [auth])
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
-    setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false})
+    setSessionTimeoutInfo({showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false})
     auth.updateInvalidSessionCause("Timeout")
     await handleRestartLogin(auth, "Timeout")
   }, [auth])
@@ -178,12 +179,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
           if (remainingTime !== undefined) {
             const twoMinutes = 14 * 60 * 1000
 
-            logger.debug("Session time check", {
-              remainingTime,
-              remainingMinutes: Math.floor(remainingTime / 60000),
-              twoMinuteThreshold: twoMinutes
-            })
-
             if (remainingTime <= twoMinutes && remainingTime > 0) {
               // Show timeout modal when 2 minutes or less remaining
               logger.info("Session timeout warning triggered - showing modal", {
@@ -193,7 +188,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
               setSessionTimeoutInfo({
                 showModal: true,
                 timeLeft: remainingTime,
-                isExtending: false
+                isExtending: false,
+                isLoggingOut: false
               })
             } else if (remainingTime <= 0) {
               logger.warn("Session expired - automatically logging out user")
@@ -205,7 +201,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
               setSessionTimeoutInfo({
                 showModal: false,
                 timeLeft: remainingTime,
-                isExtending: false
+                isExtending: false,
+                isLoggingOut: false
               })
             }
           } else {

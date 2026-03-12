@@ -662,10 +662,10 @@ describe("AccessProvider", () => {
     })
 
     it("should hide modal when session is still valid", async () => {
-      const fiveMinutes = 5 * 60 * 1000
+      const fifteenMinutes = 15 * 60 * 1000
       mockUpdateTrackerUserInfo.mockResolvedValue({
         error: null,
-        remainingSessionTime: fiveMinutes
+        remainingSessionTime: fifteenMinutes
       })
 
       mockAuthHook.mockReturnValue(authContext)
@@ -689,10 +689,10 @@ describe("AccessProvider", () => {
 
       expect(logger.debug).toHaveBeenCalledWith(
         "Session still valid - hiding modal if shown",
-        {remainingTime: fiveMinutes}
+        {remainingTime: fifteenMinutes}
       )
       expect(accessContext!.sessionTimeoutInfo.showModal).toBe(false)
-      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(fiveMinutes)
+      expect(accessContext!.sessionTimeoutInfo.timeLeft).toBe(fifteenMinutes)
     })
 
     it("should hide modal when no remaining session time provided", async () => {

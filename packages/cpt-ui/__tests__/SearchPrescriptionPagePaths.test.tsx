@@ -95,7 +95,7 @@ const renderWithProviders = (
     <MemoryRouter initialEntries={initialEntries}>
       <AuthContext.Provider value={authContext}>
         <AccessContext.Provider value={{
-          sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+          sessionTimeoutInfo: {showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false},
           onStayLoggedIn: jest.fn(),
           onLogOut: jest.fn(),
           onTimeout: jest.fn()
@@ -179,7 +179,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
       <MemoryRouter initialEntries={["/search-by-prescription-id"]}>
         <AuthContext.Provider value={defaultAuthContext}>
           <AccessContext.Provider value={{
-            sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+            sessionTimeoutInfo: {showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false},
             onStayLoggedIn: jest.fn(),
             onLogOut: jest.fn(),
             onTimeout: jest.fn()
@@ -197,7 +197,7 @@ describe("SearchPrescriptionPage - Path and UseEffect Coverage", () => {
       <MemoryRouter initialEntries={["/search-by-nhs-number"]}>
         <AuthContext.Provider value={defaultAuthContext}>
           <AccessContext.Provider value={{
-            sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+            sessionTimeoutInfo: {showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false},
             onStayLoggedIn: jest.fn(),
             onLogOut: jest.fn(),
             onTimeout: jest.fn()
