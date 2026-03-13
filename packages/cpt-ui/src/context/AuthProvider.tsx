@@ -277,7 +277,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
       markerToUpdate.cognitoSignOutStartedAt = now
       writeLogoutMarker(markerToUpdate)
-      setLogoutMarker(markerToUpdate)
 
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)

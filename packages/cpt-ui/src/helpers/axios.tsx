@@ -57,6 +57,8 @@ http.interceptors.request.use(
     if (idToken === undefined) {
       controller.abort()
       // logger.error("Could not get a cognito token")
+      // CIS2 sign-out multiple times won't have an ID Token
+      // Maybe use CIS2 endpoint check before throwing exception?
       throw new Error("Could not get a cognito token")
     }
     config.headers.Authorization = `Bearer ${idToken?.toString()}`
