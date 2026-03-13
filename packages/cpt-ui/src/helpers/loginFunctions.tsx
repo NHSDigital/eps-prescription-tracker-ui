@@ -7,21 +7,20 @@ export const getHomeLink = (isSignedIn: boolean) => {
   return isSignedIn ? FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID : FRONTEND_PATHS.LOGIN
 }
 
-export const handleSignIn = async (auth: AuthContextType, type: "Primary" | "Mock") => {
+export const handleSignIn = async (
+  auth: AuthContextType,
+  type: "Primary" | "Mock",
+  navigate: (path: string) => void) => {
   logger.info(`Redirecting user to ${type} login`)
-  // await auth.cognitoSignOut() // Clear any existing sessions to ensure a clean login flow
-  async function attemptLogin() {
+
+  try {
     await auth?.cognitoSignIn({
       provider: {
         custom: type
       }
     })
-  }
-
-  try {
-    await attemptLogin()
   } catch (err) {
-    signOut(auth)
+    signOut(auth, navigate, FRONTEND_PATHS.LOGOUT, true)
     logger.error(`Error during ${type} sign in:`, err)
   }
   logger.info("Signed in: ", auth)

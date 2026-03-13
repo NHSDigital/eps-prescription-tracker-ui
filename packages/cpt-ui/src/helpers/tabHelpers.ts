@@ -1,18 +1,33 @@
-export const TAB_ID_SESSION_KEY = "tabId"
-export const OPEN_TABS_STORAGE_KEY = "openTabIds"
+import {TAB_ID_SESSION_KEY, OPEN_TABS_STORAGE_KEY} from "@/constants/environment"
+
+// Module-level cache so we only resolve once per page lifecycle
+let resolvedTabId: string | null = null
 
 export const getOrCreateTabId = () => {
   if (typeof window === "undefined") {
     return "server"
   }
 
+  if (resolvedTabId) {
+    return resolvedTabId
+  }
+
   const existingTabId = window.sessionStorage.getItem(TAB_ID_SESSION_KEY)
   if (existingTabId) {
-    return existingTabId
+    // Check if another tab is already using this ID (i.e. this tab was duplicated).
+    // On a normal reload, beforeunload removes the ID from the open tabs list first,
+    // so it won't appear here. On a duplicate, the original tab is still open and
+    // its ID remains in the list, so we detect the collision and create a new one.
+    const openTabIds = getOpenTabIds()
+    if (!openTabIds.includes(existingTabId)) {
+      resolvedTabId = existingTabId
+      return existingTabId
+    }
   }
 
   const createdTabId = crypto.randomUUID()
   window.sessionStorage.setItem(TAB_ID_SESSION_KEY, createdTabId)
+  resolvedTabId = createdTabId
   return createdTabId
 }
 

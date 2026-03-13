@@ -6,8 +6,8 @@ import {getHomeLink} from "@/helpers/loginFunctions"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
-import {signOut} from "@/helpers/logout"
+import {FRONTEND_PATHS} from "@/constants/environment"
+import {handleSignoutEvent} from "@/helpers/logout"
 import NhsLogo from "@/components/icons/NhsLogo"
 
 export default function EpsHeader() {
@@ -74,7 +74,7 @@ export default function EpsHeader() {
 
   const handleConfirmLogout = async () => {
     setShowLogoutModal(false)
-    signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    handleSignoutEvent(authContext, navigate, "UserInitiatedHeaderLogout")
   }
 
   const toggleDropdown = () => {

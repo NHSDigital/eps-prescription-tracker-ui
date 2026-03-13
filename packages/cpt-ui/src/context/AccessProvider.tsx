@@ -9,16 +9,10 @@ import React, {
 import {useLocation, useNavigate} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
-import {
-  useAuth,
-  type LogoutMarker,
-  LOGOUT_MARKER_STORAGE_GROUP,
-  LOGOUT_MARKER_STORAGE_KEY,
-  LOGOUT_MARKER_MAX_AGE_MS
-} from "./AuthProvider"
+import {useAuth} from "./AuthProvider"
 import {getOpenTabCount, getOrCreateTabId, updateOpenTabs} from "@/helpers/tabHelpers"
+import {checkForRecentMarker, readLogoutMarker} from "@/helpers/logout"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
-import {signOut} from "@/helpers/logout"
 
 import {
   ALLOWED_NO_ROLE_PATHS,
@@ -27,7 +21,7 @@ import {
   AUTH_CONFIG}
   from "@/constants/environment"
 import {logger} from "@/helpers/logger"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import LoadingPage from "@/pages/LoadingPage"
 import Layout from "@/Layout"
 import {getSearchParams} from "@/helpers/getSearchParams"
@@ -65,41 +59,8 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     }
   }, [])
 
-  const getRecentLogoutMarker = () => {
-    if (typeof window === "undefined") {
-      return undefined
-    }
-
-    try {
-      // Don't rely on React local storage state handling as it's slower
-      // Causing potential race condition where the marker isn't set by the primary tab in time
-      const markerGroupRaw = window.localStorage.getItem(LOGOUT_MARKER_STORAGE_GROUP)
-      if (markerGroupRaw) {
-        const markerGroup = JSON.parse(markerGroupRaw) as Record<string, LogoutMarker | undefined>
-        const marker = markerGroup[LOGOUT_MARKER_STORAGE_KEY]
-
-        if (marker && typeof marker.timestamp === "number") {
-          if (Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS) {
-            return marker
-          }
-          return undefined
-        }
-      }
-    } catch (error) {
-      logger.debug("Unable to read logout marker from localStorage", error)
-    }
-
-    if (auth.logoutMarker && typeof auth.logoutMarker.timestamp === "number") {
-      if (Date.now() - auth.logoutMarker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS) {
-        return auth.logoutMarker
-      }
-    }
-
-    return undefined
-  }
-
   const shouldRedirectDueToCrossTabLogout = () => {
-    const marker = getRecentLogoutMarker()
+    const marker = checkForRecentMarker()
     if (!marker) {
       return false
     }
@@ -174,22 +135,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
       }
 
-      // Transitional states - don't redirect. Login / Logout sequence will take care of it.
-      if (auth.isSigningOut && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
-        return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
-      }
-
-      // Capture this case to prevent new login session being redirected
-      // If the path is select your role
-      if (auth.isSigningIn && path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
-        const {codeParams, stateParams} = getSearchParams(window)
-        if (codeParams || stateParams) {
-          logger.info("User signing in with OAuth - allowing access to path with search params")
-          return
-        }
-        return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
-      }
-
+      logger.debug(`${readLogoutMarker()} :-: ${getOrCreateTabId()} :-: ${getOpenTabCount()}`)
       // If another tab has signed out, other tabs will run the redirection logic independently
       // Check if a logout has occurred elsewhere and forward all tabs to logout equally
       // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
@@ -201,6 +147,24 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.LOGOUT, "Recent cross-tab logout detected - redirecting to logout page")
       }
 
+      // Transitional states - don't redirect. Login / Logout sequence will take care of it.
+      if (auth.isSigningOut && !checkForRecentMarker()
+        && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
+        return handleSignoutEvent(auth, navigate, "Rule 1", auth.invalidSessionCause)
+      }
+
+      // Capture this case to prevent new login session being redirected
+      // If the path is select your role
+      if (auth.isSigningIn && path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+        const {codeParams, stateParams, errorParams} = getSearchParams(window)
+        if ((codeParams || stateParams) && !errorParams) {
+          // Only allow through if a successful login.
+          logger.info("User signing in with OAuth - allowing access to path with search params")
+          return
+        }
+        return handleSignoutEvent(auth, navigate, "Rule 2", auth.invalidSessionCause)
+      }
+
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
     }
 
@@ -209,7 +173,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       if (auth.isSigningOut &&
         (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
         // TODO: Check if && !auth.invalidSessionCause needed
-        return handleRestartLogin(auth, auth.invalidSessionCause, navigate)
+        return handleSignoutEvent(auth, navigate, "Rule 3", auth.invalidSessionCause)
       }
 
       if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
@@ -251,14 +215,14 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const handleLogOut = useCallback(async () => {
     logger.info("User chose to log out from session timeout modal")
     setSessionTimeoutInfo({showModal: false, timeLeft: 0})
-    await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    await handleSignoutEvent(auth, navigate, "SessionTimeoutModal", AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }, [auth])
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
     setSessionTimeoutInfo({showModal: false, timeLeft: 0})
     auth.updateInvalidSessionCause("Timeout")
-    await handleRestartLogin(auth, "Timeout")
+    await handleSignoutEvent(auth, navigate, "AutoSessionTimeoutModal", "Timeout")
   }, [auth])
 
   const checkUserInfo = () => {
@@ -274,7 +238,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       auth.updateTrackerUserInfo().then((response) => {
         if (response.error) {
           logger.debug("Restarting login")
-          handleRestartLogin(auth, response.invalidSessionCause)
+          handleSignoutEvent(auth, navigate, "UserInfoCheck", response.invalidSessionCause)
         } else {
           const remainingTime = response.remainingSessionTime
           if (remainingTime !== undefined) {
@@ -299,7 +263,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
             } else if (remainingTime <= 0) {
               logger.warn("Session expired - automatically logging out user")
               auth.updateInvalidSessionCause("Timeout")
-              handleRestartLogin(auth, "Timeout")
+              handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
             } else {
               // Session still valid, ensure modal is hidden and update time info
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
@@ -312,7 +276,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
             // No remaining session time info available - this indicates a session integrity issue
             logger.warn("No remainingSessionTime in response - session may be corrupted, logging out user")
             auth.updateInvalidSessionCause("InvalidSession")
-            handleRestartLogin(auth, "InvalidSession")
+            handleSignoutEvent(auth, navigate, "InvalidSession", "InvalidSession")
           }
         }
       })

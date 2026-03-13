@@ -19,7 +19,7 @@ import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
 import LoadingPage from "@/pages/LoadingPage"
 
@@ -117,7 +117,7 @@ export default function RoleSelectionPage({
     } catch (err) {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
-        handleRestartLogin(auth, invalidSessionCause)
+        handleSignoutEvent(auth, navigate, invalidSessionCause)
         return
       }
       logger.error("Error selecting role:", err)
@@ -243,8 +243,9 @@ export default function RoleSelectionPage({
         redirecting.current = true
         return
       } else {
+        // TODO: May conflict with ensureRoleSelected
         // something has gone wrong so go back to login
-        handleRestartLogin(auth, "NoSearchParams")
+        handleSignoutEvent(auth, navigate, "NoSearchParams")
       }
     } else {
       redirecting.current = false

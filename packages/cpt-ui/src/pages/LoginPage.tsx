@@ -9,11 +9,13 @@ import {EpsLoginPageStrings} from "@/constants/ui-strings/EpsLoginPageStrings"
 import {AUTO_LOGIN_ENVIRONMENTS, ENV_CONFIG, type Environment} from "@/constants/environment"
 import {Button} from "@/components/ReactRouterButton"
 import {logger} from "@/helpers/logger"
-import {signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {handleSignIn} from "@/helpers/loginFunctions"
+import {useNavigate} from "react-router-dom"
 
 export default function LoginPage() {
   const auth = useAuth()
+  const navigate = useNavigate()
 
   const target_environment: string =
     ENV_CONFIG.TARGET_ENVIRONMENT as Environment
@@ -28,7 +30,7 @@ export default function LoginPage() {
     if (isAutoLoginEnvironment) {
       logger.info("performing auto login")
       const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
-      handleSignIn(auth, autoLoginDetails?.loginMethod === "cis2" ? "Primary" : "Mock")
+      handleSignIn(auth, autoLoginDetails?.loginMethod === "cis2" ? "Primary" : "Mock", navigate)
     }
   }, [])
 
@@ -74,11 +76,11 @@ export default function LoginPage() {
         <Row>
           <Col width="full">
             <Button id="primary-signin" style={{margin: "8px"}}
-              onClick={() => handleSignIn(auth, "Primary")}>Log in with PTL CIS2</Button>
+              onClick={() => handleSignIn(auth, "Primary", navigate)}>Log in with PTL CIS2</Button>
             <Button id="mock-signin" style={{margin: "8px"}}
-              onClick={() => handleSignIn(auth, "Mock")}>Log in with mock CIS2</Button>
+              onClick={() => handleSignIn(auth, "Mock", navigate)}>Log in with mock CIS2</Button>
             <Button id="signout" style={{margin: "8px"}}
-              onClick={() => signOut(auth)}>Sign Out</Button>
+              onClick={() => handleSignoutEvent(auth, navigate, "LoginPage")}>Sign Out</Button>
 
             {auth && (
               <Fragment>

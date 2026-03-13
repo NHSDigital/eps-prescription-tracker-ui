@@ -9,29 +9,20 @@ import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut, SignInWithRedirectInput} from "aws-amplify/auth"
 import {authConfig} from "./configureAmplify"
 
-import {readItemGroupFromLocalStorage, useLocalStorageState} from "@/helpers/useLocalStorageState"
+import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
-import {getOrCreateTabId, TAB_ID_SESSION_KEY as TAB_ID_SESSION_KEY_VALUE} from "@/helpers/tabHelpers"
+import {getOrCreateTabId} from "@/helpers/tabHelpers"
 
 import http from "@/helpers/axios"
 import {RoleDetails, TrackerUserInfoResult, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
+import {LOGOUT_MARKER_STORAGE_KEY, LOGOUT_MARKER_STORAGE_GROUP} from "@/constants/environment"
+import {clearLogoutMarkerFromStorage, LogoutMarker} from "@/helpers/logout"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
-// Logout idempotency and tab awareness
-export const LOGOUT_MARKER_STORAGE_KEY = "logoutMarker"
-export const LOGOUT_MARKER_STORAGE_GROUP = "logoutMarker"
-export const TAB_ID_SESSION_KEY = TAB_ID_SESSION_KEY_VALUE
-export const LOGOUT_MARKER_MAX_AGE_MS = 3000
-export const COGNITO_SIGNOUT_DEDUPE_WINDOW_MS = 3000
 
-export type LogoutMarker = {
-  timestamp: number
-  reason: "signOut"
-  initiatedByTabId: string
-  cognitoSignOutStartedAt?: number
-}
+export const TAB_ID_SESSION_KEY = getOrCreateTabId()
 
 export interface AuthContextType {
   error: string | null
@@ -98,36 +89,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "remainingSessionTime",
     undefined
   )
-  const [logoutMarker, setLogoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
+  const [logoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
     LOGOUT_MARKER_STORAGE_KEY,
     LOGOUT_MARKER_STORAGE_GROUP,
     undefined
   )
 
-  const readLogoutMarker = () => {
-    const markerGroup =
-    readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
-    return markerGroup[LOGOUT_MARKER_STORAGE_KEY]
-  }
-
-  const writeLogoutMarker = (marker: LogoutMarker) => {
-    const markerGroup =
-    readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
-    markerGroup[LOGOUT_MARKER_STORAGE_KEY] = marker
-    window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
-  }
-
-  const clearLogoutMarkerFromStorage = () => {
-    if (typeof window === "undefined") return
-    const markerGroup =
-    readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
-    delete markerGroup[LOGOUT_MARKER_STORAGE_KEY]
-    window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
-  }
-
-  const isRecentMarker = (marker: LogoutMarker | undefined) => {
-    return !!marker && Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
-  }
   /**
    * Fetch and update the auth tokens
    */
@@ -144,7 +111,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRemainingSessionTime(undefined)
     setSessionId(undefined)
     setInvalidSessionCause(undefined)
-    clearLogoutMarkerFromStorage()
+    // clearLogoutMarkerFromStorage()
   }
 
   const updateTrackerUserInfo = async () => {
@@ -221,63 +188,24 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
   }, [])
 
-  /** Sign out state helper
-  * Sets logout marker in local storage with timestamp and tab ID
-  * Timestamp - used to validate recency in redirection rules
-  * Tab ID - used to ensure primary / secondary tabs behave differently
+  /** signOut state helper
+   * Don't use outside of logout helper
   */
   const setStateForSignOut = () => {
-    const currentTabId = getOrCreateTabId()
-    const existingMarker = readLogoutMarker()
-
-    const marker: LogoutMarker = isRecentMarker(existingMarker)
-      ? existingMarker!
-      : {
-        timestamp: Date.now(),
-        reason: "signOut",
-        initiatedByTabId: currentTabId
-      }
-
-    if (typeof window !== "undefined") {
-      try {
-        writeLogoutMarker(marker)
-      } catch (error) {
-        logger.error("Unable to synchronously write logout marker", error)
-      }
-    }
-    setLogoutMarker(marker)
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsSigningOut(true)
   }
 
   /**
-   * Sign out process.
+   * Cognito signout process with redirect URL.
+   * Don't use directly, use the helper functions signOut or handleLogoutEvent
    */
-  const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
-    logger.info("Signing out in authProvider...")
-
+  const cognitoSignOut = async (
+    signoutRedirectUrl?: string | undefined
+  ): Promise<boolean> => {
     try {
-      const now = Date.now()
-      const existingMarker = readLogoutMarker()
-
-      // if (
-      //   !isSigningIn && existingMarker?.cognitoSignOutStartedAt &&
-      //   now - existingMarker.cognitoSignOutStartedAt <= COGNITO_SIGNOUT_DEDUPE_WINDOW_MS
-      // ) {
-      //   logger.info("Skipping duplicate cognitoSignOut call due to in-progress marker")
-      //   return true
-      // }
-
-      const markerToUpdate: LogoutMarker = existingMarker ?? {
-        timestamp: now,
-        reason: "signOut",
-        initiatedByTabId: getOrCreateTabId()
-      }
-
-      markerToUpdate.cognitoSignOutStartedAt = now
-      writeLogoutMarker(markerToUpdate)
-
+      logger.info("Signing out in authProvider...")
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
       try {
@@ -287,12 +215,16 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         throw new Error("Failed to sign out of CIS2:", {cause: err})
       }
 
-      // signOut helper always sets a redirection URL
-      logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
-      await signOut({
-        global: true,
-        oauth: {redirectUrl: signoutRedirectUrl}
-      })
+      // handleSignoutEvent helper always sets a redirection URL
+      if (signoutRedirectUrl) {
+        logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
+        await signOut({
+          global: true,
+          oauth: {redirectUrl: signoutRedirectUrl}
+        })
+      } else {
+        await signOut({global: true})
+      }
 
       logger.info("Frontend amplify signout OK!")
       return true
@@ -309,7 +241,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
     clearLogoutMarkerFromStorage()
-    setLogoutMarker(undefined)
     setIsSigningIn(true)
     setInvalidSessionCause(undefined)
 
