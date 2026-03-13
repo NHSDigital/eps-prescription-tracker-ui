@@ -96,11 +96,15 @@ export default function RoleSelectionPage({
 
   const navigate = useNavigate()
   const redirecting = useRef(false)
+  const isSelectingRoleRef = useRef(false)
 
   const [roleComponentProps, setRoleComponentProps] = useState<RoleComponentProps>({
     rolesWithAccess: [],
     rolesWithoutAccess: []
   })
+
+  const [isSelectingRole, setIsSelectingRole] = useState(false)
+  const [selectedCardUuid, setSelectedCardUuid] = useState<string | null>(null)
 
   usePageTitle(auth.rolesWithAccess.length === 0
     ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle
@@ -111,10 +115,23 @@ export default function RoleSelectionPage({
     roleCardProps: RolesWithAccessProps
   ) => {
     e.preventDefault()
+
+    // Prevent multiple role selections using ref for immediate check
+    if (isSelectingRoleRef.current) {
+      return
+    }
+
+    isSelectingRoleRef.current = true
+    setIsSelectingRole(true)
+    setSelectedCardUuid(roleCardProps.uuid)
+
     try {
       await auth.updateSelectedRole(roleCardProps.role)
       navigate(roleCardProps.link)
     } catch (err) {
+      isSelectingRoleRef.current = false // Reset ref on error
+      setIsSelectingRole(false) // Reset on error since we're not navigating away
+      setSelectedCardUuid(null) // Reset selected card on error
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
         handleRestartLogin(auth, invalidSessionCause)
@@ -125,6 +142,7 @@ export default function RoleSelectionPage({
   }
 
   const handleCardKeyDown = (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => {
+    if (isSelectingRoleRef.current) return // Immediate check
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault()
       handleSetSelectedRole(e, roleCardProps)
@@ -132,8 +150,15 @@ export default function RoleSelectionPage({
   }
 
   const handleCardClick = (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => {
+    if (isSelectingRoleRef.current) return // Immediate check
     e.preventDefault()
     handleSetSelectedRole(e, roleCardProps)
+  }
+
+  const handleCardFocus = (e: React.FocusEvent) => {
+    if (isSelectingRoleRef.current) {
+      (e.target as HTMLElement).blur()
+    }
   }
 
   const chunkRolesForRumLogs = (
@@ -284,132 +309,227 @@ export default function RoleSelectionPage({
   }
 
   return (
-    <main
-      id="main-content"
-      className="nhsuk-main-wrapper"
-      data-testid="eps_roleSelectionComponent"
-    >
-      {
-        redirecting.current || auth.isSigningOut ?
-          <LoadingPage /> :
-          <Container role="contentinfo">
-            <Row>
-              <Col width="two-thirds">
-                <h1 className="nhsuk-heading-xl">
-                  <span role="text" data-testid="eps_header_selectYourRole">
-                    <span className="nhsuk-title">
-                      {auth.rolesWithAccess.length === 0 ? titleNoAccess : title}
-                    </span>
-                    <span className="nhsuk-caption-l nhsuk-caption--bottom">
-                      <span className="nhsuk-u-visually-hidden"> - </span>
-                      {(auth.rolesWithAccess.length > 0) && caption}
-                    </span>
-                  </span>
-                </h1>
-
-                {auth.rolesWithAccess.length === 0 && <p>{captionNoAccess}</p>}
-                {auth.selectedRole && (
-                  <section aria-label="Login Information">
-                    <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                      <p>
-                        {insetText.loggedInTemplate
-                          .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
-                          .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
-                          .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
-                      </p>
-                    </InsetText>
-                    <Button
-                      to={confirmButton.link}
-                      data-testid="confirm-and-continue"
-                    >
-                      {confirmButton.text}
-                    </Button>
-                    <p>{alternativeMessage}</p>
-                  </section>
-                )}
-              </Col>
-
-              {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
+    <>
+      <style>
+        {`
+          .eps-card__org-name-text--selected {
+            background-color: #ffeb3b !important;
+            box-shadow: 0 -2px #ffeb3b, 0 4px #212b32 !important;
+            color: #212b32 !important;
+            outline: none !important;
+            text-decoration: none !important;
+            display: inline-block !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          
+          .nhsuk-card .nhsuk-card__heading .eps-card__org-name-text--selected,
+          .nhsuk-card .nhsuk-card__heading .eps-card__org-name-text--selected:hover,
+          .nhsuk-card .nhsuk-card__heading .eps-card__org-name-text--selected:focus {
+            color: #212b32 !important;
+          }
+          
+          .nhsuk-card--disabled * {
+            cursor: not-allowed !important;
+          }
+          
+          .nhsuk-card--disabled {
+            pointer-events: auto !important;
+          }
+          
+          .nhsuk-card--disabled * {
+            pointer-events: none !important;
+          }
+          
+          /* Maintain blue color for non-selected card text on hover - comprehensive selectors */
+          .nhsuk-card.nhsuk-card--disabled .nhsuk-card__heading.eps-card__org-name:hover span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--disabled:hover .nhsuk-card__heading.eps-card__org-name span:
+          not(.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--disabled:hover .eps-card__org-name span:not(.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .nhsuk-card__heading.eps-card__org-name:hover span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled:hover .nhsuk-card__heading.eps-card__org-name span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled:hover .nhsuk-card__heading span:
+          not(.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .nhsuk-card__content:hover .nhsuk-card__heading span:not
+          (.eps-card__org-name-text--selected),
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .nhsuk-card__content:hover .eps-card__org-name span:not
+          (.eps-card__org-name-text--selected) {
+            color: #0075c4 !important;
+            text-decoration-color: #0075c4 !important;
+            border-bottom-color: #0075c4 !important;
+            -webkit-text-decoration-color: #0075c4 !important;
+          }
+          
+          /* Force blue underline for all non-selected card headings when cards are disabled */
+          .nhsuk-card--disabled .nhsuk-heading-s span:not(.eps-card__org-name-text--selected),
+          .nhsuk-card--disabled:hover .nhsuk-heading-s span:not(.eps-card__org-name-text--selected) {
+            color: #0075c4 !important;
+            text-decoration: underline !important;
+            text-decoration-color: #0075c4 !important;
+            -webkit-text-decoration-color: #0075c4 !important;
+          }
+          
+          /* Override any black color that might be applied */
+          .nhsuk-card--disabled:hover span:not(.eps-card__org-name-text--selected) * {
+            color: #0075c4 !important;
+          }
+          
+          .eps-card__org-name-text--selected,
+          .eps-card__org-name-text--selected:hover,
+          .nhsuk-card:hover .eps-card__org-name-text--selected,
+          .nhsuk-card--disabled:hover .eps-card__org-name-text--selected,
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled:hover .eps-card__org-name-text--selected,
+          .nhsuk-card.nhsuk-card--primary.nhsuk-card--disabled .eps-card__org-name-text--selected:hover {
+            color: #212b32 !important;
+            background-color: #ffeb3b !important;
+          }
+        `}
+      </style>
+      <main
+        id="main-content"
+        className="nhsuk-main-wrapper"
+        data-testid="eps_roleSelectionComponent"
+      >
+        {
+          redirecting.current || auth.isSigningOut ?
+            <LoadingPage /> :
+            <Container role="contentinfo">
+              <Row>
                 <Col width="two-thirds">
-                  <div className="section">
-                    {roleComponentProps.rolesWithAccess
-                      .map((roleCardProps: RolesWithAccessProps) => (
-                        <Card
-                          key={roleCardProps.uuid}
-                          data-testid="eps-card"
-                          className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
-                          tabIndex={0}
-                          onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
-                          onClick={(e) => handleCardClick(e, roleCardProps)}
-                          style={{cursor: "pointer"}}
-                        >
-                          <Card.Content>
-                            <div className="eps-card__layout">
-                              <div>
-                                <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                                  {roleCardProps.role.org_name || noOrgName}
-                                  <br />
-                                  (ODS: {roleCardProps.role.org_code || noODSCode})
-                                </Card.Heading>
-                                <Card.Description className="nhsuk-u-margin-top-2">
-                                  {roleCardProps.role.role_name || noRoleName}
-                                </Card.Description>
-                              </div>
-                              <div className="eps-card__address">
-                                <Card.Description>
-                                  {(roleCardProps.role.site_address || contentText.noAddress)
-                                    .split("\n")
-                                    .map((line: string, index: number) => (
-                                      <span key={index}>
-                                        {line}
-                                        <br />
-                                      </span>
-                                    ))}
-                                </Card.Description>
-                              </div>
-                            </div>
-                          </Card.Content>
-                        </Card>
-                      ))}
-                  </div>
-                </Col>
-              )}
+                  <h1 className="nhsuk-heading-xl">
+                    <span role="text" data-testid="eps_header_selectYourRole">
+                      <span className="nhsuk-title">
+                        {auth.rolesWithAccess.length === 0 ? titleNoAccess : title}
+                      </span>
+                      <span className="nhsuk-caption-l nhsuk-caption--bottom">
+                        <span className="nhsuk-u-visually-hidden"> - </span>
+                        {(auth.rolesWithAccess.length > 0) && caption}
+                      </span>
+                    </span>
+                  </h1>
 
-              <Col width="two-thirds">
-                <h3>{rolesWithoutAccessHeader}</h3>
-                <Details expander>
-                  <Details.Summary>
-                    {roles_without_access_table_title}
-                  </Details.Summary>
-                  <Details.Text>
-                    <Table>
-                      <Table.Head>
-                        <Table.Row>
-                          <Table.Cell>{organisation}</Table.Cell>
-                          <Table.Cell>{role}</Table.Cell>
-                        </Table.Row>
-                      </Table.Head>
-                      <Table.Body>
-                        {roleComponentProps.rolesWithoutAccess.map(
-                          (roleItem: RolesWithoutAccessProps) => (
-                            <Table.Row key={roleItem.uuid}>
-                              <Table.Cell data-testid="change-role-name-cell">
-                                {roleItem.orgName} (ODS: {roleItem.odsCode})
-                              </Table.Cell>
-                              <Table.Cell data-testid="change-role-role-cell">
-                                {roleItem.roleName}
-                              </Table.Cell>
-                            </Table.Row>
-                          )
-                        )}
-                      </Table.Body>
-                    </Table>
-                  </Details.Text>
-                </Details>
-              </Col>
-            </Row>
-          </Container>
-      }
-    </main>
+                  {auth.rolesWithAccess.length === 0 && <p>{captionNoAccess}</p>}
+                  {auth.selectedRole && (
+                    <section aria-label="Login Information">
+                      <InsetText data-testid="eps_select_your_role_pre_role_selected">
+                        <p>
+                          {insetText.loggedInTemplate
+                            .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
+                            .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
+                            .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
+                        </p>
+                      </InsetText>
+                      <Button
+                        to={confirmButton.link}
+                        data-testid="confirm-and-continue"
+                        disabled={isSelectingRole}
+                        preventDoubleClick={true}
+                        debounceTimeout={1000}
+                      >
+                        {confirmButton.text}
+                      </Button>
+                      <p>{alternativeMessage}</p>
+                    </section>
+                  )}
+                </Col>
+
+                {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
+                  <Col width="two-thirds">
+                    <div className="section">
+                      {roleComponentProps.rolesWithAccess
+                        .map((roleCardProps: RolesWithAccessProps) => (
+                          <Card
+                            key={roleCardProps.uuid}
+                            data-testid="eps-card"
+                            className={`nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4 
+                              ${isSelectingRole ? "nhsuk-card--disabled" : ""}`}
+                            tabIndex={isSelectingRole ? -1 : 0}
+                            onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
+                            onClick={(e) => handleCardClick(e, roleCardProps)}
+                            onFocus={handleCardFocus}
+                            clickable={!isSelectingRole}
+                            style={{
+                              cursor: isSelectingRole ? "not-allowed" : "pointer"
+                              // opacity: isSelectingRole ? 0.6 : 1
+                            }}
+                          >
+                            <Card.Content>
+                              <div className="eps-card__layout">
+                                <div>
+                                  <Card.Heading className="nhsuk-heading-s eps-card__org-name">
+                                    <span className={selectedCardUuid === roleCardProps.uuid ?
+                                      "eps-card__org-name-text--selected" : ""}>
+                                      {roleCardProps.role.org_name || noOrgName}
+                                    </span>
+                                    <br />
+                                    <span className={selectedCardUuid === roleCardProps.uuid ?
+                                      "eps-card__org-name-text--selected" : ""}>
+                                      (ODS: {roleCardProps.role.org_code || noODSCode})
+                                    </span>
+                                  </Card.Heading>
+                                  <Card.Description className="nhsuk-u-margin-top-2">
+                                    {roleCardProps.role.role_name || noRoleName}
+                                  </Card.Description>
+                                </div>
+                                <div className="eps-card__address">
+                                  <Card.Description>
+                                    {(roleCardProps.role.site_address || contentText.noAddress)
+                                      .split("\n")
+                                      .map((line: string, index: number) => (
+                                        <span key={index}>
+                                          {line}
+                                          <br />
+                                        </span>
+                                      ))}
+                                  </Card.Description>
+                                </div>
+                              </div>
+                            </Card.Content>
+                          </Card>
+                        ))}
+                    </div>
+                  </Col>
+                )}
+
+                <Col width="two-thirds">
+                  <h3>{rolesWithoutAccessHeader}</h3>
+                  <Details expander>
+                    <Details.Summary>
+                      {roles_without_access_table_title}
+                    </Details.Summary>
+                    <Details.Text>
+                      <Table>
+                        <Table.Head>
+                          <Table.Row>
+                            <Table.Cell>{organisation}</Table.Cell>
+                            <Table.Cell>{role}</Table.Cell>
+                          </Table.Row>
+                        </Table.Head>
+                        <Table.Body>
+                          {roleComponentProps.rolesWithoutAccess.map(
+                            (roleItem: RolesWithoutAccessProps) => (
+                              <Table.Row key={roleItem.uuid}>
+                                <Table.Cell data-testid="change-role-name-cell">
+                                  {roleItem.orgName} (ODS: {roleItem.odsCode})
+                                </Table.Cell>
+                                <Table.Cell data-testid="change-role-role-cell">
+                                  {roleItem.roleName}
+                                </Table.Cell>
+                              </Table.Row>
+                            )
+                          )}
+                        </Table.Body>
+                      </Table>
+                    </Details.Text>
+                  </Details>
+                </Col>
+              </Row>
+            </Container>
+        }
+      </main>
+    </>
   )
 }
