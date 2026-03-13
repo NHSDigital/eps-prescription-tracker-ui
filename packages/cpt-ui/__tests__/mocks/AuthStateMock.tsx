@@ -38,5 +38,6 @@ export const mockAuthState = {
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
   setIsSigningOut: jest.fn(),
+  setStateForSignOut: jest.fn().mockImplementation(() => Promise.resolve()),
   remainingSessionTime: undefined
 } as unknown as AuthContextType

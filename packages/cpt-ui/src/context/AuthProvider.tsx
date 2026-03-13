@@ -42,6 +42,7 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
+  setStateForSignOut: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -97,6 +98,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsConcurrentSession(false)
     setRemainingSessionTime(undefined)
     // updateTrackerUserInfo will set InvalidSessionCause to undefined
+  }
+
+  /** Sign out state helper */
+  const setStateForSignOut = async () => {
+    setIsSigningOut(true)
   }
 
   const updateTrackerUserInfo = async () => {
@@ -255,7 +261,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,
-      setIsSigningOut
+      setIsSigningOut,
+      setStateForSignOut
     }}>
       {children}
     </AuthContext.Provider>

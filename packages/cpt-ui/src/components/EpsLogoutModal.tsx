@@ -9,12 +9,18 @@ interface EpsLogoutModalProps {
   readonly isOpen: boolean
   readonly onClose: () => void
   readonly onConfirm: () => void
+  readonly isLoggingOut?: boolean
 }
 
-export function EpsLogoutModal({isOpen, onClose, onConfirm}: EpsLogoutModalProps) {
+export function EpsLogoutModal({isOpen, onClose, onConfirm, isLoggingOut = false}: EpsLogoutModalProps) {
+  const handleClose = () => {
+    if (!isLoggingOut) {
+      onClose()
+    }
+  }
 
   return (
-    <EpsModal isOpen={isOpen} onClose={onClose} ariaLabelledBy="logout-modal-title">
+    <EpsModal isOpen={isOpen} onClose={handleClose} ariaLabelledBy="logout-modal-title">
       <Container>
 
         <h2
@@ -30,13 +36,15 @@ export function EpsLogoutModal({isOpen, onClose, onConfirm}: EpsLogoutModalProps
           <Button
             className="nhsuk-button eps-modal-button"
             onClick={onConfirm}
+            disabled={isLoggingOut}
           >
             {EpsLogoutModalStrings.CONFIRM_BUTTON_TEXT}
           </Button>
 
           <Button
             className="nhsuk-button nhsuk-button--secondary eps-modal-button"
-            onClick={onClose}
+            onClick={handleClose}
+            disabled={isLoggingOut}
           >
             {EpsLogoutModalStrings.CANCEL_BUTTON_TEXT}
           </Button>

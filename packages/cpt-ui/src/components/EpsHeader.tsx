@@ -20,6 +20,7 @@ export default function EpsHeader() {
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
   const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
 
@@ -73,8 +74,17 @@ export default function EpsHeader() {
   }
 
   const handleConfirmLogout = async () => {
-    setShowLogoutModal(false)
-    signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    if (isLoggingOut) return
+
+    setIsLoggingOut(true)
+
+    navigate("/logout", {replace: true})
+
+    try {
+      await signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   const toggleDropdown = () => {
@@ -258,8 +268,9 @@ export default function EpsHeader() {
 
       <EpsLogoutModal
         isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
+        onClose={() => !isLoggingOut && setShowLogoutModal(false)}
         onConfirm={handleConfirmLogout}
+        isLoggingOut={isLoggingOut}
       />
     </>
   )
