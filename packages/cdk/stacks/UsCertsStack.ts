@@ -1,5 +1,5 @@
 import {App, ArnFormat, Stack} from "aws-cdk-lib"
-import {ARecord, IHostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
+import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {AllowList, WebACL} from "../resources/WebApplicationFirewall"
 import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
@@ -9,11 +9,15 @@ import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
 export interface UsCertsStackProps extends StandardStackProps {
   readonly serviceName: string
   readonly stackName: string
-  readonly hostedZone: IHostedZone
+  readonly epsDomainName: string
+  readonly epsHostedZoneId: string
   readonly fullCloudfrontDomain: string
-  readonly shortCognitoDomain: string
   readonly parentCognitoDomain: string
   readonly githubAllowList?: AllowList
+  readonly splunkDeliveryStream: string
+  readonly splunkSubscriptionFilterRole: string
+  readonly logRetentionInDays: number
+  readonly csocUSWafDestination?: string
 }
 
 /**
@@ -31,43 +35,36 @@ export class UsCertsStack extends Stack {
   public constructor(scope: App, id: string, props: UsCertsStackProps) {
     super(scope, id, props)
 
-    // Context
-    /* context values passed as --context cli arguments are passed as strings so coerce them to expected types*/
-    const useCustomCognitoDomain = !props.isPullRequest
-    const splunkDeliveryStream: string = this.node.tryGetContext("splunkDeliveryStream")
-    const splunkSubscriptionFilterRole: string = this.node.tryGetContext("splunkSubscriptionFilterRole")
-    const cloudfrontDistributionArn: string = this.node.tryGetContext("cloudfrontDistributionArn")
-    const logRetentionInDays: number = Number(this.node.tryGetContext("logRetentionInDays"))
-    const isPullRequest: boolean = this.node.tryGetContext("isPullRequest")
-    const csocUSWafDestination: string = this.node.tryGetContext("csocUSWafDestination")
-    const forwardCsocLogs: boolean = this.node.tryGetContext("forwardCsocLogs")
-
     // Resources
     // - Cloudfront Cert
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: props.epsHostedZoneId,
+      zoneName: props.epsDomainName
+    })
     this.cloudfrontCert = new Certificate(this, "CloudfrontCertificate", {
       domainName: props.fullCloudfrontDomain,
-      validation: CertificateValidation.fromDns(props.hostedZone)
+      validation: CertificateValidation.fromDns(hostedZone)
     })
 
-    if (useCustomCognitoDomain) {
-      this.fullCognitoDomain = `${props.shortCognitoDomain}.${props.hostedZone.zoneName}`
+    if (!props.isPullRequest) {
+      this.fullCognitoDomain = `login.${props.parentCognitoDomain}.${props.epsDomainName}`
 
       // - cognito cert
       const cognitoCertificate = new Certificate(this, "CognitoCertificate", {
         domainName: this.fullCognitoDomain,
-        validation: CertificateValidation.fromDns(props.hostedZone)
+        validation: CertificateValidation.fromDns(hostedZone)
       })
 
       // we need an DNS A record for custom cognito domain to work
       new ARecord(this, "CognitoARecord", {
-        zone: props.hostedZone,
+        zone: hostedZone,
         target: RecordTarget.fromIpAddresses("127.0.0.1"),
-        recordName:  `${props.parentCognitoDomain}.${props.hostedZone.zoneName}`
+        recordName:  `${props.parentCognitoDomain}.${props.epsDomainName}`
       })
 
       this.cognitoCertificate = cognitoCertificate
     } else {
-      this.fullCognitoDomain = `${props.shortCognitoDomain}.auth.eu-west-2.amazoncognito.com`
+      this.fullCognitoDomain = `${props.serviceName}.auth.eu-west-2.amazoncognito.com`
     }
 
     // log groups in US region
@@ -75,15 +72,14 @@ export class UsCertsStack extends Stack {
       cloudfrontLogGroupName: props.serviceName,
       // waf log groups must start with aws-waf-logs-
       wafLogGroupName: `aws-waf-logs-${props.serviceName}-cloudfront`,
-      logRetentionInDays: logRetentionInDays,
+      logRetentionInDays: props.logRetentionInDays,
       stackName: props.stackName,
       region: this.region,
       account: this.account,
-      splunkDeliveryStream: splunkDeliveryStream,
-      splunkSubscriptionFilterRole: splunkSubscriptionFilterRole,
-      isPullRequest: isPullRequest,
-      csocUSWafDestination: csocUSWafDestination,
-      forwardCsocLogs: forwardCsocLogs
+      splunkDeliveryStream: props.splunkDeliveryStream,
+      splunkSubscriptionFilterRole: props.splunkSubscriptionFilterRole,
+      isPullRequest: props.isPullRequest,
+      csocUSWafDestination: props.csocUSWafDestination
     })
 
     // WAF Web ACL
@@ -105,8 +101,7 @@ export class UsCertsStack extends Stack {
 
     // cloudfront log group - needs to be in us-east-1 region
     this.logDelivery = new CloudfrontLogDelivery(this, "cloudfrontLogDelivery", {
-      cloudfrontLogGroup: logGroups.cloudfrontLogGroup,
-      cloudfrontDistributionArn: cloudfrontDistributionArn
+      cloudfrontLogGroup: logGroups.cloudfrontLogGroup
     })
   }
 }

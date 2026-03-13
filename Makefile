@@ -1,31 +1,23 @@
-export CDK_CONFIG_stackName=${stack_name}
+export CDK_APP_NAME=MainDeploymentApp
+export CDK_CONFIG_serviceName=${stack_name}
 export CDK_CONFIG_versionNumber=undefined
 export CDK_CONFIG_commitId=undefined
 export CDK_CONFIG_isPullRequest=true # Turns off drift detection when true
 export CDK_CONFIG_environment=dev
-export CDK_CONFIG_allowAutoDeleteObjects=true
-export CDK_CONFIG_cloudfrontDistributionId=123
-export CDK_CONFIG_cloudfrontCertArn=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID
-export CDK_CONFIG_shortCloudfrontDomain=dummy
-export CDK_CONFIG_fullCloudfrontDomain=dummy.local
-export CDK_CONFIG_epsDomainName=dummy.local
-export CDK_CONFIG_fullCognitoDomain=dummy.local
 export CDK_CONFIG_rumCloudwatchLogEnabled=true
-export CDK_CONFIG_rumAppName=dummy
-export CDK_CONFIG_epsHostedZoneId=123
 export CDK_CONFIG_useMockOidc=false
 export CDK_CONFIG_primaryOidcClientId=undefined
 export CDK_CONFIG_primaryOidcIssuer=undefined
 export CDK_CONFIG_primaryOidcAuthorizeEndpoint=undefined
 export CDK_CONFIG_primaryOidcTokenEndpoint=undefined
 export CDK_CONFIG_primaryOidcUserInfoEndpoint=undefined
-export CDK_CONFIG_primaryOidcjwksEndpoint=undefined
+export CDK_CONFIG_primaryOidcJwksEndpoint=undefined
 export CDK_CONFIG_mockOidcClientId=undefined
 export CDK_CONFIG_mockOidcIssuer=undefined
 export CDK_CONFIG_mockOidcAuthorizeEndpoint=undefined
 export CDK_CONFIG_mockOidcTokenEndpoint=undefined
 export CDK_CONFIG_mockOidcUserInfoEndpoint=undefined
-export CDK_CONFIG_mockOidcjwksEndpoint=undefined
+export CDK_CONFIG_mockOidcJwksEndpoint=undefined
 export CDK_CONFIG_apigeeApiKey=foo
 export CDK_CONFIG_apigeeApiSecret=foo
 export CDK_CONFIG_apigeeDoHSApiKey=foo
@@ -33,29 +25,15 @@ export CDK_CONFIG_apigeeCIS2TokenEndpoint=foo
 export CDK_CONFIG_apigeePrescriptionsEndpoint=foo
 export CDK_CONFIG_apigeePersonalDemographicsEndpoint=foo
 export CDK_CONFIG_apigeeDoHSEndpoint=foo
-export CDK_CONFIG_webAclAttributeArn=foo
+export CDK_CONFIG_apigeeMockTokenEndpoint=foo
 export CDK_CONFIG_logRetentionInDays=30
 export CDK_CONFIG_logLevel=debug
+export CDK_CONFIG_reactLogLevel=debug
+export CDK_CONFIG_jwtPrivateKey=foo
 export CDK_CONFIG_jwtKid=foo
-export CDK_CONFIG_roleId=foo
-export CDK_CONFIG_useCustomCognitoDomain=true
-export CDK_CONFIG_allowLocalhostAccess=false
-export CDK_CONFIG_wafAllowGaRunnerConnectivity=true
-export CDK_CONFIG_githubAllowListIpv4='["127.0.0.1"]'
-export CDK_CONFIG_githubAllowListIpv6='["::1"]'
 export CDK_CONFIG_cloudfrontOriginCustomHeader=foo
-export CDK_CONFIG_splunkDeliveryStream=foo
-export CDK_CONFIG_splunkSubscriptionFilterRole=foo
-export CDK_CONFIG_useZoneApex=false
-export CDK_CONFIG_forwardCsocLogs=true
 
-guard-%:
-	@ if [ "${${*}}" = "" ]; then \
-		echo "Environment variable $* not set"; \
-		exit 1; \
-	fi
-
-.PHONY: install compile test publish release clean lint
+.PHONY: install compile test publish release clean lint cdk-synth
 
 install: install-node install-python install-hooks
 
@@ -146,7 +124,7 @@ react-start:
 react-lint:
 	npm run lint --workspace packages/cpt-ui
 
-cdk-deploy: guard-service_name guard-CDK_APP_NAME
+cdk-deploy:
 	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
 	npm run cdk-deploy --workspace packages/cdk
 
@@ -155,40 +133,15 @@ cdk-watch:
 
 cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
 
-cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-resources-no-mock
-
-cdk-synth-mock: cdk-synth-stateful-resources-mock cdk-synth-stateless-resources-mock
-
-cdk-synth-stateful-resources-no-mock:
-	CDK_APP_NAME=StatefulResourcesApp \
+cdk-synth-no-mock:
 	CDK_CONFIG_useMockOidc=false \
-	CDK_CONFIG_stackName=cpt-ui \
+	CDK_CONFIG_serviceName="cpt-ui" \
 	npm run cdk-synth --workspace packages/cdk
 
-cdk-synth-stateless-resources-no-mock:
-	CDK_APP_NAME=StatelessResourcesApp \
-	CDK_CONFIG_useMockOidc=false \
-	CDK_CONFIG_stackName=cpt-ui \
-	npm run cdk-synth --workspace packages/cdk
-
-
-cdk-synth-stateful-resources-mock:
-	CDK_APP_NAME=StatefulResourcesApp \
+cdk-synth-mock:
 	CDK_CONFIG_useMockOidc=true \
-	CDK_CONFIG_stackName=cpt-ui \
+	CDK_CONFIG_serviceName="cpt-ui" \
 	npm run cdk-synth --workspace packages/cdk
-
-cdk-synth-stateless-resources-mock:
-	CDK_APP_NAME=StatelessResourcesApp \
-	CDK_CONFIG_useMockOidc=true \
-	CDK_CONFIG_stackName=cpt-ui \
-	npm run cdk-synth --workspace packages/cdk
-
-cdk-diff: guard-CDK_APP_NAME
-	npm run cdk-diff --workspace packages/cdk
-
-build-deployment-container-image:
-	docker build -t "clinical-prescription-tracker-ui" -f docker/Dockerfile .
 
 %:
 	@$(MAKE) -f /usr/local/share/eps/Mk/common.mk $@

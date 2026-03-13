@@ -32,7 +32,6 @@ jest.mock("@/constants/environment", () => ({
     TARGET_ENVIRONMENT: "test",
     API_DOMAIN_OVERRIDE: undefined,
     BASE_PATH: "site",
-    LOCAL_DEV: false,
     BASE_URL: "http://localhost",
     BASE_URL_PATH: "http://localhost/site/"
   },
@@ -58,9 +57,6 @@ jest.mock("@/constants/environment", () => ({
     APPLICATION_ID: "test-app-id",
     REGION: "eu-west-2",
     VERSION: "1.0.0",
-    ALLOW_COOKIES: true,
-    ENABLE_XRAY: false,
-    SESSION_SAMPLE_RATE: 1,
     TELEMETRIES: [],
     RELEASE_ID: "test-commit"
   },

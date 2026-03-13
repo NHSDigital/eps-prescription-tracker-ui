@@ -19,6 +19,7 @@ export interface SharedSecretsProps {
   readonly apigeeApiKey: string
   readonly apigeeApiSecret: string
   readonly apigeeDoHSApiKey: string
+  readonly jwtPrivateKey: string
 }
 
 // Construct for managing shared secrets and associated resources
@@ -139,19 +140,9 @@ export class SharedSecrets extends Construct {
     // Create the primary JWT private key secret
     this.primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKey`,
-      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
+      secretStringValue: SecretValue.unsafePlainText(props.jwtPrivateKey),
       encryptionKey: this.jwtKmsKey
     })
-
-    // Add a policy to allow the deployment role to update the secret
-    this.primaryJwtPrivateKey.addToResourcePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        principals: [props.deploymentRole],
-        actions: ["secretsmanager:PutSecretValue"],
-        resources: ["*"]
-      })
-    )
 
     // Create a managed policy to allow getting the primary JWT private key secret
     this.getPrimaryJwtPrivateKeyPolicy = new ManagedPolicy(this, "GetPrimaryJwtPrivateKeyPolicy", {
@@ -167,19 +158,9 @@ export class SharedSecrets extends Construct {
     if (props.useMockOidc) {
       this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
-        secretStringValue: SecretValue.unsafePlainText("mock-secret"),
+        secretStringValue: SecretValue.unsafePlainText(props.jwtPrivateKey),
         encryptionKey: this.jwtKmsKey
       })
-
-      // Add a policy to allow the deployment role to update the mock secret
-      this.mockJwtPrivateKey.addToResourcePolicy(
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          principals: [props.deploymentRole],
-          actions: ["secretsmanager:PutSecretValue"],
-          resources: ["*"]
-        })
-      )
 
       // Create a managed policy to allow getting the mock JWT private key secret
       this.getMockJwtPrivateKeyPolicy = new ManagedPolicy(this, "GetMockJwtPrivateKeyPolicy", {

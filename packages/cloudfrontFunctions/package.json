@@ -10,8 +10,5 @@
   },
   "type": "module",
   "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "cloudfront": "file:src/cloudfront"
-  }
+  "license": "MIT"
 }

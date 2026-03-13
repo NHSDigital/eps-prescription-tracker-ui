@@ -26,8 +26,7 @@ export interface usRegionLogGroupsProps {
   readonly splunkDeliveryStream: string
   readonly splunkSubscriptionFilterRole: string
   readonly isPullRequest: boolean
-  readonly csocUSWafDestination: string
-  readonly forwardCsocLogs: boolean
+  readonly csocUSWafDestination?: string
 }
 
 export class usRegionLogGroups extends Construct {
@@ -128,7 +127,7 @@ export class usRegionLogGroups extends Construct {
       removalPolicy: RemovalPolicy.DESTROY
     })
 
-    if (props.forwardCsocLogs) {
+    if (props.csocUSWafDestination) {
       new CfnSubscriptionFilter(this, "CsocWafSplunkSubscriptionFilter", {
         destinationArn: props.csocUSWafDestination,
         filterPattern: "",

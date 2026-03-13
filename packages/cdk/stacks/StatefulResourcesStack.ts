@@ -21,6 +21,7 @@ export interface StatefulResourcesStackProps extends StandardStackProps {
   readonly stackName: string
   readonly fullCloudfrontDomain: string
   readonly cognitoCertificate: Certificate
+  readonly useCustomCognitoDomain: boolean
   readonly shortCognitoDomain: string
   readonly fullCognitoDomain: string
   readonly primaryOidcConfig: OidcConfig
@@ -28,6 +29,7 @@ export interface StatefulResourcesStackProps extends StandardStackProps {
   readonly route53ExportName: string
   readonly logRetentionInDays: number
   readonly rumCloudwatchLogEnabled: boolean
+  readonly allowLocalhostAccess: boolean
 }
 
 /**
@@ -42,8 +44,6 @@ export class StatefulResourcesStack extends Stack {
 
   public constructor(scope: App, id: string, props: StatefulResourcesStackProps){
     super(scope, id, props)
-
-    const allowLocalhostAccess = props.environment === "dev" || props.isPullRequest
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -84,25 +84,26 @@ export class StatefulResourcesStack extends Stack {
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       cognitoCertificate: props.cognitoCertificate,
       hostedZone: hostedZone,
-      allowLocalhostAccess: allowLocalhostAccess,
-      useCustomCognitoDomain: !props.isPullRequest
+      allowLocalhostAccess: props.allowLocalhostAccess,
+      useCustomCognitoDomain: props.useCustomCognitoDomain
     })
 
-    // need to make sure the app monitor name is not too long
-    const appMonitorName = props.stackName.replace("-stateful-resources", "")
     this.rum = new Rum(this, "Rum", {
       topLevelDomain: props.fullCloudfrontDomain,
-      appMonitorName: appMonitorName,
       serviceName: props.serviceName,
-      stackName: props.stackName,
       logRetentionInDays: props.logRetentionInDays,
       cwLogEnabled: props.rumCloudwatchLogEnabled,
-      allowLocalhostAccess: allowLocalhostAccess,
+      allowLocalhostAccess: props.allowLocalhostAccess,
       staticContentBucket: this.staticContentBucket.bucket
     })
 
     // Exports
-    if (allowLocalhostAccess) {
+    new CfnOutput(this, "rumAppName", {
+      value: this.rum.rumApp.ref,
+      exportName: `${props.stackName}:rum:rumApp:Name`
+    })
+
+    if (props.allowLocalhostAccess) {
       new CfnOutput(this, "primaryOidcClientId", {
         value: props.primaryOidcConfig.clientId,
         exportName: `${props.stackName}:local:primaryOidcClientId`
@@ -119,9 +120,9 @@ export class StatefulResourcesStack extends Stack {
         value: props.primaryOidcConfig.userInfoEndpoint,
         exportName: `${props.stackName}:local:primaryOidcUserInfoEndpoint`
       })
-      new CfnOutput(this, "primaryOidcjwksEndpoint", {
+      new CfnOutput(this, "primaryOidcJwksEndpoint", {
         value: props.primaryOidcConfig.jwksEndpoint,
-        exportName: `${props.stackName}:local:primaryOidcjwksEndpoint`
+        exportName: `${props.stackName}:local:primaryOidcJwksEndpoint`
       })
       new CfnOutput(this, "primaryOidcTokenEndpoint", {
         value: props.primaryOidcConfig.tokenEndpoint,
@@ -144,9 +145,9 @@ export class StatefulResourcesStack extends Stack {
           value: props.mockOidcConfig.userInfoEndpoint,
           exportName: `${props.stackName}:local:mockOidcUserInfoEndpoint`
         })
-        new CfnOutput(this, "mockOidcjwksEndpoint", {
+        new CfnOutput(this, "mockOidcJwksEndpoint", {
           value: props.mockOidcConfig.jwksEndpoint,
-          exportName: `${props.stackName}:local:mockOidcjwksEndpoint`
+          exportName: `${props.stackName}:local:mockOidcJwksEndpoint`
         })
         new CfnOutput(this, "mockOidcTokenEndpoint", {
           value: props.mockOidcConfig.tokenEndpoint,

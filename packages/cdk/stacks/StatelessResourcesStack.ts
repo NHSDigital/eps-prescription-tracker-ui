@@ -3,27 +3,23 @@ import {
   App,
   Fn,
   CfnOutput,
-  Duration,
-  ArnFormat
+  ArnFormat,
+  DockerImage,
+  RemovalPolicy
 } from "aws-cdk-lib"
 import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
-import {
-  AccessLevel,
-  AllowedMethods,
-  FunctionEventType,
-  OriginRequestCookieBehavior,
-  OriginRequestHeaderBehavior,
-  OriginRequestPolicy,
-  OriginRequestQueryStringBehavior,
-  ViewerProtocolPolicy
-} from "aws-cdk-lib/aws-cloudfront"
+import {AccessLevel} from "aws-cdk-lib/aws-cloudfront"
 import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
-import {IBucket} from "aws-cdk-lib/aws-s3"
 
 import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
-import {Role} from "aws-cdk-lib/aws-iam"
+import {
+  ManagedPolicy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal
+} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
 import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
@@ -31,28 +27,35 @@ import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {RestApiGatewayMethods} from "../resources/RestApiGateway/RestApiGatewayMethods"
 import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGatewayMethods"
-import {CloudfrontBehaviors} from "../resources/CloudfrontBehaviors"
-import {IHostedZone} from "aws-cdk-lib/aws-route53"
+import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {AllowList, WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
 import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
-import {CustomSecurityHeadersPolicy} from "../resources/Cloudfront/CustomSecurityHeaders"
 import {Dynamodb} from "../resources/Dynamodb"
 import {Cognito, OidcConfig} from "../resources/Cognito"
 import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
+import {BucketDeployment, Source} from "aws-cdk-lib/aws-s3-deployment"
+import {execSync} from "child_process"
+import {Rum} from "../resources/Rum"
+import {resolve, join, basename} from "path"
+import {cpSync, globSync} from "fs"
+import {LogGroup} from "aws-cdk-lib/aws-logs"
+import {StaticContentBucket} from "../resources/StaticContentBucket"
+import {NagSuppressions} from "cdk-nag"
 
 export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly serviceName: string
   readonly stackName: string
   readonly cloudfrontCert: Certificate
   readonly dynamodb: Dynamodb
-  readonly hostedZone: IHostedZone
+  readonly route53ExportName: string
   readonly useZoneApex: boolean
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string
   readonly logRetentionInDays: number
   readonly logLevel: string
+  readonly reactLogLevel: string
   readonly primaryOidcConfig: OidcConfig
   readonly mockOidcConfig?: OidcConfig
   readonly apigeeApiKey: string
@@ -63,14 +66,17 @@ export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeeDoHSEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
+  readonly jwtPrivateKey: string
   readonly jwtKid: string
   readonly webAclUS: WebACL
   readonly githubAllowList?: AllowList
   readonly cloudfrontOriginCustomHeader: string
   readonly csocUKWafDestination?: string
-  readonly staticContentBucket: IBucket
+  readonly staticContentBucket: StaticContentBucket
   readonly cognito: Cognito
   readonly logDelivery: CloudfrontLogDelivery
+  readonly allowLocalhostAccess: boolean
+  readonly rum: Rum
 }
 
 /**
@@ -82,8 +88,6 @@ export class StatelessResourcesStack extends Stack {
   public constructor(scope: App, id: string, props: StatelessResourcesStackProps) {
     super(scope, id, props)
 
-    const allowLocalhostAccess = props.environment === "dev" || props.isPullRequest
-
     // Imports
     const cloudwatchKmsKey = Key.fromKeyArn(
       this, "cloudwatchKmsKey", Fn.importValue("account-resources:CloudwatchLogsKmsKeyArn"))
@@ -94,6 +98,12 @@ export class StatelessResourcesStack extends Stack {
 
     const deploymentRole = Role.fromRoleArn(this, "deploymentRole",
       Fn.importValue("ci-resources:CloudFormationDeployRole"))
+    const epsHostedZoneId = Fn.importValue(`eps-route53-resources:${props.route53ExportName}-ZoneID`)
+    const epsDomainName = Fn.importValue(`eps-route53-resources:${props.route53ExportName}-domain`)
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
+      hostedZoneId: epsHostedZoneId,
+      zoneName: epsDomainName
+    })
 
     // Resources
 
@@ -104,7 +114,8 @@ export class StatelessResourcesStack extends Stack {
       useMockOidc: !!props.mockOidcConfig,
       apigeeApiKey: props.apigeeApiKey,
       apigeeDoHSApiKey: props.apigeeDoHSApiKey,
-      apigeeApiSecret: props.apigeeApiSecret
+      apigeeApiSecret: props.apigeeApiSecret,
+      jwtPrivateKey: props.jwtPrivateKey
     })
 
     // Functions for the login OAuth2 proxy lambdas
@@ -260,10 +271,122 @@ export class StatelessResourcesStack extends Stack {
 
     // - Cloudfront
     // --- Origins for bucket and api gateway
-    const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
-      props.staticContentBucket,
+    const staticContentDeploymentLogGroup = new LogGroup(this, "StaticContentDeploymentLogGroup", {
+      encryptionKey: cloudwatchKmsKey,
+      logGroupName: `/aws/lambda/${props.stackName}-static-content-deployment`,
+      retention: props.logRetentionInDays,
+      removalPolicy: RemovalPolicy.DESTROY
+    })
+    const staticContentDeploymentPolicy = new ManagedPolicy(this, "StaticContentDeploymentPolicy", {
+      statements: [
+        new PolicyStatement({
+          actions: [
+            "s3:ListBucket",
+            "s3:DeleteObject",
+            "s3:PutObject"
+          ],
+          resources: [
+            props.staticContentBucket.bucket.bucketArn,
+            props.staticContentBucket.bucket.arnForObjects(props.version + "/*")
+          ]
+        }),
+        new PolicyStatement({
+          actions: [
+            "kms:Decrypt",
+            "kms:Encrypt",
+            "kms:GenerateDataKey"
+          ],
+          resources: [props.staticContentBucket.kmsKey.keyArn]
+        }),
+        new PolicyStatement({
+          actions: [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents"
+          ],
+          resources: [
+            staticContentDeploymentLogGroup.logGroupArn,
+            `${staticContentDeploymentLogGroup.logGroupArn}:log-stream:*`
+          ]
+        })
+      ]
+    })
+    NagSuppressions.addResourceSuppressions(staticContentDeploymentPolicy, [
       {
-        originAccessLevels: [AccessLevel.READ]
+        id: "AwsSolutions-IAM5",
+        // eslint-disable-next-line max-len
+        reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+      }
+    ])
+    const staticContentDeploymentRole = new Role(this, "StaticContentDeploymentRole", {
+      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+      managedPolicies: [staticContentDeploymentPolicy]
+    }).withoutPolicyUpdates()
+    const mainDeployment = new BucketDeployment(this, "StaticContentDeployment", {
+      sources: [
+        Source.asset("../cpt-ui/dist", {
+          bundling: {
+            local: {
+              tryBundle(outputDir, options) {
+                const root = resolve("../..")
+                execSync(
+                  `npm run build --workspace packages/cpt-ui`,
+                  {cwd: root, env: {...process.env, ...options.environment}, stdio: "inherit"}
+                )
+                cpSync(join(root, "packages", "cpt-ui", "dist"), outputDir, {recursive: true})
+                return true
+              }
+            },
+            image: DockerImage.fromRegistry("alpine"), // unused but required
+            environment: {
+              VITE_userPoolId: props.cognito.userPool.userPoolId,
+              VITE_userPoolClientId: props.cognito.userPoolClient.userPoolClientId,
+              VITE_hostedLoginDomain: props.fullCognitoDomain,
+              VITE_fullCloudfrontDomain: props.fullCloudfrontDomain,
+              VITE_TARGET_ENVIRONMENT: props.environment,
+              VITE_SERVICE_NAME: props.serviceName,
+              VITE_COMMIT_ID: props.commitId,
+              VITE_VERSION_NUMBER: props.version,
+              VITE_RUM_GUEST_ROLE_ARN: props.rum.guestRole.roleArn,
+              VITE_RUM_IDENTITY_POOL_ID: props.rum.identityPool.ref,
+              VITE_RUM_APPLICATION_ID: props.rum.rumApp.attrId,
+              VITE_REACT_LOG_LEVEL: props.reactLogLevel
+            }
+          }
+        }),
+        Source.asset("../staticContent", {exclude: ["jwks"]}),
+        Source.asset(`../staticContent/jwks/${props.environment}`)
+      ],
+      destinationKeyPrefix: props.version,
+      destinationBucket: props.staticContentBucket.bucket,
+      retainOnDelete: false,
+      role: staticContentDeploymentRole,
+      logGroup: staticContentDeploymentLogGroup
+    })
+    const sourceMapsDeployment = new BucketDeployment(this, "SourceMapsDeployment", {
+      sources: [Source.asset("../cpt-ui/dist", {
+        bundling: {
+          local: {
+            tryBundle(outputDir) {
+              for (const file of globSync(resolve("../..") + "/packages/cpt-ui/dist/**/*.map")) {
+                cpSync(file, join(outputDir, basename(file)))
+              }
+              return true
+            }
+          },
+          image: DockerImage.fromRegistry("alpine") // unused but required
+        }
+      })],
+      destinationKeyPrefix: `source_maps/${props.commitId}/site/assets`,
+      destinationBucket: mainDeployment.deployedBucket,
+      retainOnDelete: false,
+      role: staticContentDeploymentRole,
+      logGroup: staticContentDeploymentLogGroup
+    })
+    const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
+      sourceMapsDeployment.deployedBucket,
+      {
+        originAccessLevels: [AccessLevel.READ],
+        originPath: "/" + props.version
       }
     )
 
@@ -281,82 +404,28 @@ export class StatelessResourcesStack extends Stack {
       }
     })
 
-    // --- Origin Request Policies
-    /* Allow all for now, may want to review these at a later stage */
-    const apiGatewayRequestPolicy = new OriginRequestPolicy(this, "apiGatewayRequestPolicy", {
-      originRequestPolicyName: `${props.serviceName}-ApiGatewayRequestPolicy`,
-      cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
-      queryStringBehavior: OriginRequestQueryStringBehavior.all()
-    })
-
-    const oauth2GatewayRequestPolicy = new OriginRequestPolicy(this, "OAuth2GatewayRequestPolicy", {
-      originRequestPolicyName: `${props.serviceName}-OAuth2GatewayRequestPolicy`,
-      cookieBehavior: OriginRequestCookieBehavior.all(),
-      headerBehavior: OriginRequestHeaderBehavior.denyList("host"),
-      queryStringBehavior: OriginRequestQueryStringBehavior.all()
-    })
-
-    // --- CloudfrontBehaviors
-    const headersPolicy = new CustomSecurityHeadersPolicy(this, "DefaultBehaviourHeadersPolicy", {
-      policyName: `${props.serviceName}-CustomSecurityHeaders`,
-      fullCognitoDomain: props.fullCognitoDomain
-    })
-
-    const cloudfrontBehaviors = new CloudfrontBehaviors(this, "CloudfrontBehaviors", {
-      serviceName: props.serviceName,
-      stackName: props.stackName,
-      apiGatewayOrigin: apiGatewayOrigin,
-      apiGatewayRequestPolicy: apiGatewayRequestPolicy,
-      oauth2GatewayOrigin: oauth2GatewayOrigin,
-      oauth2GatewayRequestPolicy: oauth2GatewayRequestPolicy,
-      staticContentBucketOrigin: staticContentBucketOrigin,
-      fullCognitoDomain: props.fullCognitoDomain
-    })
-
     // --- Distribution
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      hostedZone: props.hostedZone,
+      hostedZone: hostedZone,
       cloudfrontCert: props.cloudfrontCert,
       useZoneApex: props.useZoneApex,
       fullCloudfrontDomain: props.fullCloudfrontDomain,
-      defaultBehavior: {
-        origin: staticContentBucketOrigin,
-        allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        functionAssociations: [
-          {
-            function: cloudfrontBehaviors.s3404UriRewriteFunction.function,
-            eventType: FunctionEventType.VIEWER_REQUEST
-          },
-          {
-            function: cloudfrontBehaviors.s3404ModifyStatusCodeFunction.function,
-            eventType: FunctionEventType.VIEWER_RESPONSE
-          }
-        ],
-        responseHeadersPolicy: headersPolicy.policy
-      },
-      additionalBehaviors: cloudfrontBehaviors.additionalBehaviors,
-      errorResponses: [
-        {
-          httpStatus: 404,
-          responseHttpStatus: 404,
-          responsePagePath: "/404.html",
-          ttl: Duration.seconds(10)
-        }
-      ],
       webAcl: props.webAclUS,
       wafAllowGaRunnerConnectivity: !!props.githubAllowList,
-      logDelivery: props.logDelivery
+      logDelivery: props.logDelivery,
+      apiGatewayOrigin: apiGatewayOrigin,
+      oauth2GatewayOrigin: oauth2GatewayOrigin,
+      staticContentBucketOrigin: staticContentBucketOrigin,
+      fullCognitoDomain: props.fullCognitoDomain
     })
 
     // Outputs
 
     // Exports
-    if (allowLocalhostAccess) {
+    if (props.allowLocalhostAccess) {
       new CfnOutput(this, "apigeeApiKey", {
         value: props.apigeeApiKey,
         exportName: `${props.stackName}:local:apigeeApiKey`
@@ -404,6 +473,6 @@ export class StatelessResourcesStack extends Stack {
         exportName: `${props.stackName}:local:COMMIT-ID`
       })
     }
-    nagSuppressions(this)
+    nagSuppressions(this, !!props.mockOidcConfig)
   }
 }

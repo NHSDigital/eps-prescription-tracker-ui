@@ -44,8 +44,10 @@ export class RestApiGatewayMethods extends Construct {
       props.restAPiGatewayRole.addManagedPolicy(policy)
     }
 
+    const apiRoot = props.restApiGateway.root.addResource("api")
+
     // cis2-signout endpoint
-    const CIS2SignOutLambdaResource = props.restApiGateway.root.addResource("cis2-signout")
+    const CIS2SignOutLambdaResource = apiRoot.addResource("cis2-signout")
     CIS2SignOutLambdaResource.addMethod("GET", new LambdaIntegration(props.CIS2SignOutLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
@@ -54,7 +56,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     // prescription-list endpoint
-    const prescriptionListLambdaResource = props.restApiGateway.root.addResource("prescription-list")
+    const prescriptionListLambdaResource = apiRoot.addResource("prescription-list")
     prescriptionListLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionListLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
@@ -63,7 +65,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     // prescription-details endpoint
-    const prescriptionDetailsLambdaResource = props.restApiGateway.root
+    const prescriptionDetailsLambdaResource = apiRoot
       .addResource("prescription-details")
       .addResource("{prescriptionId}") // Accepts prescriptionId as a path parameter
     prescriptionDetailsLambdaResource.addMethod("GET", new LambdaIntegration(props.prescriptionDetailsLambda, {
@@ -74,7 +76,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     // tracker-user-info endpoint
-    const trackerUserInfoLambdaResource = props.restApiGateway.root.addResource("tracker-user-info")
+    const trackerUserInfoLambdaResource = apiRoot.addResource("tracker-user-info")
     trackerUserInfoLambdaResource.addMethod("GET", new LambdaIntegration(props.trackerUserInfoLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
@@ -83,7 +85,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     // session-management endpoint
-    const sessionManagementLambdaResource = props.restApiGateway.root.addResource("session-management")
+    const sessionManagementLambdaResource = apiRoot.addResource("session-management")
     sessionManagementLambdaResource.addMethod("POST", new LambdaIntegration(props.sessionManagementLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
@@ -92,7 +94,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     // selected-role endpoint
-    const selectedRoleLambdaResource = props.restApiGateway.root.addResource("selected-role")
+    const selectedRoleLambdaResource = apiRoot.addResource("selected-role")
     selectedRoleLambdaResource.addMethod("PUT", new LambdaIntegration(props.selectedRoleLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
@@ -101,7 +103,7 @@ export class RestApiGatewayMethods extends Construct {
     })
 
     // patient-search endpoint
-    const patientSearchLambdaResource = props.restApiGateway.root.addResource("patient-search")
+    const patientSearchLambdaResource = apiRoot.addResource("patient-search")
     patientSearchLambdaResource.addMethod("GET", new LambdaIntegration(props.patientSearchLambda, {
       credentialsRole: props.restAPiGatewayRole
     }), {
@@ -111,7 +113,7 @@ export class RestApiGatewayMethods extends Construct {
 
     if (props.useMockOidc) {
       // testing-support-clear-active-sessions
-      const clearActiveSessionResource = props.restApiGateway.root.addResource("test-support-clear-active-session")
+      const clearActiveSessionResource = apiRoot.addResource("test-support-clear-active-session")
       clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
         credentialsRole: props.restAPiGatewayRole
       }), {})
