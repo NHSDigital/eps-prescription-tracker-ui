@@ -93,14 +93,28 @@ on:
       FORWARD_CSOC_LOGS:
         type: boolean
         required: true
+      pinned_image:
+        required: true
+        type: string
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    container:
+      image: ${{ inputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     permissions:
       id-token: write
       contents: write
+    env:
+      AWS_MAX_ATTEMPTS: 20
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Checkout local github actions
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -120,13 +134,6 @@ jobs:
           DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
           TARGET_CLOUD_FORMATION_CHECK_VERSION_ROLE: ${{ secrets.INT_CLOUD_FORMATION_CHECK_VERSION_ROLE }}
           DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
-      - name: Configure AWS Credentials
-        id: connect_aws_pull_image
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
-        with:
-          aws-region: eu-west-2
-          role-to-assume: ${{ secrets.CDK_PULL_IMAGE_ROLE }}
-          role-session-name: prescription-clinical-tracker-ui-pull-image
       - name: build_artifact download
         uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3
         with:
@@ -136,20 +143,6 @@ jobs:
         run: |
           mkdir -p .build
           tar -xf artifact.tar -C .build
-
-      - name: Retrieve AWS Account ID
-        id: retrieve_aws_account_id
-        run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> "$GITHUB_ENV"
-
-      - name: Login to Amazon ECR
-        id: login_ecr
-        run: |
-          aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com
-
-      - name: Pull cdk-utils-build from Amazon ECR
-        run: |
-          docker pull "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest"
-          docker tag "${{ env.ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/cdk-utils-build-repo:latest" cdk-utils-build-repo:latest
 
       - name: Configure AWS Credentials
         id: connect_aws_for_deployment
@@ -162,8 +155,6 @@ jobs:
 
       - name: check redeploy stateful stack
         id: check_redeploy_stateful_stack
-        env:
-          AWS_MAX_ATTEMPTS: 20
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
@@ -251,41 +242,20 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
-          AWS_MAX_ATTEMPTS: 20
-
-      - name: Show diff for stateful stack
-        run: |
-          docker run \
-          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
-          -e AWS_ACCESS_KEY_ID=${{ steps.connect_aws_for_deployment.outputs.aws-access-key-id }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect_aws_for_deployment.outputs.aws-secret-access-key }} \
-          -e AWS_SESSION_TOKEN=${{ steps.connect_aws_for_deployment.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
-          -e SHOW_DIFF="true" \
-          -e DEPLOY_CODE="false" \
-          -e CONFIG_FILE_NAME="stateful_resources.json" \
-          -e CDK_APP_PATH="packages/cdk/bin/StatefulResourcesApp.ts" \
-          cdk-utils-build-repo:latest
-        shell: bash
 
       - name: Deploy for stateful stack
         run: |
-          docker run \
-          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
-          -e AWS_ACCESS_KEY_ID=${{ steps.connect_aws_for_deployment.outputs.aws-access-key-id }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect_aws_for_deployment.outputs.aws-secret-access-key }} \
-          -e AWS_SESSION_TOKEN=${{ steps.connect_aws_for_deployment.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
-          -e SHOW_DIFF="false" \
-          -e DEPLOY_CODE="true" \
-          -e CONFIG_FILE_NAME="stateful_resources.json" \
-          -e CDK_APP_PATH="packages/cdk/bin/StatefulResourcesApp.ts" \
-          cdk-utils-build-repo:latest
+          cd .build
+          npx cdk deploy \
+          --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
+          --all \
+          --require-approval=never \
+          --ci true
         shell: bash
+        env:
+          CONFIG_FILE_NAME: stateful_resources.json
       - name: Set Environment Variables for website deployment
         id: setup_env_website_deployment
-        env:
-          AWS_MAX_ATTEMPTS: 20
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
@@ -340,8 +310,6 @@ jobs:
           make react-build
 
       - name: deploy website
-        env:
-          AWS_MAX_ATTEMPTS: 20
         run: |
           staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
           aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
@@ -393,41 +361,20 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
-          AWS_MAX_ATTEMPTS: 20
-
-      - name: Show diff for stateless stack
-        run: |
-          docker run \
-          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
-          -e AWS_ACCESS_KEY_ID=${{ steps.connect_aws_for_deployment.outputs.aws-access-key-id }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect_aws_for_deployment.outputs.aws-secret-access-key }} \
-          -e AWS_SESSION_TOKEN=${{ steps.connect_aws_for_deployment.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
-          -e SHOW_DIFF="true" \
-          -e DEPLOY_CODE="false" \
-          -e CONFIG_FILE_NAME="stateless_resources.json" \
-          -e CDK_APP_PATH="packages/cdk/bin/StatelessResourcesApp.ts" \
-          cdk-utils-build-repo:latest
-        shell: bash
 
       - name: Deploy code for stateless stack
         run: |
-          docker run \
-          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
-          -e AWS_ACCESS_KEY_ID=${{ steps.connect_aws_for_deployment.outputs.aws-access-key-id }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect_aws_for_deployment.outputs.aws-secret-access-key }} \
-          -e AWS_SESSION_TOKEN=${{ steps.connect_aws_for_deployment.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
-          -e SHOW_DIFF="false" \
-          -e DEPLOY_CODE="true" \
-          -e CONFIG_FILE_NAME="stateless_resources.json" \
-          -e CDK_APP_PATH="packages/cdk/bin/StatelessResourcesApp.ts" \
-          cdk-utils-build-repo:latest
+          cd .build
+          npx cdk deploy \
+          --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
+          --all \
+          --require-approval=never \
+          --ci true
         shell: bash
+        env:
+          CONFIG_FILE_NAME: stateless_resources.json
       - name: update cloudfront kvs
         id: update_cloudfront_kvs
-        env:
-          AWS_MAX_ATTEMPTS: 20
         shell: bash
         run: |
           # shellcheck disable=SC2140
@@ -524,39 +471,19 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
-          AWS_MAX_ATTEMPTS: 20
-
-      - name: Show diff for stateful stack redeployment
-        if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
-        run: |
-          docker run \
-          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
-          -e AWS_ACCESS_KEY_ID=${{ steps.connect_aws_for_deployment.outputs.aws-access-key-id }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect_aws_for_deployment.outputs.aws-secret-access-key }} \
-          -e AWS_SESSION_TOKEN=${{ steps.connect_aws_for_deployment.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
-          -e SHOW_DIFF="true" \
-          -e DEPLOY_CODE="false" \
-          -e CONFIG_FILE_NAME="stateful_resources.json" \
-          -e CDK_APP_PATH="packages/cdk/bin/StatefulResourcesApp.ts" \
-          cdk-utils-build-repo:latest
-        shell: bash
 
       - name: Deploy code for stateful stack redeployment
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
         run: |
-          docker run \
-          -v "$(pwd)/.build":/home/cdkuser/workspace/ \
-          -e AWS_ACCESS_KEY_ID=${{ steps.connect_aws_for_deployment.outputs.aws-access-key-id }} \
-          -e AWS_SECRET_ACCESS_KEY=${{ steps.connect_aws_for_deployment.outputs.aws-secret-access-key }} \
-          -e AWS_SESSION_TOKEN=${{ steps.connect_aws_for_deployment.outputs.aws-session-token }} \
-          -e AWS_REGION="eu-west-2" \
-          -e SHOW_DIFF="false" \
-          -e DEPLOY_CODE="true" \
-          -e CONFIG_FILE_NAME="stateful_resources.json" \
-          -e CDK_APP_PATH="packages/cdk/bin/StatefulResourcesApp.ts" \
-          cdk-utils-build-repo:latest
+          cd .build
+          npx cdk deploy \
+          --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
+          --all \
+          --require-approval=never \
+          --ci true
         shell: bash
+        env:
+          CONFIG_FILE_NAME: stateful_resources.json
 
       - name: create_int_release_notes
         uses: ./.github/actions/update_confluence_jira
@@ -625,5 +552,6 @@ jobs:
     with:
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+      pinned_image: ${{ inputs.pinned_image }}
     secrets:
       REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
