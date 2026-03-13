@@ -92,6 +92,7 @@ jest.mock("@/constants/environment", () => ({
     SELECT_YOUR_ROLE: "/select-your-role",
     YOUR_SELECTED_ROLE: "/your-selected-role",
     CHANGE_YOUR_ROLE: "/change-your-role",
+    SESSION_SELECTION: "/select-active-session",
     SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
     SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
     SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
@@ -103,7 +104,6 @@ jest.mock("@/constants/environment", () => ({
     NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected",
-    SESSION_SELECTION: "/select-active-session",
     NOT_FOUND: "/notfound"
   },
   ALLOWED_NO_ROLE_PATHS: [

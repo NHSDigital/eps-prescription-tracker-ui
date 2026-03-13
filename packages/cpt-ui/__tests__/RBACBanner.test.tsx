@@ -37,7 +37,8 @@ describe("RBACBanner", () => {
       userDetails: {
         family_name: "Doe",
         given_name: "John"
-      }
+      },
+      isSignedIn: true
     })
 
     render(<RBACBanner />)
@@ -57,7 +58,8 @@ describe("RBACBanner", () => {
       userDetails: {
         family_name: "Smith",
         given_name: "Anna"
-      }
+      },
+      isSignedIn: true
     })
 
     render(<RBACBanner />)
@@ -77,7 +79,8 @@ describe("RBACBanner", () => {
       },
       userDetails: {
         // missing family_name and given_name
-      }
+      },
+      isSignedIn: true
     })
 
     render(<RBACBanner />)
@@ -96,7 +99,8 @@ describe("RBACBanner", () => {
       userDetails: {
         family_name: "Brown",
         given_name: "Charlie"
-      }
+      },
+      isSignedIn: true
     })
 
     render(<RBACBanner />)
@@ -117,7 +121,8 @@ describe("RBACBanner", () => {
       userDetails: {
         family_name: "Green",
         given_name: "Emma"
-      }
+      },
+      isSignedIn: true
     })
 
     render(<RBACBanner />)
@@ -134,7 +139,26 @@ describe("RBACBanner", () => {
       userDetails: {
         family_name: "Green",
         given_name: "Emma"
-      }
+      },
+      isSignedIn: true
+    })
+
+    const {container} = render(<RBACBanner />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it("should render null (nothing) when isSignedIn is false", () => {
+    mockUseAuth.mockReturnValue({
+      selectedRole: {
+        org_code: "X55555",
+        // missing org_name
+        role_name: "Technician"
+      },
+      userDetails: {
+        family_name: "Green",
+        given_name: "Emma"
+      },
+      isSignedIn: false
     })
 
     const {container} = render(<RBACBanner />)

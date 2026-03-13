@@ -11,13 +11,18 @@ import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
+import {getOrCreateTabId} from "@/helpers/tabHelpers"
 
 import http from "@/helpers/axios"
 import {RoleDetails, TrackerUserInfoResult, UserDetails} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
+import {LOGOUT_MARKER_STORAGE_KEY, LOGOUT_MARKER_STORAGE_GROUP} from "@/constants/environment"
+import {clearLogoutMarkerFromStorage, LogoutMarker} from "@/helpers/logout"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
+
+export const TAB_ID_SESSION_KEY = getOrCreateTabId()
 
 export interface AuthContextType {
   error: string | null
@@ -34,6 +39,7 @@ export interface AuthContextType {
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   remainingSessionTime: number | undefined
+  logoutMarker: LogoutMarker | undefined
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
@@ -42,6 +48,7 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
+  setStateForSignOut: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -82,6 +89,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "remainingSessionTime",
     undefined
   )
+  const [logoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
+    LOGOUT_MARKER_STORAGE_KEY,
+    LOGOUT_MARKER_STORAGE_GROUP,
+    undefined
+  )
+
   /**
    * Fetch and update the auth tokens
    */
@@ -96,7 +109,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSigningIn(false)
     setIsConcurrentSession(false)
     setRemainingSessionTime(undefined)
-    // updateTrackerUserInfo will set InvalidSessionCause to undefined
+    setSessionId(undefined)
+    setInvalidSessionCause(undefined)
+    // clearLogoutMarkerFromStorage()
   }
 
   const updateTrackerUserInfo = async () => {
@@ -107,11 +122,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       setSelectedRole(trackerUserInfo.selectedRole)
       setUserDetails(trackerUserInfo.userDetails)
     }
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause) // Set first
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setSessionId(trackerUserInfo.sessionId)
     setRemainingSessionTime(trackerUserInfo.remainingSessionTime)
     setError(trackerUserInfo.error)
-    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
     return trackerUserInfo
   }
 
@@ -157,7 +172,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
-          setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
@@ -174,39 +188,50 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
   }, [])
 
+  /** signOut state helper
+   * Don't use outside of logout helper
+  */
+  const setStateForSignOut = () => {
+    setIsSignedIn(false)
+    setIsSigningIn(false)
+    setIsSigningOut(true)
+  }
+
   /**
-   * Sign out process.
+   * Cognito signout process with redirect URL.
+   * Don't use directly, use the helper functions signOut or handleLogoutEvent
    */
-  const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
-    logger.info("Signing out in authProvider...")
+  const cognitoSignOut = async (
+    signoutRedirectUrl?: string | undefined
+  ): Promise<boolean> => {
     try {
+      logger.info("Signing out in authProvider...")
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
       try {
         await http.get(CIS2SignOutEndpoint)
         logger.info("Successfully signed out of CIS2")
       } catch (err) {
-        logger.error("Failed to sign out of CIS2:", err)
+        throw new Error("Failed to sign out of CIS2:", {cause: err})
       }
 
+      // handleSignoutEvent helper always sets a redirection URL
       if (signoutRedirectUrl) {
         logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
         await signOut({
           global: true,
           oauth: {redirectUrl: signoutRedirectUrl}
         })
-
       } else {
-        logger.info("Calling Amplify Signout, no redirect URL")
         await signOut({global: true})
       }
 
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
-      logger.error("Failed to sign out:", err)
+      // clearAuthState()
       setError(String(err))
-      return false
+      throw new Error("Failed to sign out", {cause: err})
     }
   }
 
@@ -215,8 +240,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
-    await signInWithRedirect(input)
+    clearLogoutMarkerFromStorage()
     setIsSigningIn(true)
+    setInvalidSessionCause(undefined)
+
+    await signInWithRedirect(input)
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {
@@ -248,6 +276,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       sessionId,
       remainingSessionTime,
       deviceId,
+      logoutMarker,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,
@@ -255,7 +284,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateSelectedRole,
       updateTrackerUserInfo,
       updateInvalidSessionCause,
-      setIsSigningOut
+      setIsSigningOut,
+      setStateForSignOut
     }}>
       {children}
     </AuthContext.Provider>

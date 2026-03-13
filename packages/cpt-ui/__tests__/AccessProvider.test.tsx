@@ -50,7 +50,8 @@ jest.mock("@/constants/environment", () => ({
     "/session-logged-out",
     "/cookies-selected",
     "/",
-    "/select-active-session"
+    "/select-active-session",
+    "/select-your-role"
   ],
   PUBLIC_PATHS: [
     "/login",
@@ -124,6 +125,7 @@ describe("AccessProvider", () => {
     jest.useFakeTimers()
 
     mockNavigateHook.mockReturnValue(navigate)
+    mockNormalizePathFn.mockImplementation((path: string) => path)
   })
 
   afterEach(() => {
@@ -216,7 +218,7 @@ describe("AccessProvider", () => {
   it("skips redirection logic when signing in and on select-your-role path", () => {
     mockAuthHook.mockReturnValue({
       ...mockAuthState,
-      isSignedIn: false,
+      isSignedIn: true,
       isSigningIn: true,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn(),
@@ -267,13 +269,14 @@ describe("AccessProvider", () => {
       clearAuthState: jest.fn(),
       updateInvalidSessionCause: jest.fn()
     })
-    mockLocationHook.mockReturnValue({pathname: "/"})
-    mockNormalizePathFn.mockReturnValue("/")
+    const path = "/"
+    mockLocationHook.mockReturnValue({pathname: path})
+    mockNormalizePathFn.mockReturnValue(path)
 
     renderWithProvider()
 
     expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-    expect(logger.info).toHaveBeenCalledWith("Authenticated user on root path - redirecting to search")
+    expect(logger.info).toHaveBeenCalledWith(`Signed-in user on ${path} - blocking render until redirect`)
   })
 
   describe("shouldBlockChildren", () => {
@@ -307,9 +310,11 @@ describe("AccessProvider", () => {
 
     it("allows children when concurrent session exists but user is on session selection page", () => {
       (mockUseAuth as jest.Mock).mockReturnValue({
+        ...mockAuthState,
         isSignedIn: true,
         isConcurrentSession: true,
-        isSigningIn: false
+        isSigningIn: false,
+        updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null})
       });
       (useLocation as jest.Mock).mockReturnValue({
         pathname: FRONTEND_PATHS.SESSION_SELECTION
@@ -429,7 +434,7 @@ describe("AccessProvider", () => {
       clearIntervalSpy.mockRestore()
     })
 
-    it("should skip user info check when isSigningIn is true", async () => {
+    it("shouldn't skip user info check when isSigningIn is true on protected page", async () => {
       mockAuthHook.mockReturnValue({
         ...mockAuthState,
         isSignedIn: true,
@@ -437,7 +442,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"}) // protected page
 
       renderWithProvider()
 
@@ -446,9 +451,9 @@ describe("AccessProvider", () => {
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
-        "Not checking user info"
+        "Refreshing user info"
       )
-      expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
     })
 
     it("should skip user info check when on allowed no-role paths", async () => {
@@ -536,7 +541,7 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(60001)
       })
 
-      expect(logger.debug).toHaveBeenCalledWith("Not checking user info")
+      expect(logger.debug).toHaveBeenCalledWith("No conditions met - not checking user info")
       expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
     })
 
@@ -599,6 +604,7 @@ describe("AccessProvider", () => {
     beforeEach(() => {
       mockUpdateTrackerUserInfo = jest.fn()
       authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         isSigningIn: false,
         selectedRole: {name: "TestRole"},
@@ -624,9 +630,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -678,9 +686,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -711,9 +721,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -731,7 +743,9 @@ describe("AccessProvider", () => {
       mockSignOut.mockResolvedValue(undefined)
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
+        selectedRole: {name: "TestRole", role_id: "123"},
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
         updateInvalidSessionCause: jest.fn()
       }
@@ -746,9 +760,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -766,6 +782,7 @@ describe("AccessProvider", () => {
       const mockUpdateTrackerUserInfo = jest.fn().mockResolvedValue({error: null})
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         selectedRole: {name: "TestRole", role_id: "123"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo,
@@ -782,9 +799,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -802,6 +821,7 @@ describe("AccessProvider", () => {
       mockSignOut.mockResolvedValue(undefined)
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         selectedRole: null, // No selected role
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -809,7 +829,7 @@ describe("AccessProvider", () => {
       }
 
       mockAuthHook.mockReturnValue(authContext)
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: FRONTEND_PATHS.SELECT_YOUR_ROLE})
 
       let accessContext: MockAccessContext
       const ContextConsumer = () => {
@@ -818,9 +838,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {
@@ -841,6 +863,7 @@ describe("AccessProvider", () => {
       mockSignOut.mockResolvedValue(undefined)
 
       const authContext = {
+        ...mockAuthState,
         isSignedIn: true,
         selectedRole: {name: "TestRole", role_id: "123"},
         updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
@@ -857,9 +880,11 @@ describe("AccessProvider", () => {
       }
 
       render(
-        <AccessProvider>
-          <ContextConsumer />
-        </AccessProvider>
+        <MemoryRouter>
+          <AccessProvider>
+            <ContextConsumer />
+          </AccessProvider>
+        </MemoryRouter>
       )
 
       await act(async () => {

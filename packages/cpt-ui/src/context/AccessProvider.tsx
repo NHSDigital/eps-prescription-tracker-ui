@@ -10,8 +10,9 @@ import {useLocation, useNavigate} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
+import {getOpenTabCount, getOrCreateTabId, updateOpenTabs} from "@/helpers/tabHelpers"
+import {checkForRecentMarker, readLogoutMarker} from "@/helpers/logout"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
-import {signOut} from "@/helpers/logout"
 
 import {
   ALLOWED_NO_ROLE_PATHS,
@@ -20,9 +21,10 @@ import {
   AUTH_CONFIG}
   from "@/constants/environment"
 import {logger} from "@/helpers/logger"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import LoadingPage from "@/pages/LoadingPage"
 import Layout from "@/Layout"
+import {getSearchParams} from "@/helpers/getSearchParams"
 
 export const AccessContext = createContext<{
   sessionTimeoutInfo: { showModal: boolean; timeLeft: number }
@@ -41,31 +43,66 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     timeLeft: number
   }>({showModal: false, timeLeft: 0})
 
-  const shouldBlockChildren = () => {
-    // TODO: Investigate moving 'ensureRoleSelected' functionality into this blockChildren
-    // This could potentially stop amplify re-trying login on a pre-existing session
+  useEffect(() => {
+    const tabId = getOrCreateTabId()
 
+    updateOpenTabs(tabId, "add")
+
+    const onBeforeUnload = () => {
+      updateOpenTabs(tabId, "remove")
+    }
+
+    window.addEventListener("beforeunload", onBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload)
+      updateOpenTabs(tabId, "remove")
+    }
+  }, [])
+
+  const shouldRedirectDueToCrossTabLogout = () => {
+    const marker = checkForRecentMarker()
+    if (!marker) {
+      return false
+    }
+
+    const currentTabId = getOrCreateTabId()
+    if (marker.initiatedByTabId === currentTabId) {
+      return false
+    }
+
+    return getOpenTabCount() > 1
+  }
+
+  const shouldBlockChildren = () => {
     const path = normalizePath(location.pathname)
 
-    // not signed in → block on protected paths, and also block root path to prevent flash
-    if (!auth.isSignedIn && !auth.isSigningIn) {
-      if (path === "/") {
-        logger.info("At root path and not signed in - blocking render")
-        return true
+    if ((!auth.isSignedIn || auth.isSigningIn) && !PUBLIC_PATHS.includes(path)) {
+      logger.info(`Not signed in fully and trying to access ${path} - blocking render`, auth)
+      return true
+    }
+
+    if (auth.isSignedIn) {
+      if ((path === "/" || path === FRONTEND_PATHS.LOGIN) || !PUBLIC_PATHS.includes(path)) {
+        if (auth.isConcurrentSession && (path !== FRONTEND_PATHS.SESSION_SELECTION)) {
+          logger.info(`Concurrent session detected on ${path} - blocking render until redirect to session selection`)
+          return true
+        }
+
+        if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
+          logger.info(`No role selected on ${path} - blocking render until redirect to select your role`)
+          return true
+        }
+
+        if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+          logger.info(`Signed-in user on ${path} - blocking render until redirect`)
+          return true
+        }
+
+        if (auth.isSigningOut || auth.isSigningIn) {
+          // Block render if a user is temporarily in a transition state
+          return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
+        }
       }
-      return !ALLOWED_NO_ROLE_PATHS.includes(path)
-    }
-
-    // block if concurrent session needs resolution
-    if (auth.isConcurrentSession && auth.isSignedIn) {
-      return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
-    }
-
-    // block if user needs to select a role (but allow specific paths)
-    if (!auth.selectedRole && !auth.isSigningIn && auth.isSignedIn) {
-      return (
-        ![...ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS.SELECT_YOUR_ROLE].includes(normalizePath(path))
-      )
     }
 
     return false
@@ -73,44 +110,83 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
 
   const ensureRoleSelected = () => {
     const path = normalizePath(location.pathname)
-    const inNoRoleAllowed = ALLOWED_NO_ROLE_PATHS.includes(path)
-    const atRoot = path === "/"
 
     const redirect = (to: string, msg: string) => {
       logger.info(msg)
       navigate(to)
     }
 
-    const loggedOut = !auth.isSignedIn && !auth.isSigningOut
-    const loggingOut = auth.isSignedIn && auth.isSigningOut
-    const concurrent = auth.isSignedIn && auth.isConcurrentSession
-    const noRole = auth.isSignedIn && !auth.isSigningIn && !auth.selectedRole
-    const authedAtRoot = auth.isSignedIn && !!auth.selectedRole && atRoot
+    if (auth.isSignedIn && auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+      return redirect(
+        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+        `Signed-in user on ${path} - redirecting to default page`
+      )
+    }
 
-    logger.info(`Requested path: ${path}`)
-    if (loggedOut && (!inNoRoleAllowed || atRoot)) {
+    // Public paths (except root) don't need protection
+    if (PUBLIC_PATHS.includes(path) && path !== "/") {
+      return
+    }
+
+    // Not signed in
+    if (!auth.isSignedIn) {
+      if (path === "/") {
+        logger.info("User at root path - redirecting to login page")
+        return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
+      }
+
+      logger.debug(`${readLogoutMarker()} :-: ${getOrCreateTabId()} :-: ${getOpenTabCount()}`)
+      // If another tab has signed out, other tabs will run the redirection logic independently
+      // Check if a logout has occurred elsewhere and forward all tabs to logout equally
+      // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
+      if (
+        path !== FRONTEND_PATHS.LOGOUT &&
+        path !== FRONTEND_PATHS.SESSION_LOGGED_OUT &&
+        shouldRedirectDueToCrossTabLogout()
+      ) {
+        return redirect(FRONTEND_PATHS.LOGOUT, "Recent cross-tab logout detected - redirecting to logout page")
+      }
+
+      // Transitional states - don't redirect. Login / Logout sequence will take care of it.
+      if (auth.isSigningOut && !checkForRecentMarker()
+        && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
+        return handleSignoutEvent(auth, navigate, "Rule 1", auth.invalidSessionCause)
+      }
+
+      // Capture this case to prevent new login session being redirected
+      // If the path is select your role
+      if (auth.isSigningIn && path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+        const {codeParams, stateParams, errorParams} = getSearchParams(window)
+        if ((codeParams || stateParams) && !errorParams) {
+          // Only allow through if a successful login.
+          logger.info("User signing in with OAuth - allowing access to path with search params")
+          return
+        }
+        return handleSignoutEvent(auth, navigate, "Rule 2", auth.invalidSessionCause)
+      }
+
       return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
     }
 
-    if (auth.isSignedIn && path === FRONTEND_PATHS.LOGIN) {
-      if (!auth.selectedRole) {
-        return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, "User already logged in. No role selected.")
-      } else {
+    // Signed in - check states in priority order
+    if (auth.isSignedIn) {
+      if (auth.isSigningOut &&
+        (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
+        // TODO: Check if && !auth.invalidSessionCause needed
+        return handleSignoutEvent(auth, navigate, "Rule 3", auth.invalidSessionCause)
+      }
+
+      if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
+        return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
+      }
+
+      if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
+        return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
+      }
+
+      if (auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
         return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID, "User already logged in. Role already selected.")
       }
-    }
-
-    if (concurrent && !(PUBLIC_PATHS.includes(path) || path === FRONTEND_PATHS.SESSION_SELECTION)) {
-      return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
-    }
-
-    if (!loggingOut && noRole && (!inNoRoleAllowed || atRoot)) {
-      return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
-    }
-
-    if (authedAtRoot) {
-      return redirect(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-        "Authenticated user on root path - redirecting to search")
     }
   }
 
@@ -139,30 +215,30 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   const handleLogOut = useCallback(async () => {
     logger.info("User chose to log out from session timeout modal")
     setSessionTimeoutInfo({showModal: false, timeLeft: 0})
-    await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    await handleSignoutEvent(auth, navigate, "SessionTimeoutModal", AUTH_CONFIG.REDIRECT_SIGN_OUT)
   }, [auth])
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
     setSessionTimeoutInfo({showModal: false, timeLeft: 0})
     auth.updateInvalidSessionCause("Timeout")
-    await handleRestartLogin(auth, "Timeout")
+    await handleSignoutEvent(auth, navigate, "AutoSessionTimeoutModal", "Timeout")
   }, [auth])
 
   const checkUserInfo = () => {
     // Check if a user is signed in, if it fails sign the user out
-    if (auth.isSigningIn === true || ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
+    if (auth.isSigningIn && ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
       logger.debug("Not checking user info")
       return
     }
 
-    if (auth.isSignedIn) {
+    if (auth.isSignedIn && !auth.isSigningOut) {
       logger.debug("Refreshing user info")
 
       auth.updateTrackerUserInfo().then((response) => {
         if (response.error) {
           logger.debug("Restarting login")
-          handleRestartLogin(auth, response.invalidSessionCause)
+          handleSignoutEvent(auth, navigate, "UserInfoCheck", response.invalidSessionCause)
         } else {
           const remainingTime = response.remainingSessionTime
           if (remainingTime !== undefined) {
@@ -187,7 +263,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
             } else if (remainingTime <= 0) {
               logger.warn("Session expired - automatically logging out user")
               auth.updateInvalidSessionCause("Timeout")
-              handleRestartLogin(auth, "Timeout")
+              handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
             } else {
               // Session still valid, ensure modal is hidden and update time info
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
@@ -200,29 +276,29 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
             // No remaining session time info available - this indicates a session integrity issue
             logger.warn("No remainingSessionTime in response - session may be corrupted, logging out user")
             auth.updateInvalidSessionCause("InvalidSession")
-            handleRestartLogin(auth, "InvalidSession")
+            handleSignoutEvent(auth, navigate, "InvalidSession", "InvalidSession")
           }
         }
       })
     }
 
+    logger.debug("No conditions met - not checking user info")
     return
   }
 
   useEffect(() => {
-    const currentPath = location.pathname
-    const onSelectYourRole = currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE
-    if (auth.isSigningIn && onSelectYourRole) {
-      return
-    }
+    // Note: Any logical assertions should be placed within the function.
+    // Any placed here cause developer confusion.
+
+    // Implementation notes: useNavigate as a dependency causes an infinite loop as redirects use it
     ensureRoleSelected()
   }, [
     auth.isSignedIn,
     auth.isSigningIn,
+    auth.isSigningOut,
     auth.selectedRole,
     auth.isConcurrentSession,
-    location.pathname,
-    navigate
+    location.pathname
   ])
 
   useEffect(() => {
@@ -239,14 +315,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
     return () => clearInterval(interval)
   }, [auth.isSignedIn, auth.isSigningIn, location.pathname])
 
-  if (shouldBlockChildren()) {
-    return (
-      <Layout>
-        <LoadingPage />
-      </Layout>
-    )
-  }
-
   return (
     <AccessContext.Provider value={{
       sessionTimeoutInfo,
@@ -254,7 +322,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       onLogOut: handleLogOut,
       onTimeout: handleTimeout
     }}>
-      {children}
+      {shouldBlockChildren() ? <Layout><LoadingPage /></Layout> : children}
     </AccessContext.Provider>
   )
 }

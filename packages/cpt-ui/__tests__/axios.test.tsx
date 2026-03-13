@@ -135,7 +135,7 @@ describe("HTTP Axios Instance", () => {
       .mockReturnValueOnce("not a token")
     mock.onGet("/test").reply(200)
 
-    await expect(http.get("/test")).rejects.toThrow("canceled")
+    await expect(http.get("/test")).rejects.toThrow("Could not get a cognito token")
   })
 
   it("Does not retry if response says to restart login", async () => {

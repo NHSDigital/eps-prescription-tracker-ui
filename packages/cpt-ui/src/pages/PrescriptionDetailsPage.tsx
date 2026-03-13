@@ -26,7 +26,7 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import axios from "axios"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
@@ -78,7 +78,7 @@ export default function PrescriptionDetailsPage() {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
         logger.warn("prescriptionDetails triggered restart login due to:", invalidSessionCause)
-        handleRestartLogin(auth, invalidSessionCause)
+        handleSignoutEvent(auth, navigate, "PrescriptionDetailsPage", invalidSessionCause)
         return
       }
       logger.error("Failed to fetch prescription details", err)

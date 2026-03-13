@@ -11,7 +11,13 @@ import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
 import {signInWithRedirect, signOut} from "aws-amplify/auth"
 
-import {AuthContext, AuthContextType, AuthProvider} from "@/context/AuthProvider"
+import {
+  AuthContext,
+  AuthContextType,
+  AuthProvider,
+  LOGOUT_MARKER_STORAGE_GROUP,
+  LOGOUT_MARKER_STORAGE_KEY
+} from "@/context/AuthProvider"
 
 import axios from "@/helpers/axios"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
@@ -200,7 +206,7 @@ describe("AuthProvider", () => {
 
   // Error Handling
 
-  it("should log an error if signOut fails", async () => {
+  it("should throw an error if signOut fails", async () => {
     const loggerErrorSpy = jest.spyOn(logger, "error")
     const signOutError = new Error("Sign out failed");
     (signOut as jest.Mock).mockRejectedValue(signOutError as never)
@@ -223,13 +229,9 @@ describe("AuthProvider", () => {
     })
 
     await act(async () => {
-      await contextValue.cognitoSignOut()
+      await expect(contextValue.cognitoSignOut()).rejects.toThrow("Failed to sign out")
     })
 
-    expect(loggerErrorSpy).toHaveBeenCalledWith(
-      "Failed to sign out:",
-      signOutError
-    )
     loggerErrorSpy.mockRestore()
   })
 
@@ -352,6 +354,8 @@ describe("AuthProvider", () => {
   })
 
   it("should provide cognitoSignOut functions", async () => {
+    (signOut as jest.Mock).mockResolvedValue(undefined)
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let contextValue: any
     const TestComponent = () => {
@@ -373,6 +377,37 @@ describe("AuthProvider", () => {
       await contextValue.cognitoSignOut()
     })
     expect(signOut).toHaveBeenCalled()
+  })
+
+  it("should set logout marker when setStateForSignOut is called", async () => {
+    let contextValue: AuthContextType | null = null
+
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext)
+      return null
+    }
+
+    localStorage.removeItem(LOGOUT_MARKER_STORAGE_GROUP)
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </MemoryRouter>
+      )
+    })
+
+    await act(async () => {
+      await contextValue?.setStateForSignOut()
+    })
+
+    const markerGroup = JSON.parse(localStorage.getItem(LOGOUT_MARKER_STORAGE_GROUP) ?? "{}")
+    expect(markerGroup[LOGOUT_MARKER_STORAGE_KEY]).toEqual(
+      expect.objectContaining({reason: "signOut"})
+    )
+    expect(typeof markerGroup[LOGOUT_MARKER_STORAGE_KEY].timestamp).toBe("number")
   })
 
   it(
