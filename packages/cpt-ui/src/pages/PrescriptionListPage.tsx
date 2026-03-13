@@ -22,14 +22,17 @@ import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/s
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {buildPrescriptionSearchParams} from "@/helpers/buildPrescriptionSearchParams"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails, setPatientFallback} = usePatientDetails()
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
 
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -47,18 +50,23 @@ export default function PrescriptionListPage() {
     const runSearch = async () => {
       setLoading(true)
 
-      const searchParams = new URLSearchParams()
+      // Build search parameters using original navigation context and search context
+      const originalSearchParams = navigationContext.getOriginalSearchParameters()
+      const searchParamsResult = buildPrescriptionSearchParams(originalSearchParams, searchContext)
 
-      // determine which search page to go back to based on query parameters
-      if (searchContext.nhsNumber) {
-        searchParams.append("nhsNumber", searchContext.nhsNumber)
-      } else if (searchContext.prescriptionId) {
-        searchParams.append("prescriptionId", searchContext.prescriptionId)
-      } else {
+      // Handle redirection needs
+      if (searchParamsResult.shouldRedirectToPrescriptionSearch) {
+        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+        return
+      }
+
+      if (!searchParamsResult.hasValidSearchCriteria) {
         logger.info("No search parameter provided - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
+
+      const {searchParams} = searchParamsResult
 
       try {
         const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {

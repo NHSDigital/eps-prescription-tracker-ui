@@ -56,6 +56,27 @@ export default function SessionLoggedOutPage() {
     )
   }
 
+  // Handle token expiration scenarios (server-side session validation failures)
+  if (auth.invalidSessionCause === "token_expired" ||
+      auth.invalidSessionCause === "InvalidSession" ||
+      auth.invalidSessionCause === "session_expired") {
+    return (
+      <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-expired">
+        <Container>
+          <Row>
+            <Col width="full">
+              <h1 data-testid="expired-title">{EpsLogoutStrings.LOGOUT_SESSION_EXPIRED_TITLE}</h1>
+              <p data-testid="expired-description">
+                {EpsLogoutStrings.LOGOUT_SESSION_EXPIRED_DESCRIPTION}</p>
+              <p data-testid="expired-description2">{EpsLogoutStrings.LOGOUT_SESSION_EXPIRED_FURTHER}</p>
+              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    )
+  }
+
   return (
     <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-default">
       <Container>
