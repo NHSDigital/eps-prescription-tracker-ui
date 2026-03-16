@@ -27,7 +27,6 @@ import {handleRestartLogin, signOut} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {AUTH_CONFIG} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
-import {buildPrescriptionSearchParams} from "@/helpers/buildPrescriptionSearchParams"
 
 export default function PrescriptionListPage() {
   const {setPatientDetails, setPatientFallback} = usePatientDetails()
@@ -50,23 +49,71 @@ export default function PrescriptionListPage() {
     const runSearch = async () => {
       setLoading(true)
 
-      // Build search parameters using original navigation context and search context
-      const originalSearchParams = navigationContext.getOriginalSearchParameters()
-      const searchParamsResult = buildPrescriptionSearchParams(originalSearchParams, searchContext)
+      // Use searchType from SearchProvider to determine which parameter to search with
+      const searchParams = new URLSearchParams()
+      let hasValidSearchCriteria = false
 
-      // Handle redirection needs
-      if (searchParamsResult.shouldRedirectToPrescriptionSearch) {
+      // Check original parameters first, then fall back to current search context
+      const originalSearchParams = navigationContext.getOriginalSearchParameters()
+
+      // Handle basic details case - redirect to prescription ID search
+      if (originalSearchParams &&
+          (originalSearchParams.firstName || originalSearchParams.lastName) &&
+          !originalSearchParams.nhsNumber) {
+        logger.info("Basic details present but no NHS number - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
 
-      if (!searchParamsResult.hasValidSearchCriteria) {
+      if (searchContext.searchType === "nhs" &&
+          (originalSearchParams?.nhsNumber || searchContext.nhsNumber)) {
+        const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
+        searchParams.append("nhsNumber", nhsNumber!)
+        hasValidSearchCriteria = true
+        if (originalSearchParams?.nhsNumber) {
+          logger.info("Using original NHS number from navigation context", {
+            nhsNumber: originalSearchParams.nhsNumber
+          })
+        }
+      } else if (searchContext.searchType === "prescriptionId" &&
+                 (originalSearchParams?.prescriptionId || searchContext.prescriptionId)) {
+        const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
+        searchParams.append("prescriptionId", prescriptionId!)
+        hasValidSearchCriteria = true
+        if (originalSearchParams?.prescriptionId) {
+          logger.info("Using original prescription ID from navigation context", {
+            prescriptionId: originalSearchParams.prescriptionId
+          })
+        }
+      } else {
+        // Fallback: if no searchType is set, try using available parameters
+        if (originalSearchParams?.nhsNumber || searchContext.nhsNumber) {
+          const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
+          searchParams.append("nhsNumber", nhsNumber!)
+          hasValidSearchCriteria = true
+          if (originalSearchParams?.nhsNumber) {
+            logger.info("Using original NHS number from navigation context", {
+              nhsNumber: originalSearchParams.nhsNumber
+            })
+          }
+        } else if (originalSearchParams?.prescriptionId || searchContext.prescriptionId) {
+          const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
+          searchParams.append("prescriptionId", prescriptionId!)
+          hasValidSearchCriteria = true
+          if (originalSearchParams?.prescriptionId) {
+            logger.info("Using original prescription ID from navigation context", {
+              prescriptionId: originalSearchParams.prescriptionId
+            })
+          }
+        }
+      }
+
+      // If no valid search criteria, redirect to prescription ID search
+      if (!hasValidSearchCriteria) {
         logger.info("No search parameter provided - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
-
-      const {searchParams} = searchParamsResult
 
       try {
         const response = await http.get(API_ENDPOINTS.PRESCRIPTION_LIST, {
