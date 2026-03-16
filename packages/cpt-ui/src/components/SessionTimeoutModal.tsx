@@ -1,17 +1,19 @@
-import React, {useEffect, useRef} from "react"
+import React, {useEffect, useRef, useCallback} from "react"
 import {Container} from "nhsuk-react-components"
 
 import {EpsModal} from "@/components/EpsModal"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 import {Button} from "./ReactRouterButton"
+import {logger} from "@/helpers/logger"
+import {useAuth} from "@/context/AuthProvider"
 
 interface SessionTimeoutModalProps {
   isOpen: boolean
   timeLeft: number
   onStayLoggedIn: () => Promise<void>
   onLogOut: () => Promise<void>
-  isExtending: boolean
-  isLoggingOut?: boolean
+  onTimeOut: () => Promise<void>
+  buttonDisabledState: boolean
 }
 
 // Helper functions moved outside component to reduce cognitive complexity
@@ -36,7 +38,7 @@ const formatTimeAnnouncement = (minutes: number, seconds: number): string => {
 
 const shouldAnnounceAtTime = (timeLeft: number): boolean => {
   if (timeLeft <= 20) {
-    const criticalTimes = [20, 15, 10, 5, 3, 2, 1]
+    const criticalTimes = [20, 15, 10, 5]
     return criticalTimes.includes(timeLeft)
   }
   return timeLeft % 15 === 0
@@ -99,10 +101,20 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   timeLeft,
   onStayLoggedIn,
   onLogOut,
-  isExtending,
-  isLoggingOut = false
+  onTimeOut,
+  buttonDisabledState
 }) => {
   const liveRegionRef = useRef<HTMLDivElement>(null)
+  const auth = useAuth()
+
+  const countdownTimerRef = useRef<number | null>(null)
+
+  const clearCountdownTimer = useCallback(() => {
+    if (countdownTimerRef.current) {
+      clearInterval(countdownTimerRef.current)
+      countdownTimerRef.current = null
+    }
+  }, [])
 
   useModalFocus(isOpen)
   useAriaLiveAnnouncements(isOpen, timeLeft, liveRegionRef)
@@ -115,6 +127,40 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
       return
     }
   }
+
+  // // Effect to start/stop countdown based on modal visibility
+  useEffect(() => {
+    logger.info("Use effect count down started")
+    if (isOpen && timeLeft > 0) {
+      logger.info("isopen and timeleft")
+      // Only start if not already running or if starting fresh
+      if (!countdownTimerRef.current) {
+        let secondsLeft = Math.floor(timeLeft / 1000)
+
+        // Set initial time
+        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: secondsLeft}))
+
+        // Start countdown that decrements every second
+        countdownTimerRef.current = setInterval(() => {
+          secondsLeft -= 1
+
+          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: secondsLeft}))
+          // Auto-logout when countdown reaches 0
+          if (secondsLeft <= 0) {
+            clearInterval(countdownTimerRef.current!)
+            countdownTimerRef.current = null
+            onTimeOut()
+          }
+        }, 1000) as unknown as number
+      }
+    } else {
+      // Clear timer when modal is hidden
+      clearCountdownTimer()
+    }
+
+    // Cleanup on unmount
+    return clearCountdownTimer
+  }, [isOpen]) // Only depend on showModal, not timeLeft
 
   return (
     <EpsModal
@@ -147,7 +193,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
             className="nhsuk-button eps-modal-button"
             data-testid="stay-logged-in-button"
             onClick={onStayLoggedIn}
-            disabled={isExtending}
+            disabled={buttonDisabledState}
           >
             {SESSION_TIMEOUT_MODAL_STRINGS.STAY_LOGGED_IN}
           </Button>
@@ -156,9 +202,10 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
             className="nhsuk-button nhsuk-button--secondary eps-modal-button"
             data-testid="logout-button"
             onClick={onLogOut}
-            disabled={isExtending || isLoggingOut}
+            disabled={buttonDisabledState}
           >
-            {isLoggingOut ? "Logging out..." : SESSION_TIMEOUT_MODAL_STRINGS.LOG_OUT}
+            {auth.sessionTimeoutModalInfo.action === "loggingOut" ?
+              "Logging out..." : SESSION_TIMEOUT_MODAL_STRINGS.LOG_OUT}
           </Button>
         </div>
       </Container>

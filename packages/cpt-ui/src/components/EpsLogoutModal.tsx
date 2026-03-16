@@ -4,23 +4,16 @@ import {Container} from "nhsuk-react-components"
 import {EpsModal} from "@/components/EpsModal"
 import {EpsLogoutModalStrings} from "@/constants/ui-strings/EpsLogoutModalStrings"
 import {Button} from "./ReactRouterButton"
-
 interface EpsLogoutModalProps {
   readonly isOpen: boolean
   readonly onClose: () => void
   readonly onConfirm: () => void
-  readonly isLoggingOut?: boolean
+  readonly buttonDisabled: boolean
 }
 
-export function EpsLogoutModal({isOpen, onClose, onConfirm, isLoggingOut = false}: EpsLogoutModalProps) {
-  const handleClose = () => {
-    if (!isLoggingOut) {
-      onClose()
-    }
-  }
-
+export function EpsLogoutModal({isOpen, onClose, onConfirm, buttonDisabled}: EpsLogoutModalProps) {
   return (
-    <EpsModal isOpen={isOpen} onClose={handleClose} ariaLabelledBy="logout-modal-title">
+    <EpsModal isOpen={isOpen} onClose={onClose} ariaLabelledBy="logout-modal-title">
       <Container>
 
         <h2
@@ -36,15 +29,14 @@ export function EpsLogoutModal({isOpen, onClose, onConfirm, isLoggingOut = false
           <Button
             className="nhsuk-button eps-modal-button"
             onClick={onConfirm}
-            disabled={isLoggingOut}
+            disabled={buttonDisabled}
           >
             {EpsLogoutModalStrings.CONFIRM_BUTTON_TEXT}
           </Button>
 
           <Button
             className="nhsuk-button nhsuk-button--secondary eps-modal-button"
-            onClick={handleClose}
-            disabled={isLoggingOut}
+            onClick={onClose}
           >
             {EpsLogoutModalStrings.CANCEL_BUTTON_TEXT}
           </Button>
