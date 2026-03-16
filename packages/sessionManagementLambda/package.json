@@ -16,11 +16,11 @@
     "@aws-lambda-powertools/commons": "^2.31.0",
     "@aws-lambda-powertools/logger": "^2.31.0",
     "@aws-lambda-powertools/parameters": "^2.31.0",
-    "@middy/core": "^7.1.0",
+    "@middy/core": "^7.1.7",
     "@middy/input-output-logger": "^7.1.1"
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",
-    "esbuild": "^0.27.3"
+    "esbuild": "^0.27.4"
   }
 }
