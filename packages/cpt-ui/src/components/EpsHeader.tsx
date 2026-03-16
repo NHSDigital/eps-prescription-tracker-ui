@@ -78,7 +78,6 @@ export default function EpsHeader() {
 
     setIsLoggingOut(true)
 
-    navigate("/logout", {replace: true})
 
     try {
       await signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
