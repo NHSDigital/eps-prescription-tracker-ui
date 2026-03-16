@@ -117,7 +117,7 @@ export default function RoleSelectionPage({
     } catch (err) {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
-        handleSignoutEvent(auth, navigate, invalidSessionCause)
+        handleSignoutEvent(auth, navigate, "RoleSelection Call Failure", invalidSessionCause)
         return
       }
       logger.error("Error selecting role:", err)
