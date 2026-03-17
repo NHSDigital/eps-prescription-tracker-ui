@@ -27,9 +27,11 @@ export const handleSignoutEvent = async (
     + (invalidSessionReason ? ` and invalid session reason: ${invalidSessionReason}` : ""))
 
   if (invalidSessionReason) {
+    logger.info(`Invalid session cause supplied, ${invalidSessionReason}`)
     await auth.updateInvalidSessionCause(invalidSessionReason)
     await signOut(auth, navigate, AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT, false)
   } else {
+    logger.info("No invalid session cause, using standard logout")
     await signOut(auth, navigate, AUTH_CONFIG.REDIRECT_SIGN_OUT, false)
   }
 }

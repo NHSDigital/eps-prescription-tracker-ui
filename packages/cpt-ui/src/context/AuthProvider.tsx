@@ -2,7 +2,8 @@ import React, {
   createContext,
   useContext,
   useEffect,
-  useState
+  useState,
+  SetStateAction
 } from "react"
 import {Amplify} from "aws-amplify"
 import {Hub} from "aws-amplify/utils"
@@ -14,7 +15,12 @@ import {API_ENDPOINTS} from "@/constants/environment"
 import {getOrCreateTabId} from "@/helpers/tabHelpers"
 
 import http from "@/helpers/axios"
-import {RoleDetails, TrackerUserInfoResult, UserDetails} from "@cpt-ui-common/common-types"
+import {
+  RoleDetails,
+  TrackerUserInfoResult,
+  UserDetails,
+  SessionTimeoutModal
+} from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 import {LOGOUT_MARKER_STORAGE_KEY, LOGOUT_MARKER_STORAGE_GROUP} from "@/constants/environment"
@@ -40,6 +46,10 @@ export interface AuthContextType {
   userDetails: UserDetails | undefined
   remainingSessionTime: number | undefined
   logoutMarker: LogoutMarker | undefined
+  sessionTimeoutModalInfo: SessionTimeoutModal
+  logoutModalType: string | undefined
+  setSessionTimeoutModalInfo: (value: SetStateAction<SessionTimeoutModal>) => void
+  setLogoutModalType: (value: "userInitiated" | "timeout" | undefined) => Promise<void>
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
   clearAuthState: () => void
@@ -48,7 +58,7 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
-  setStateForSignOut: () => void
+  setStateForSignOut: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -95,6 +105,17 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     undefined
   )
 
+  const [sessionTimeoutModalInfo, setSessionTimeoutModalInfo] = useLocalStorageState<SessionTimeoutModal>(
+    "sessionTimeoutModalInfo",
+    "sessionTimeoutModalInfo",
+    {showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined}
+  )
+  const [logoutModalType, setLogoutModalType] = useLocalStorageState<"userInitiated" | "timeout" | undefined>(
+    "logoutModalType",
+    "logoutModalType",
+    undefined
+  )
+
   /**
    * Fetch and update the auth tokens
    */
@@ -105,10 +126,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRolesWithAccess([])
     setRolesWithoutAccess([])
     setUser(null)
+    setLogoutModalType(undefined)
     setIsSignedIn(false)
     setIsSigningIn(false)
     setIsConcurrentSession(false)
     setRemainingSessionTime(undefined)
+    setSessionTimeoutModalInfo({showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined})
     setSessionId(undefined)
     setInvalidSessionCause(undefined)
     // clearLogoutMarkerFromStorage()
@@ -260,6 +283,15 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     return rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0
   }
 
+  // Wrap setLogoutModalType to match the expected signature
+  const setLogoutModalTypeAsync = async (value: "userInitiated" | "timeout" | undefined) => {
+    if (logoutModalType === undefined || value === undefined) {
+      setLogoutModalType(value)
+    } else {
+      logger.info("Conflicting log out modal, not setting")
+    }
+  }
+
   return (
     <AuthContext.Provider value={{
       error,
@@ -277,6 +309,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       remainingSessionTime,
       deviceId,
       logoutMarker,
+      sessionTimeoutModalInfo,
+      logoutModalType,
+      setSessionTimeoutModalInfo,
+      setLogoutModalType: setLogoutModalTypeAsync,
       cognitoSignIn,
       cognitoSignOut,
       clearAuthState,

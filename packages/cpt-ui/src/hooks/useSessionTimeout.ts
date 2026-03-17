@@ -1,99 +1,83 @@
-import {
-  useEffect,
-  useState,
-  useCallback,
-  useRef
-} from "react"
+import {useCallback, useRef} from "react"
 import {logger} from "@/helpers/logger"
-
+import {useAuth} from "@/context/AuthProvider"
+import {updateRemoteSelectedRole} from "@/helpers/userInfo"
+import {handleSignoutEvent} from "@/helpers/logout"
+import {useNavigate} from "react-router-dom"
 export interface SessionTimeoutProps {
-  showModal: boolean
-  timeLeft: number
   onStayLoggedIn: () => Promise<void>
   onLogOut: () => Promise<void>
   onTimeout: () => Promise<void>
 }
 
-export const useSessionTimeout = (props: SessionTimeoutProps) => {
-  const [sessionState, setSessionState] = useState<{
-    timeLeft: number
-    isExtending: boolean
-  }>({
-    timeLeft: 0,
-    isExtending: false
-  })
+export const useSessionTimeout = () => {
+  const auth = useAuth()
+  const navigate = useNavigate()
+  const actionLockRef = useRef<"extending" | "loggingOut" | undefined>(undefined)
 
-  const countdownTimerRef = useRef<number | null>(null)
+  const clearCountdownTimer = () => {
+    auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: 0}))
+  }
 
-  const clearCountdownTimer = useCallback(() => {
-    if (countdownTimerRef.current) {
-      clearInterval(countdownTimerRef.current)
-      countdownTimerRef.current = null
-    }
-  }, [])
-
-  const handleTimeoutLogout = useCallback(async () => {
-    logger.warn("Session expired - automatically logging out user")
-    clearCountdownTimer()
-    await props.onTimeout()
-  }, [props.onTimeout, clearCountdownTimer])
-
-  // Effect to start/stop countdown based on modal visibility
-  useEffect(() => {
-    if (props.showModal && props.timeLeft > 0) {
-      // Only start if not already running or if starting fresh
-      if (!countdownTimerRef.current) {
-        let secondsLeft = Math.floor(props.timeLeft / 1000)
-
-        // Set initial time
-        setSessionState(prev => ({
-          ...prev,
-          timeLeft: secondsLeft
-        }))
-
-        // Start countdown that decrements every second
-        countdownTimerRef.current = setInterval(() => {
-          secondsLeft -= 1
-
-          setSessionState(prev => ({
-            ...prev,
-            timeLeft: secondsLeft
-          }))
-
-          // Auto-logout when countdown reaches 0
-          if (secondsLeft <= 0) {
-            clearInterval(countdownTimerRef.current!)
-            countdownTimerRef.current = null
-            handleTimeoutLogout()
-          }
-        }, 1000) as unknown as number
-      }
-    } else {
-      // Clear timer when modal is hidden
-      clearCountdownTimer()
+  const handleStayLoggedIn = useCallback(async () => {
+    // Prevent multiple simultaneous extension attempts or cross-calls
+    if (actionLockRef.current !== undefined) {
+      logger.info("Session action already in progress, ignoring duplicate request")
+      return
     }
 
-    // Cleanup on unmount
-    return clearCountdownTimer
-  }, [props.showModal]) // Only depend on showModal, not timeLeft
-
-  const handleExtendSession = useCallback(async () => {
-    setSessionState(prev => ({...prev, isExtending: true}))
     try {
-      await props.onStayLoggedIn()
-      setSessionState(prev => ({...prev, isExtending: false}))
-    } catch {
-      setSessionState(prev => ({...prev, isExtending: false}))
-      await props.onLogOut()
+      actionLockRef.current = "extending"
+      logger.info("User chose to extend session")
+      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "extending", buttonDisabled: true}))
+
+      // Call the selectedRole API with current role to refresh session
+      if (auth.selectedRole) {
+        await updateRemoteSelectedRole(auth.selectedRole)
+        logger.info("Session extended successfully")
+
+        // Hide modal and refresh user info
+        auth.setLogoutModalType(undefined)
+        auth.setSessionTimeoutModalInfo(
+          prev => ({...prev, showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined}))
+        actionLockRef.current = undefined
+        await auth.updateTrackerUserInfo()
+      } else {
+        logger.error("No selected role available to extend session")
+        auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
+        await handleLogOut()
+      }
+    } catch (error) {
+      logger.error("Error extending session:", error)
+      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
+      await handleLogOut()
     }
-  }, [props])
+  }, [auth])
+
+  const handleLogOut = useCallback(async () => {
+    // Prevent multiple simultaneous logout attempts or cross-calls
+    if (actionLockRef.current !== undefined) {
+      logger.info("Session action already in progress, ignoring duplicate request")
+      return
+    }
+    actionLockRef.current = "loggingOut"
+    logger.info("User chose to log out from session timeout modal")
+    auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
+    await handleSignoutEvent(auth, navigate, "Timeout")
+    auth.setLogoutModalType(undefined)
+  }, [auth])
+
+  const handleTimeout = useCallback(async () => {
+    logger.warn("Session automatically timed out")
+    clearCountdownTimer()
+    auth.updateInvalidSessionCause("Timeout")
+    await handleSignoutEvent(auth, navigate, "Timeout")
+  }, [auth])
 
   return {
-    showModal: props.showModal,
-    timeLeft: sessionState.timeLeft,
-    onStayLoggedIn: handleExtendSession,
-    onLogOut: props.onLogOut,
-    isExtending: sessionState.isExtending,
+    onStayLoggedIn: handleStayLoggedIn,
+    onLogOut: handleLogOut,
+    onTimeOut: handleTimeout,
     resetSessionTimeout: () => {}
   }
 }

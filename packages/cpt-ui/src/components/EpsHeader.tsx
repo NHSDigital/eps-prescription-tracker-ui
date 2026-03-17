@@ -1,4 +1,9 @@
-import React, {useContext, useEffect, useState} from "react"
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useRef
+} from "react"
 import {Link, useNavigate, useLocation} from "react-router-dom"
 import {AuthContext} from "@/context/AuthProvider"
 import {useAuth} from "@/context/AuthProvider"
@@ -19,9 +24,10 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
-  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [actionButtonsDisabled, setActionButtonsDisabled] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
+  const buttonDisabledRef = useRef<boolean>(false)
 
   useEffect(() => {
     const isSignedIn = auth?.isSignedIn as boolean
@@ -69,12 +75,15 @@ export default function EpsHeader() {
 
   const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault()
-    setShowLogoutModal(true)
+    authContext.setLogoutModalType("userInitiated")
   }
 
   const handleConfirmLogout = async () => {
-    setShowLogoutModal(false)
-    handleSignoutEvent(authContext, navigate, "UserInitiatedHeaderLogout")
+    setActionButtonsDisabled(true)
+    if (buttonDisabledRef.current === false) {
+      await handleSignoutEvent(authContext, navigate, "UserInitiatedHeaderLogout")
+    }
+    buttonDisabledRef.current = true
   }
 
   const toggleDropdown = () => {
@@ -257,9 +266,14 @@ export default function EpsHeader() {
       </header>
 
       <EpsLogoutModal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
+        isOpen={authContext?.logoutModalType === "userInitiated"}
+        onClose={() => {
+          authContext?.setLogoutModalType(undefined)
+          buttonDisabledRef.current = false
+          setActionButtonsDisabled(false)
+        }}
         onConfirm={handleConfirmLogout}
+        buttonDisabled={actionButtonsDisabled}
       />
     </>
   )

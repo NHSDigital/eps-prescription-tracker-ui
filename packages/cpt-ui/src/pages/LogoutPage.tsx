@@ -25,7 +25,7 @@ export default function LogoutPage() {
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
-        {!auth?.isSignedIn && !auth.isSigningIn ? (
+        {(!auth?.isSignedIn && !auth.isSigningIn && !auth.isSigningOut) ? (
           <Fragment>
             <h1>{EpsLogoutStrings.TITLE}</h1>
             <p>{EpsLogoutStrings.BODY}</p>
