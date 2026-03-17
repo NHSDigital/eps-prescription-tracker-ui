@@ -130,7 +130,6 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
 
   // // Effect to start/stop countdown based on modal visibility
   useEffect(() => {
-    logger.info("Use effect count down started")
     if (isOpen && timeLeft > 0) {
       // Only start if not already running or if starting fresh
       if (!countdownTimerRef.current) {
