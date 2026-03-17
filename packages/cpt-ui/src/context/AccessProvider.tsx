@@ -14,9 +14,7 @@ import {handleRestartLogin} from "@/helpers/logout"
 import LoadingPage from "@/pages/LoadingPage"
 import Layout from "@/Layout"
 
-export const AccessContext = createContext<{
-  sessionTimeoutModalInfo: {showModal: boolean; timeLeft: number; action: "extending" | "loggingOut" | undefined}
-    } | null>(null)
+export const AccessContext = createContext<Record<string, never> | null>(null)
 
 export const AccessProvider = ({children}: {children: ReactNode}) => {
   const auth = useAuth()
@@ -194,11 +192,9 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   }
 
   return (
-    <AccessContext.Provider value={{
-      sessionTimeoutModalInfo: auth.sessionTimeoutModalInfo
-    }}>
+    <AccessProvider>
       {children}
-    </AccessContext.Provider>
+    </AccessProvider>
   )
 }
 

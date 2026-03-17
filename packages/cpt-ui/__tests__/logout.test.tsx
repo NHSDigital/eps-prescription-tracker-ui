@@ -3,6 +3,7 @@ import {signOut, handleRestartLogin} from "@/helpers/logout"
 import {logger} from "@/helpers/logger"
 import {AUTH_CONFIG} from "@/constants/environment"
 import {AuthContextType} from "@/context/AuthProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock logger
 jest.mock("@/helpers/logger", () => ({
@@ -21,6 +22,7 @@ jest.mock("@/constants/environment", () => ({
 }))
 
 const createMockAuth = (overrides = {}): AuthContextType => ({
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: false,

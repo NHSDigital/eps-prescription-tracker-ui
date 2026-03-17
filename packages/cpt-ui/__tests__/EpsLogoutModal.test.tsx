@@ -56,7 +56,7 @@ const defaultProps = {
   isOpen: true,
   onClose: jest.fn(),
   onConfirm: jest.fn(),
-  isLoggingOut: false
+  buttonDisabled: false
 }
 
 describe("EpsLogoutModal", () => {
@@ -121,82 +121,28 @@ describe("EpsLogoutModal", () => {
       expect(mockOnClose).toHaveBeenCalledTimes(1)
     })
 
-    it("disables confirm button when isLoggingOut is true", () => {
-      render(<EpsLogoutModal {...defaultProps} isLoggingOut={true} />)
+    it("disables confirm button when buttonDisabled is true", () => {
+      render(<EpsLogoutModal {...defaultProps} buttonDisabled={true} />)
       expect(screen.getByTestId("confirm-button")).toBeDisabled()
     })
 
-    it("disables cancel button when isLoggingOut is true", () => {
-      render(<EpsLogoutModal {...defaultProps} isLoggingOut={true} />)
-      expect(screen.getByTestId("cancel-button")).toBeDisabled()
-    })
-
-    it("does not call onClose when cancel button is clicked and isLoggingOut is true", async () => {
-      const mockOnClose = jest.fn()
-      const user = userEvent.setup()
-
-      render(<EpsLogoutModal {...defaultProps} onClose={mockOnClose} isLoggingOut={true} />)
-      // Try to click the disabled cancel button
-      const cancelButton = screen.getByTestId("cancel-button")
-      expect(cancelButton).toBeDisabled()
-      // Even if we try to click it, onClose should not be called
-      await user.click(cancelButton)
-      expect(mockOnClose).not.toHaveBeenCalled()
-    })
-  })
-
-  describe("isLoggingOut behavior", () => {
-    it("defaults isLoggingOut to false when not provided", () => {
-      const props = {
-        isOpen: true,
-        onClose: jest.fn(),
-        onConfirm: jest.fn()
-        // isLoggingOut not provided
-      }
-
-      render(<EpsLogoutModal {...props} />)
-      // Buttons should be enabled when isLoggingOut defaults to false
-      expect(screen.getByTestId("confirm-button")).not.toBeDisabled()
+    it("does not disable cancel button when buttonDisabled is true", () => {
+      render(<EpsLogoutModal {...defaultProps} buttonDisabled={true} />)
       expect(screen.getByTestId("cancel-button")).not.toBeDisabled()
     })
 
-    it("handles the handleClose function correctly when isLoggingOut is false", async () => {
+    it("enables confirm button when buttonDisabled is false", () => {
+      render(<EpsLogoutModal {...defaultProps} buttonDisabled={false} />)
+      expect(screen.getByTestId("confirm-button")).not.toBeDisabled()
+    })
+
+    it("still allows cancel when buttonDisabled is true", async () => {
       const mockOnClose = jest.fn()
       const user = userEvent.setup()
 
-      render(<EpsLogoutModal {...defaultProps} onClose={mockOnClose} isLoggingOut={false} />)
+      render(<EpsLogoutModal {...defaultProps} onClose={mockOnClose} buttonDisabled={true} />)
       await user.click(screen.getByTestId("cancel-button"))
       expect(mockOnClose).toHaveBeenCalledTimes(1)
-    })
-
-    it("prevents handleClose from calling onClose when isLoggingOut is true", () => {
-      // This test is to ensure the handleClose function's conditional logic is covered
-      const mockOnClose = jest.fn()
-
-      const TestComponent = () => {
-        const [isLoggingOut, setIsLoggingOut] = React.useState(false)
-        return (
-          <>
-            <button onClick={() => setIsLoggingOut(true)} data-testid="set-logging-out">
-              Set Logging Out
-            </button>
-            <EpsLogoutModal
-              {...defaultProps}
-              onClose={mockOnClose}
-              isLoggingOut={isLoggingOut}
-            />
-          </>
-        )
-      }
-
-      render(<TestComponent />)
-
-      // Initially should be able to close
-      const cancelButton = screen.getByTestId("cancel-button")
-      // Simulate the case where isLoggingOut becomes true
-      // The handleClose function should not call onClose in this case
-      // This is tested implicitly through the disabled state, but we're ensuring branch coverage
-      expect(cancelButton).not.toBeDisabled() // Initially enabled
     })
   })
 

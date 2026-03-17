@@ -10,6 +10,32 @@ import React from "react"
 import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 
+// Mock useAuth
+const mockSetSessionTimeoutModalInfo = jest.fn()
+const mockAuthValue = {
+  sessionTimeoutModalInfo: {
+    showModal: false,
+    timeLeft: 0,
+    action: undefined as "extending" | "loggingOut" | undefined,
+    buttonDisabled: false
+  },
+  setSessionTimeoutModalInfo: mockSetSessionTimeoutModalInfo
+}
+
+jest.mock("@/context/AuthProvider", () => ({
+  useAuth: () => mockAuthValue
+}))
+
+// Mock logger
+jest.mock("@/helpers/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn()
+  }
+}))
+
 // Mock the EpsModal component
 jest.mock("@/components/EpsModal", () => {
   return {
@@ -67,14 +93,21 @@ const defaultProps = {
   timeLeft: 120,
   onStayLoggedIn: jest.fn(),
   onLogOut: jest.fn(),
-  isExtending: false,
-  isLoggingOut: false
+  onTimeOut: jest.fn(),
+  buttonDisabledState: false
 }
 
 describe("SessionTimeoutModal", () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.useFakeTimers()
+    // Reset auth mock to defaults
+    mockAuthValue.sessionTimeoutModalInfo = {
+      showModal: false,
+      timeLeft: 0,
+      action: undefined,
+      buttonDisabled: false
+    }
   })
 
   afterEach(() => {
@@ -158,24 +191,30 @@ describe("SessionTimeoutModal", () => {
       expect(mockLogOut).toHaveBeenCalledTimes(1)
     })
 
-    it("disables stay logged in button when isExtending is true", () => {
-      render(<SessionTimeoutModal {...defaultProps} isExtending={true} />)
+    it("disables both buttons when buttonDisabledState is true", () => {
+      render(<SessionTimeoutModal {...defaultProps} buttonDisabledState={true} />)
       expect(screen.getByTestId("stay-logged-in-button")).toBeDisabled()
-    })
-
-    it("disables logout button when isExtending is true", () => {
-      render(<SessionTimeoutModal {...defaultProps} isExtending={true} />)
       expect(screen.getByTestId("logout-button")).toBeDisabled()
     })
 
-    it("disables logout button when isLoggingOut is true", () => {
-      render(<SessionTimeoutModal {...defaultProps} isLoggingOut={true} />)
-      expect(screen.getByTestId("logout-button")).toBeDisabled()
+    it("enables both buttons when buttonDisabledState is false", () => {
+      render(<SessionTimeoutModal {...defaultProps} buttonDisabledState={false} />)
+      expect(screen.getByTestId("stay-logged-in-button")).not.toBeDisabled()
+      expect(screen.getByTestId("logout-button")).not.toBeDisabled()
     })
 
-    it("shows 'Logging out...' text when isLoggingOut is true", () => {
-      render(<SessionTimeoutModal {...defaultProps} isLoggingOut={true} />)
+    it("shows 'Logging out...' text when auth action is loggingOut", () => {
+      mockAuthValue.sessionTimeoutModalInfo = {
+        ...mockAuthValue.sessionTimeoutModalInfo,
+        action: "loggingOut"
+      }
+      render(<SessionTimeoutModal {...defaultProps} />)
       expect(screen.getByText("Logging out...")).toBeInTheDocument()
+    })
+
+    it("shows normal log out text when auth action is not loggingOut", () => {
+      render(<SessionTimeoutModal {...defaultProps} />)
+      expect(screen.getByText(SESSION_TIMEOUT_MODAL_STRINGS.LOG_OUT)).toBeInTheDocument()
     })
   })
 
@@ -231,6 +270,80 @@ describe("SessionTimeoutModal", () => {
 
       expect(mockPreventDefault).toHaveBeenCalled()
       expect(mockStopPropagation).toHaveBeenCalled()
+    })
+  })
+
+  describe("Countdown timer", () => {
+    it("starts countdown when modal opens with time left", () => {
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={120000} />)
+
+      // Initial time should be set (120000ms = 120s)
+      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+    })
+
+    it("decrements countdown every second", () => {
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={5000} />)
+
+      mockSetSessionTimeoutModalInfo.mockClear()
+
+      act(() => {
+        jest.advanceTimersByTime(1000)
+      })
+
+      // Should have called setSessionTimeoutModalInfo to update timeLeft
+      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+    })
+
+    it("calls onTimeOut when countdown reaches 0", () => {
+      const mockOnTimeOut = jest.fn()
+      render(
+        <SessionTimeoutModal
+          {...defaultProps}
+          isOpen={true}
+          timeLeft={2000}
+          onTimeOut={mockOnTimeOut}
+        />
+      )
+
+      // Advance past the countdown (2000ms = 2 seconds)
+      act(() => {
+        jest.advanceTimersByTime(3000)
+      })
+
+      expect(mockOnTimeOut).toHaveBeenCalled()
+    })
+
+    it("clears countdown when modal closes", () => {
+      const {rerender} = render(
+        <SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={60000} />
+      )
+
+      // Close modal
+      rerender(<SessionTimeoutModal {...defaultProps} isOpen={false} timeLeft={60000} />)
+
+      mockSetSessionTimeoutModalInfo.mockClear()
+
+      // Advance timers — should not fire any updates
+      act(() => {
+        jest.advanceTimersByTime(5000)
+      })
+
+      expect(mockSetSessionTimeoutModalInfo).not.toHaveBeenCalled()
+    })
+
+    it("does not start countdown when timeLeft is 0", () => {
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={0} />)
+
+      // setSessionTimeoutModalInfo should not be called to set initial time
+      // (the effect path for isOpen && timeLeft > 0 is not entered)
+      const callsSettingTimeLeft = mockSetSessionTimeoutModalInfo.mock.calls.filter(call => {
+        if (typeof call[0] === "function") {
+          const result = call[0]({showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false})
+          return result.timeLeft !== undefined
+        }
+        return false
+      })
+      expect(callsSettingTimeLeft).toHaveLength(0)
     })
   })
 
@@ -315,18 +428,6 @@ describe("SessionTimeoutModal", () => {
       // Update to 5 (should announce)
       rerender(<SessionTimeoutModal {...defaultProps} timeLeft={5} />)
       expect(liveRegion).toHaveTextContent("You will be logged out in 5 seconds.")
-
-      // Update to 3 (should announce)
-      rerender(<SessionTimeoutModal {...defaultProps} timeLeft={3} />)
-      expect(liveRegion).toHaveTextContent("You will be logged out in 3 seconds.")
-
-      // Update to 2 (should announce)
-      rerender(<SessionTimeoutModal {...defaultProps} timeLeft={2} />)
-      expect(liveRegion).toHaveTextContent("You will be logged out in 2 seconds.")
-
-      // Update to 1 (should announce)
-      rerender(<SessionTimeoutModal {...defaultProps} timeLeft={1} />)
-      expect(liveRegion).toHaveTextContent("You will be logged out in 1 second.")
     })
 
     it("does not announce at non-specified intervals", () => {

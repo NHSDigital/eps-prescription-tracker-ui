@@ -5,7 +5,7 @@ import {useLocation} from "react-router-dom"
 import React from "react"
 import EpsHeader from "@/components/EpsHeader"
 import {AuthContext, type AuthContextType} from "@/context/AuthProvider"
-import {AccessContext} from "@/context/AccessProvider"
+import {AccessProvider} from "@/context/AccessProvider"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock the strings module
@@ -86,18 +86,11 @@ const renderWithProviders = (
 
   const authValue = {...defaultAuthContext, ...authOverrides}
 
-  const mockAccessContext = {
-    sessionTimeoutInfo: {showModal: false, timeLeft: 0, isExtending: false, isLoggingOut: false},
-    onStayLoggedIn: jest.fn(),
-    onLogOut: jest.fn(),
-    onTimeout: jest.fn()
-  }
-
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={mockAccessContext}>
+      <AccessProvider>
         <EpsHeader />
-      </AccessContext.Provider>
+      </AccessProvider>
     </AuthContext.Provider>
   )
 }
