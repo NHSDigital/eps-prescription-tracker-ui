@@ -4,7 +4,6 @@ import {Container} from "nhsuk-react-components"
 import {EpsModal} from "@/components/EpsModal"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 import {Button} from "./ReactRouterButton"
-import {logger} from "@/helpers/logger"
 import {useAuth} from "@/context/AuthProvider"
 
 interface SessionTimeoutModalProps {
