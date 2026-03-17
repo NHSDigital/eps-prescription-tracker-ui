@@ -56,6 +56,26 @@ export default function PrescriptionListPage() {
       // Check original parameters first, then fall back to current search context
       const originalSearchParams = navigationContext.getOriginalSearchParameters()
 
+      const handleNhsNumber = (nhsNumber: string) => {
+        searchParams.append("nhsNumber", nhsNumber)
+        hasValidSearchCriteria = true
+        if (originalSearchParams?.nhsNumber) {
+          logger.info("Using original NHS number from navigation context", {
+            nhsNumber: originalSearchParams.nhsNumber
+          })
+        }
+      }
+
+      const handlePrescriptionId = (prescriptionId: string) => {
+        searchParams.append("prescriptionId", prescriptionId)
+        hasValidSearchCriteria = true
+        if (originalSearchParams?.prescriptionId) {
+          logger.info("Using original prescription ID from navigation context", {
+            prescriptionId: originalSearchParams.prescriptionId
+          })
+        }
+      }
+
       // Handle basic details case - redirect to prescription ID search
       if (originalSearchParams &&
           (originalSearchParams.firstName || originalSearchParams.lastName) &&
@@ -68,42 +88,18 @@ export default function PrescriptionListPage() {
       if (searchContext.searchType === "nhs" &&
           (originalSearchParams?.nhsNumber || searchContext.nhsNumber)) {
         const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
-        searchParams.append("nhsNumber", nhsNumber!)
-        hasValidSearchCriteria = true
-        if (originalSearchParams?.nhsNumber) {
-          logger.info("Using original NHS number from navigation context", {
-            nhsNumber: originalSearchParams.nhsNumber
-          })
-        }
+        handleNhsNumber(nhsNumber!)
       } else if (searchContext.searchType === "prescriptionId" &&
                  (originalSearchParams?.prescriptionId || searchContext.prescriptionId)) {
         const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
-        searchParams.append("prescriptionId", prescriptionId!)
-        hasValidSearchCriteria = true
-        if (originalSearchParams?.prescriptionId) {
-          logger.info("Using original prescription ID from navigation context", {
-            prescriptionId: originalSearchParams.prescriptionId
-          })
-        }
+        handlePrescriptionId(prescriptionId!)
       } else if (originalSearchParams?.nhsNumber || searchContext.nhsNumber) {
         // Fallback: if no searchType is set, try using available parameters
         const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
-        searchParams.append("nhsNumber", nhsNumber!)
-        hasValidSearchCriteria = true
-        if (originalSearchParams?.nhsNumber) {
-          logger.info("Using original NHS number from navigation context", {
-            nhsNumber: originalSearchParams.nhsNumber
-          })
-        }
+        handleNhsNumber(nhsNumber!)
       } else if (originalSearchParams?.prescriptionId || searchContext.prescriptionId) {
         const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
-        searchParams.append("prescriptionId", prescriptionId!)
-        hasValidSearchCriteria = true
-        if (originalSearchParams?.prescriptionId) {
-          logger.info("Using original prescription ID from navigation context", {
-            prescriptionId: originalSearchParams.prescriptionId
-          })
-        }
+        handlePrescriptionId(prescriptionId!)
       }
 
       // If no valid search criteria, redirect to prescription ID search

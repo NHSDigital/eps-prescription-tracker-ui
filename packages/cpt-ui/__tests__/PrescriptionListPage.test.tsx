@@ -1,4 +1,4 @@
-import React from "react"
+import React, {useMemo} from "react"
 import {screen, render, waitFor} from "@testing-library/react"
 import {MemoryRouter} from "react-router-dom"
 import axios, {AxiosError, AxiosHeaders} from "axios"
@@ -170,10 +170,10 @@ const TestWrapper = ({
   children: React.ReactNode
   searchState?: Partial<SearchStateProps>
 }) => {
-  const defaultSearchState = {
+  const defaultSearchState = useMemo(() => ({
     ...mockSearchState,
     ...searchState
-  }
+  }), [searchState])
 
   const patientDetailsState = {
     patient: undefined,
