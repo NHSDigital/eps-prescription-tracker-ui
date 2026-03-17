@@ -132,7 +132,6 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   useEffect(() => {
     logger.info("Use effect count down started")
     if (isOpen && timeLeft > 0) {
-      logger.info("isopen and timeleft")
       // Only start if not already running or if starting fresh
       if (!countdownTimerRef.current) {
         let secondsLeft = Math.floor(timeLeft / 1000)
