@@ -11,7 +11,7 @@ import {useLocation, useNavigate} from "react-router-dom"
 import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
 import {getOpenTabCount, getOrCreateTabId, updateOpenTabs} from "@/helpers/tabHelpers"
-import {checkForRecentMarker, readLogoutMarker} from "@/helpers/logout"
+import {checkForRecentLogoutMarker} from "@/helpers/logout"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 
 import {
@@ -60,7 +60,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
   }, [])
 
   const shouldRedirectDueToCrossTabLogout = () => {
-    const marker = checkForRecentMarker()
+    const marker = checkForRecentLogoutMarker()
     if (!marker) {
       return false
     }
@@ -135,7 +135,6 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
         return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
       }
 
-      logger.debug(`${readLogoutMarker()} :-: ${getOrCreateTabId()} :-: ${getOpenTabCount()}`)
       // If another tab has signed out, other tabs will run the redirection logic independently
       // Check if a logout has occurred elsewhere and forward all tabs to logout equally
       // Else subsequent tabs with manipulated state will attempt to logout again or redirect to login
@@ -148,7 +147,7 @@ export const AccessProvider = ({children}: { children: ReactNode }) => {
       }
 
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
-      if (auth.isSigningOut && !checkForRecentMarker()
+      if (auth.isSigningOut && !checkForRecentLogoutMarker()
         && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
         return handleSignoutEvent(auth, navigate, "Rule 1", auth.invalidSessionCause)
       }

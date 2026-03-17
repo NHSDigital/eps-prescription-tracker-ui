@@ -21,9 +21,20 @@ jest.mock("@/helpers/logger", () => ({
 }))
 
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
-  signOut: jest.fn()
+  handleSignoutEvent: jest.fn(),
+  signOut: jest.fn(),
+  checkForRecentLogoutMarker: jest.fn().mockReturnValue(false)
 }))
+
+jest.mock("@/helpers/tabHelpers", () => {
+  const actual = jest.requireActual("@/helpers/tabHelpers")
+  return {
+    ...actual,
+    getOrCreateTabId: jest.fn().mockReturnValue("default-tab"),
+    getOpenTabCount: jest.fn().mockReturnValue(1),
+    updateOpenTabs: jest.fn()
+  }
+})
 
 // Mock useNavigate and assign to a variable for assertions
 const mockNavigate = jest.fn()

@@ -6,7 +6,7 @@ import {useAuth as mockUseAuth} from "@/context/AuthProvider"
 import {useNavigate, useLocation, MemoryRouter} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {logger} from "@/helpers/logger"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {handleSignoutEvent, signOut} from "@/helpers/logout"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import Layout from "@/Layout"
 import LoadingPage from "@/pages/LoadingPage"
@@ -83,7 +83,7 @@ jest.mock("@/helpers/logger", () => ({
 }))
 
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
+  handleSignoutEvent: jest.fn(),
   signOut: jest.fn()
 }))
 
@@ -521,7 +521,8 @@ describe("AccessProvider", () => {
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
+        navigate, expect.anything(), "InvalidSession")
     })
 
     it("should not call updateTrackerUserInfo when user is not signed in", async () => {
@@ -588,11 +589,12 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(60001)
       })
 
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
+        navigate, expect.anything(), "InvalidSession")
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(2)
 
       // Verify the interval continues to exist and can be cleared
-      // No need to test second execution since handleRestartLogin changes auth state
+      // No need to test second execution since handleSignoutEvent changes auth state
       // which causes useEffect to re-run and reset the interval
     })
   })
@@ -666,7 +668,8 @@ describe("AccessProvider", () => {
 
       expect(logger.warn).toHaveBeenCalledWith("Session expired - automatically logging out user")
       expect(authContext.updateInvalidSessionCause).toHaveBeenCalledWith("Timeout")
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
+        navigate, expect.anything(), "Timeout")
     })
 
     it("should hide modal when session is still valid", async () => {

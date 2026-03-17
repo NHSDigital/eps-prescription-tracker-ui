@@ -44,7 +44,7 @@ export const signOut = async (
   redirectUri?: string | undefined,
   duplicateSignout?: boolean
 ) => {
-  if (!duplicateSignout && checkForRecentMarker()) {
+  if (!duplicateSignout && checkForRecentLogoutMarker()) {
     logger.info("Skipping duplicate signOut call due to in-progress marker")
     return
   }
@@ -79,7 +79,7 @@ export const signOut = async (
 }
 
 const createOrUpdateLogoutMarker = (): LogoutMarker => {
-  const existingMarker = checkForRecentMarker()
+  const existingMarker = checkForRecentLogoutMarker()
   if (existingMarker) {
     existingMarker.timestamp = Date.now()
     writeLogoutMarker(existingMarker)
@@ -114,7 +114,7 @@ const writeLogoutMarker = (marker: LogoutMarker) => {
 }
 
 /* Exported functions used within this helper, AuthProvider or AccessProvider */
-export const checkForRecentMarker = () => {
+export const checkForRecentLogoutMarker = () => {
   const existingMarker = readLogoutMarker()
   if (existingMarker) {
     logger.info("Found existing logout marker in storage", existingMarker)

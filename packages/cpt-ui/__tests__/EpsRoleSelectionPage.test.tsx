@@ -11,7 +11,7 @@ import {useAuth, AuthContextType} from "@/context/AuthProvider"
 import {MemoryRouter, useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {handleSignoutEvent, signOut} from "@/helpers/logout"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {logger} from "@/helpers/logger"
@@ -21,7 +21,7 @@ import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 jest.mock("@/context/AuthProvider")
 jest.mock("@/helpers/getSearchParams")
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
+  handleSignoutEvent: jest.fn(),
   signOut: jest.fn().mockImplementation((auth: AuthContextType) => {
     auth.isSigningOut = true
   })
@@ -998,9 +998,9 @@ describe("RoleSelectionPage", () => {
       })
 
       await waitFor(() => {
-        expect(handleRestartLogin).toHaveBeenCalledWith(
-          expect.objectContaining({updateSelectedRole: mockUpdateSelectedRole}),
-          "session_expired"
+        expect(handleSignoutEvent).toHaveBeenCalledWith(
+          expect.objectContaining({updateSelectedRole: mockUpdateSelectedRole}), mockNavigate,
+          expect.anything(), "session_expired"
         )
       })
     })
