@@ -192,9 +192,9 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   }
 
   return (
-    <AccessProvider>
+    <AccessContext.Provider value={{}}>
       {children}
-    </AccessProvider>
+    </AccessContext.Provider>
   )
 }
 

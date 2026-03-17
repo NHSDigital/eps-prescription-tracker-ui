@@ -28,7 +28,7 @@ export const mockAuthState = {
   rolesWithoutAccess: [],
   selectedRole: undefined,
   userDetails: undefined,
-  sessionTimeoutModalInfo: undefined,
+  sessionTimeoutModalInfo: {showModal: false, timeLeft: 0, action: undefined, buttonDisabled: false},
   logoutModalType: undefined,
 
   // Mock functions with sensible defaults

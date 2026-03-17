@@ -5,7 +5,7 @@ import React from "react"
 
 import SearchPrescriptionPage from "@/pages/SearchPrescriptionPage"
 import {AuthContext, AuthContextType} from "@/context/AuthProvider"
-import {AccessProvider} from "@/context/AccessProvider"
+import {AccessContext} from "@/context/AccessProvider"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
@@ -94,11 +94,16 @@ const renderWithProviders = (
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <AuthContext.Provider value={authContext}>
-        <AccessProvider>
+        <AccessContext.Provider value={{
+          sessionTimeoutInfo: {showModal: false, timeLeft: 0},
+          onStayLoggedIn: jest.fn(),
+          onLogOut: jest.fn(),
+          onTimeout: jest.fn()
+        }}>
           <SearchContext.Provider value={searchContext}>
             {ui}
           </SearchContext.Provider>
-        </AccessProvider>
+        </AccessContext.Provider>
       </AuthContext.Provider>
     </MemoryRouter>
   )
