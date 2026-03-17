@@ -1,15 +1,10 @@
 import React from "react"
 import {render, waitFor} from "@testing-library/react"
 import {AccessProvider} from "@/context/AccessProvider"
-import {FRONTEND_PATHS} from "@/constants/environment"
-import {
-  AuthContext,
-  AuthContextType,
-  LogoutMarker,
-  LOGOUT_MARKER_STORAGE_GROUP,
-  LOGOUT_MARKER_STORAGE_KEY,
-  TAB_ID_SESSION_KEY
-} from "@/context/AuthProvider"
+import {FRONTEND_PATHS, LOGOUT_MARKER_STORAGE_GROUP, LOGOUT_MARKER_STORAGE_KEY} from "@/constants/environment"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {LogoutMarker} from "@/helpers/logout"
+import {getOrCreateTabId, getOpenTabCount} from "@/helpers/tabHelpers"
 import {MemoryRouter} from "react-router-dom"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
@@ -27,12 +22,12 @@ jest.mock("@/helpers/logger", () => ({
   }
 }))
 
-const mockHandleRestartLogin = jest.fn()
+const mockHandleSignoutEvent = jest.fn()
 jest.mock("@/helpers/logout", () => {
   const actual = jest.requireActual("@/helpers/logout")
   return {
     ...actual,
-    handleRestartLogin: (...args: Array<unknown>) => mockHandleRestartLogin(...args),
+    handleSignoutEvent: (...args: Array<unknown>) => mockHandleSignoutEvent(...args),
     signOut: jest.fn()
   }
 })
@@ -44,6 +39,16 @@ jest.mock("react-router-dom", () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate
+  }
+})
+
+jest.mock("@/helpers/tabHelpers", () => {
+  const actual = jest.requireActual("@/helpers/tabHelpers")
+  return {
+    ...actual,
+    getOrCreateTabId: jest.fn().mockReturnValue("default-tab"),
+    getOpenTabCount: jest.fn().mockReturnValue(1),
+    updateOpenTabs: jest.fn()
   }
 })
 
@@ -325,17 +330,17 @@ describe("ensureRoleSelected", () => {
 
       await waitFor(() => {
         expect(mockNavigate).not.toHaveBeenCalled()
-        expect(mockHandleRestartLogin).toHaveBeenCalledWith(
-          expect.objectContaining(authStateOverrides),
-          authStateOverrides.invalidSessionCause, mockNavigate
+        expect(mockHandleSignoutEvent).toHaveBeenCalledWith(
+          expect.objectContaining(authStateOverrides), mockNavigate,
+          expect.anything(), authStateOverrides.invalidSessionCause
         )
       })
     })
 
   it("redirects to logout for non-initiating tab when recent logout marker exists and multiple tabs are open",
     async () => {
-      sessionStorage.setItem(TAB_ID_SESSION_KEY, "tab-b")
-      localStorage.setItem("openTabIds", JSON.stringify(["tab-a", "tab-b"]))
+      jest.mocked(getOrCreateTabId).mockReturnValue("tab-b")
+      jest.mocked(getOpenTabCount).mockReturnValue(2)
       localStorage.setItem(
         LOGOUT_MARKER_STORAGE_GROUP,
         JSON.stringify({
@@ -363,8 +368,8 @@ describe("ensureRoleSelected", () => {
     })
 
   it("does not force logout redirect for initiating tab even when marker is recent", async () => {
-    sessionStorage.setItem(TAB_ID_SESSION_KEY, "tab-a")
-    localStorage.setItem("openTabIds", JSON.stringify(["tab-a", "tab-b"]))
+    jest.mocked(getOrCreateTabId).mockReturnValue("tab-a")
+    jest.mocked(getOpenTabCount).mockReturnValue(2)
     localStorage.setItem(
       LOGOUT_MARKER_STORAGE_GROUP,
       JSON.stringify({

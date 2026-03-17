@@ -148,7 +148,12 @@ jest.mock("@/constants/environment", () => ({
     "/cookies-selected",
     "/"
   ],
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"]
+  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"],
+  LOGOUT_MARKER_STORAGE_KEY: "logoutMarker",
+  LOGOUT_MARKER_STORAGE_GROUP: "logoutMarker",
+  LOGOUT_MARKER_MAX_AGE_MS: 10000,
+  TAB_ID_SESSION_KEY: "tabId",
+  OPEN_TABS_STORAGE_KEY: "openTabIds"
 }))
 
 // Allows for tab selection
