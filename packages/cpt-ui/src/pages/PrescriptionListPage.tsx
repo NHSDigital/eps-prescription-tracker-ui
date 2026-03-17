@@ -85,26 +85,24 @@ export default function PrescriptionListPage() {
             prescriptionId: originalSearchParams.prescriptionId
           })
         }
-      } else {
+      } else if (originalSearchParams?.nhsNumber || searchContext.nhsNumber) {
         // Fallback: if no searchType is set, try using available parameters
-        if (originalSearchParams?.nhsNumber || searchContext.nhsNumber) {
-          const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
-          searchParams.append("nhsNumber", nhsNumber!)
-          hasValidSearchCriteria = true
-          if (originalSearchParams?.nhsNumber) {
-            logger.info("Using original NHS number from navigation context", {
-              nhsNumber: originalSearchParams.nhsNumber
-            })
-          }
-        } else if (originalSearchParams?.prescriptionId || searchContext.prescriptionId) {
-          const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
-          searchParams.append("prescriptionId", prescriptionId!)
-          hasValidSearchCriteria = true
-          if (originalSearchParams?.prescriptionId) {
-            logger.info("Using original prescription ID from navigation context", {
-              prescriptionId: originalSearchParams.prescriptionId
-            })
-          }
+        const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
+        searchParams.append("nhsNumber", nhsNumber!)
+        hasValidSearchCriteria = true
+        if (originalSearchParams?.nhsNumber) {
+          logger.info("Using original NHS number from navigation context", {
+            nhsNumber: originalSearchParams.nhsNumber
+          })
+        }
+      } else if (originalSearchParams?.prescriptionId || searchContext.prescriptionId) {
+        const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
+        searchParams.append("prescriptionId", prescriptionId!)
+        hasValidSearchCriteria = true
+        if (originalSearchParams?.prescriptionId) {
+          logger.info("Using original prescription ID from navigation context", {
+            prescriptionId: originalSearchParams.prescriptionId
+          })
         }
       }
 

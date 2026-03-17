@@ -10,8 +10,7 @@ import {PatientDetailsProvider} from "@/context/PatientDetailsProvider"
 import {FRONTEND_PATHS, API_ENDPOINTS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import * as logoutHelpers from "@/helpers/logout"
-import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/src/prescriptionList"
-import {TreatmentType} from "@cpt-ui-common/common-types/src/prescriptionList"
+import {SearchResponse, PrescriptionSummary, TreatmentType} from "@cpt-ui-common/common-types/src/prescriptionList"
 import {mockAuthState, mockSearchState} from "./mocks/AuthStateMock"
 
 // Mock axios completely
