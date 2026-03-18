@@ -41,7 +41,7 @@ export interface AuthContextType {
   userDetails: UserDetails | undefined
   remainingSessionTime: number | undefined
   sessionTimeoutModalInfo: SessionTimeoutModal
-  logoutModalType: string | undefined
+  logoutModalType: "userInitiated" | "timeout" | undefined
   setSessionTimeoutModalInfo: (value: SetStateAction<SessionTimeoutModal>) => void
   setLogoutModalType: (value: "userInitiated" | "timeout" | undefined) => Promise<void>
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
