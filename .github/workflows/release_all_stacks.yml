@@ -140,18 +140,6 @@ jobs:
         shell: bash
         env: *deployment_env_vars
 
-      - name: update cloudfront kvs
-        id: update_cloudfront_kvs
-        env:
-          AWS_MAX_ATTEMPTS: 20
-        shell: bash
-        run: |
-          # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
-
-          # invalidate the cache
-          aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
-
   update_github_pages:
     runs-on: ubuntu-22.04
     if: ${{ always() && !failure() && !cancelled() }}
