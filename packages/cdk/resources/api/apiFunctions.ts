@@ -26,7 +26,7 @@ export interface ApiFunctionsProps {
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
   readonly apigeeApiKey: ISecret
-  readonly apigeeApiSecret: ISecret
+  readonly apigeeSecretKey: ISecret
   readonly apigeeDoHSApiKey: ISecret
   readonly jwtKid: string
   readonly logLevel: string
@@ -90,7 +90,7 @@ export class ApiFunctions extends Construct {
       // Indicate if mock mode is available
       MOCK_MODE_ENABLED: props.mockOidcConfig ? "true" : "false",
 
-      APIGEE_API_SECRET_ARN: props.apigeeApiSecret.secretArn,
+      APIGEE_API_SECRET_ARN: props.apigeeSecretKey.secretArn,
       APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
       FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain
     }

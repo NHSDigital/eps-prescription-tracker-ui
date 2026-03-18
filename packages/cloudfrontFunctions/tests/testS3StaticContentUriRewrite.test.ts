@@ -42,6 +42,11 @@ describe("S3 Content URI Rewrite", () => {
       description: "Nested static file",
       requestUri: "/site/files/file.ext",
       expectedOriginUri: "/files/file.ext"
+    },
+    {
+      description: "Another url",
+      requestUri: "/other/url",
+      expectedOriginUri: "/index.html"
     }
   ]
 

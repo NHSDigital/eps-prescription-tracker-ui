@@ -105,11 +105,11 @@ jobs:
           CDK_CONFIG_environment: "${{ inputs.TARGET_ENVIRONMENT }}"
           CDK_CONFIG_rumCloudwatchLogEnabled: "true"
           CDK_CONFIG_useMockOidc: "${{ inputs.useMockOidc }}"
-          CDK_CONFIG_primaryOidcClientId: "${{ secrets.primaryOidcClientId }}"
-          CDK_CONFIG_mockOidcClientId: "${{ secrets.mockOidcClientId }}"
-          CDK_CONFIG_apigeeApiKey: "${{ secrets.apigeeApiKey }}"
-          CDK_CONFIG_apigeeApiSecret: "${{ secrets.apigeeApiSecret }}"
-          CDK_CONFIG_apigeeDoHSApiKey: "${{ secrets.apigeeDoHSApiKey }}"
+          CDK_CONFIG_primaryOidcClientId: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+          CDK_CONFIG_mockOidcClientId: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+          CDK_CONFIG_apigeeApiKey: "${{ secrets.APIGEE_API_KEY }}"
+          CDK_CONFIG_apigeeSecretKey: "${{ secrets.APIGEE_API_SECRET }}"
+          CDK_CONFIG_apigeeDoHSApiKey: "${{ secrets.APIGEE_DOHS_API_KEY }}"
           CDK_CONFIG_logRetentionInDays: "${{ inputs.LOG_RETENTION_IN_DAYS }}"
           CDK_CONFIG_logLevel: "${{ inputs.LOG_LEVEL }}"
           CDK_CONFIG_reactLogLevel: "${{ inputs.REACT_LOG_LEVEL }}"
@@ -131,7 +131,12 @@ jobs:
         env: *deployment_env_vars
 
       - name: Deploy Stateless Stack
-        run: CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk
+        run: |
+          CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk -- \
+            --parameters "JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
+            --parameters "ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
+            --parameters "ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
+            --parameters "ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
         shell: bash
         env: *deployment_env_vars
 

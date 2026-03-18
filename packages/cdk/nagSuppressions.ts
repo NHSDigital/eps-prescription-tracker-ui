@@ -91,9 +91,9 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/callback/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/token/POST/Resource"
       ],
       endpointSuppressions
     )
@@ -102,11 +102,11 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
       safeAddNagSuppressionGroup(
         stack,
         [
-          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
-          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
-          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
-          "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session/POST/Resource",
-          "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-fake-timer/POST/Resource"
+          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/mock-authorize/GET/Resource",
+          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/mock-callback/GET/Resource",
+          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/mock-token/POST/Resource",
+          "/StatelessStack/ApiGateway/ApiGateway/Default/api/test-support-clear-active-session/POST/Resource",
+          "/StatelessStack/ApiGateway/ApiGateway/Default/api/test-support-fake-timer/POST/Resource"
         ],
         endpointSuppressions
       )
@@ -161,9 +161,9 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
       stack,
       [
         "/StatelessStack/SharedSecrets/PrimaryJwtPrivateKey/Resource",
-        "/StatelessStack/SharedSecrets/ApigeeApiKey/Resource",
-        "/StatelessStack/SharedSecrets/ApigeeApiSecret/Resource",
-        "/StatelessStack/SharedSecrets/ApigeeDoHSApiKey/Resource"
+        "/StatelessStack/SharedSecrets/ApigeeApiKeySecret/Resource",
+        "/StatelessStack/SharedSecrets/ApigeeSecretKeySecret/Resource",
+        "/StatelessStack/SharedSecrets/ApigeeDoHSApiKeySecret/Resource"
       ],
       secretSuppressions
     )

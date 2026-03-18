@@ -140,12 +140,9 @@ async function main() {
     crossRegionReferences: true,
     serviceName,
     stackName: calculateVersionedStackName(serviceName, props),
-    apigeeApiKey: getConfigFromEnvVar("apigeeApiKey"),
-    apigeeApiSecret: getConfigFromEnvVar("apigeeApiSecret"),
     apigeeCIS2TokenEndpoint: targetApigeeEnv === "internal_qa"
       ? `https://${apigeeDomain}/oauth2-int/token`
       : `https://${apigeeDomain}/oauth2/token`,
-    apigeeDoHSApiKey: getConfigFromEnvVar("apigeeDoHSApiKey"),
     apigeeDoHSEndpoint: apigeeDoHSEndpoint,
     apigeeMockTokenEndpoint: `https://${apigeeDomain}/oauth2-mock/token`,
     apigeePersonalDemographicsEndpoint: `https://${apigeeDomain}/personal-demographics/FHIR/R4/`,
@@ -156,7 +153,6 @@ async function main() {
     dynamodb: statefulResourcesStack.dynamodb,
     fullCloudfrontDomain,
     fullCognitoDomain: usCertsStack.fullCognitoDomain,
-    jwtPrivateKey: getConfigFromEnvVar("jwtPrivateKey"),
     jwtKid: getConfigFromEnvVar("jwtKid"),
     logDelivery: usCertsStack.logDelivery,
     logLevel: getConfigFromEnvVar("logLevel"),

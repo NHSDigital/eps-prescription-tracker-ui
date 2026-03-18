@@ -29,7 +29,7 @@ export interface OAuth2FunctionsProps {
   readonly logLevel: string
   readonly jwtKid: string
   readonly apigeeApiKey: ISecret
-  readonly apigeeApiSecret: ISecret
+  readonly apigeeSecretKey: ISecret
   readonly version: string
   readonly commitId: string
 }
@@ -194,7 +194,7 @@ export class OAuth2Functions extends Construct {
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
           APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
-          APIGEE_API_SECRET_ARN: props.apigeeApiSecret.secretArn
+          APIGEE_API_SECRET_ARN: props.apigeeSecretKey.secretArn
         },
         version: props.version,
         commitId: props.commitId

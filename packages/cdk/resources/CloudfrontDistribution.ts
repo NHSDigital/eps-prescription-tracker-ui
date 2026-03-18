@@ -66,19 +66,19 @@ export class CloudfrontDistribution extends Construct {
     super(scope, id)
 
     // Resources
-    const s3StaticContentUriRewriteFunction = new Function(this, "Function", {
+    const s3StaticContentUriRewriteFunction = new Function(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
       code: FunctionCode.fromFile({
-        filePath: resolve(__dirname, `../../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js`)
+        filePath: resolve(__dirname, `../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js`)
       }),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
     })
 
-    const s3StaticContentRootSlashRedirect = new Function(this, "Function", {
+    const s3StaticContentRootSlashRedirect = new Function(this, "S3StaticContentRootSlashRedirect", {
       functionName: `${props.serviceName}-S3StaticContentRootSlashRedirect`,
       code: FunctionCode.fromFile({
-        filePath: resolve(__dirname, `../../../cloudfrontFunctions/src/s3StaticContentRootSlashRedirect.js`)
+        filePath: resolve(__dirname, `../../cloudfrontFunctions/src/s3StaticContentRootSlashRedirect.js`)
       }),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
@@ -108,7 +108,7 @@ export class CloudfrontDistribution extends Construct {
       sslSupportMethod: SSLMethod.SNI,
       publishAdditionalMetrics: true,
       enableLogging: false,
-      logIncludesCookies: true, // may actually want to be false, don't know if it includes names of cookies or contents
+      logIncludesCookies: false,
       defaultBehavior: {
         origin: props.staticContentBucketOrigin,
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,

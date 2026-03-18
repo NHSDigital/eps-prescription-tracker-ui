@@ -58,15 +58,11 @@ export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly reactLogLevel: string
   readonly primaryOidcConfig: OidcConfig
   readonly mockOidcConfig?: OidcConfig
-  readonly apigeeApiKey: string
-  readonly apigeeApiSecret: string
-  readonly apigeeDoHSApiKey: string
   readonly apigeeCIS2TokenEndpoint: string
   readonly apigeeMockTokenEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeeDoHSEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
-  readonly jwtPrivateKey: string
   readonly jwtKid: string
   readonly webAclUS: WebACL
   readonly githubAllowList?: AllowList
@@ -111,11 +107,7 @@ export class StatelessResourcesStack extends Stack {
     const sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
       stackName: props.stackName,
       deploymentRole: deploymentRole,
-      useMockOidc: !!props.mockOidcConfig,
-      apigeeApiKey: props.apigeeApiKey,
-      apigeeDoHSApiKey: props.apigeeDoHSApiKey,
-      apigeeApiSecret: props.apigeeApiSecret,
-      jwtPrivateKey: props.jwtPrivateKey
+      useMockOidc: !!props.mockOidcConfig
     })
 
     // Functions for the login OAuth2 proxy lambdas
@@ -138,7 +130,7 @@ export class StatelessResourcesStack extends Stack {
       logLevel: props.logLevel,
       jwtKid: props.jwtKid,
       apigeeApiKey: sharedSecrets.apigeeApiKey,
-      apigeeApiSecret: sharedSecrets.apigeeApiSecret,
+      apigeeSecretKey: sharedSecrets.apigeeSecretKey,
       version: props.version,
       commitId: props.commitId
     })
@@ -160,7 +152,7 @@ export class StatelessResourcesStack extends Stack {
       apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
       apigeeApiKey: sharedSecrets.apigeeApiKey,
       apigeeDoHSApiKey: sharedSecrets.apigeeDoHSApiKey,
-      apigeeApiSecret: sharedSecrets.apigeeApiSecret,
+      apigeeSecretKey: sharedSecrets.apigeeSecretKey,
       jwtKid: props.jwtKid,
       apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
       fullCloudfrontDomain: props.fullCloudfrontDomain,
@@ -427,18 +419,6 @@ export class StatelessResourcesStack extends Stack {
 
     // Exports
     if (props.allowLocalhostAccess) {
-      new CfnOutput(this, "apigeeApiKey", {
-        value: props.apigeeApiKey,
-        exportName: `${props.stackName}:local:apigeeApiKey`
-      })
-      new CfnOutput(this, "apigeeApiSecret", {
-        value: props.apigeeApiSecret,
-        exportName: `${props.stackName}:local:apigeeApiSecret`
-      })
-      new CfnOutput(this, "apigeeDoHSApiKey", {
-        value: props.apigeeDoHSApiKey,
-        exportName: `${props.stackName}:local:apigeeDoHSApiKey`
-      })
       new CfnOutput(this, "jwtKid", {
         value: props.jwtKid,
         exportName: `${props.stackName}:local:jwtKid`

@@ -4,8 +4,10 @@ export async function handler(event) {
   const parts = requestUri.split("/site")
   const uri = parts[1]
 
-  if (uri.includes(".")){
-    request.uri = `/${uri}`
+  if (!uri) {
+    request.uri = `/index.html`
+  } else if (uri.includes(".")) {
+    request.uri = uri
   } else {
     request.uri = `/index.html`
   }

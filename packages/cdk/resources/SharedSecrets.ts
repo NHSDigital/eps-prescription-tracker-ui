@@ -9,17 +9,18 @@ import {
   PolicyDocument,
   AccountRootPrincipal
 } from "aws-cdk-lib/aws-iam"
-import {SecretValue, RemovalPolicy, Duration} from "aws-cdk-lib"
+import {
+  SecretValue,
+  RemovalPolicy,
+  Duration,
+  CfnParameter
+} from "aws-cdk-lib"
 
 // Interface defining the properties for SharedSecrets construct
 export interface SharedSecretsProps {
   readonly stackName: string
   readonly deploymentRole: IRole
   readonly useMockOidc?: boolean
-  readonly apigeeApiKey: string
-  readonly apigeeApiSecret: string
-  readonly apigeeDoHSApiKey: string
-  readonly jwtPrivateKey: string
 }
 
 // Construct for managing shared secrets and associated resources
@@ -32,7 +33,7 @@ export class SharedSecrets extends Construct {
   public readonly getMockJwtPrivateKeyPolicy: ManagedPolicy
   public readonly apigeeSecretsKmsKey: IKey
   public readonly apigeeApiKey: Secret
-  public readonly apigeeApiSecret: Secret
+  public readonly apigeeSecretKey: Secret
   public readonly apigeeDoHSApiKey: Secret
   public readonly getApigeeSecretsPolicy: ManagedPolicy
 
@@ -91,19 +92,37 @@ export class SharedSecrets extends Construct {
         ]
       })
     })
-    this.apigeeApiKey = new Secret(this, "ApigeeApiKey", {
+
+    const apigeeApiKeyParameter = new CfnParameter(this, "ApigeeApiKey", {
+      type: "String",
+      description: "The Apigee API key.",
+      noEcho: true
+    })
+    this.apigeeApiKey = new Secret(this, "ApigeeApiKeySecret", {
       secretName: `${props.stackName}-apigeeApiKey`,
-      secretStringValue: SecretValue.unsafePlainText(props.apigeeApiKey),
+      secretStringValue: SecretValue.cfnParameter(apigeeApiKeyParameter),
       encryptionKey: this.apigeeSecretsKmsKey
     })
-    this.apigeeApiSecret = new Secret(this, "ApigeeApiSecret", {
-      secretName: `${props.stackName}-apigeeApiSecret`,
-      secretStringValue: SecretValue.unsafePlainText(props.apigeeApiSecret),
+
+    const apigeeSecretKeyParameter = new CfnParameter(this, "ApigeeSecretKey", {
+      type: "String",
+      description: "The Apigee secret key.",
+      noEcho: true
+    })
+    this.apigeeSecretKey = new Secret(this, "ApigeeSecretKeySecret", {
+      secretName: `${props.stackName}-apigeeSecretKey`,
+      secretStringValue: SecretValue.cfnParameter(apigeeSecretKeyParameter),
       encryptionKey: this.apigeeSecretsKmsKey
     })
-    this.apigeeDoHSApiKey = new Secret(this, "ApigeeDoHSApiKey", {
+
+    const apigeeDoHSApiKeyParameter = new CfnParameter(this, "ApigeeDoHSApiKey", {
+      type: "String",
+      description: "The Apigee DoHS API key.",
+      noEcho: true
+    })
+    this.apigeeDoHSApiKey = new Secret(this, "ApigeeDoHSApiKeySecret", {
       secretName: `${props.stackName}-apigeeDoHSApiKey`,
-      secretStringValue: SecretValue.unsafePlainText(props.apigeeDoHSApiKey),
+      secretStringValue: SecretValue.cfnParameter(apigeeDoHSApiKeyParameter),
       encryptionKey: this.apigeeSecretsKmsKey
     })
 
@@ -114,7 +133,7 @@ export class SharedSecrets extends Construct {
           actions: ["secretsmanager:GetSecretValue"],
           resources: [
             this.apigeeApiKey.secretArn,
-            this.apigeeApiSecret.secretArn,
+            this.apigeeSecretKey.secretArn,
             this.apigeeDoHSApiKey.secretArn]
         }),
         new PolicyStatement({
@@ -137,10 +156,16 @@ export class SharedSecrets extends Construct {
       ]
     })
 
+    const jwtPrivateKeyParameter = new CfnParameter(this, "JwtPrivateKey", {
+      type: "String",
+      description: "The JWT private key used for signing tokens.",
+      noEcho: true
+    })
+
     // Create the primary JWT private key secret
     this.primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKey`,
-      secretStringValue: SecretValue.unsafePlainText(props.jwtPrivateKey),
+      secretStringValue: SecretValue.cfnParameter(jwtPrivateKeyParameter),
       encryptionKey: this.jwtKmsKey
     })
 
@@ -158,7 +183,7 @@ export class SharedSecrets extends Construct {
     if (props.useMockOidc) {
       this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
-        secretStringValue: SecretValue.unsafePlainText(props.jwtPrivateKey),
+        secretStringValue: SecretValue.cfnParameter(jwtPrivateKeyParameter),
         encryptionKey: this.jwtKmsKey
       })
 
