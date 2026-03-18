@@ -111,7 +111,7 @@ describe("SessionTimeoutModal", () => {
   })
 
   afterEach(() => {
-    jest.runOnlyPendingTimers()
+    jest.clearAllTimers()
     jest.useRealTimers()
   })
 
@@ -300,14 +300,14 @@ describe("SessionTimeoutModal", () => {
         <SessionTimeoutModal
           {...defaultProps}
           isOpen={true}
-          timeLeft={2000}
+          timeLeft={2} // Component works in seconds
           onTimeOut={mockOnTimeOut}
         />
       )
 
-      // Advance past the countdown (2000ms = 2 seconds)
+      // Advance past the countdown (2 seconds + buffer)
       act(() => {
-        jest.advanceTimersByTime(3000)
+        jest.advanceTimersByTime(3000) // Test works in milliseconds
       })
 
       expect(mockOnTimeOut).toHaveBeenCalled()

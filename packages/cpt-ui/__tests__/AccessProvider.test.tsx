@@ -622,7 +622,7 @@ describe("AccessProvider", () => {
       expect(mockSetLogoutModalType).toHaveBeenCalledWith("timeout")
       expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalledWith({
         showModal: true,
-        timeLeft: remainingTime,
+        timeLeft: Math.floor(remainingTime / 1000),
         buttonDisabled: false,
         action: undefined
       })

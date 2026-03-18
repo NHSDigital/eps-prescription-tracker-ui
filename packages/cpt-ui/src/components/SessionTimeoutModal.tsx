@@ -132,18 +132,17 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     if (isOpen && timeLeft > 0) {
       // Only start if not already running or if starting fresh
       if (!countdownTimerRef.current) {
-        let secondsLeft = Math.floor(timeLeft / 1000)
 
         // Set initial time
-        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: secondsLeft}))
+        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
 
         // Start countdown that decrements every second
         countdownTimerRef.current = setInterval(() => {
-          secondsLeft -= 1
+          timeLeft -= 1
 
-          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: secondsLeft}))
+          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
           // Auto-logout when countdown reaches 0
-          if (secondsLeft <= 0) {
+          if (timeLeft <= 0) {
             clearInterval(countdownTimerRef.current!)
             countdownTimerRef.current = null
             onTimeOut()
