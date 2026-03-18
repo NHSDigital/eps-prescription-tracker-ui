@@ -45,11 +45,15 @@ export const useSessionTimeout = () => {
       } else {
         logger.error("No selected role available to extend session")
         auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
+        // Clear the extending lock so handleLogOut can proceed with logout
+        actionLockRef.current = undefined
         await handleLogOut()
       }
     } catch (error) {
       logger.error("Error extending session:", error)
       auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
+      // Clear the extending lock so handleLogOut can proceed with logout
+      actionLockRef.current = undefined
       await handleLogOut()
     }
   }, [auth])

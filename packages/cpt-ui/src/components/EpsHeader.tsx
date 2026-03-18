@@ -79,11 +79,18 @@ export default function EpsHeader() {
   }
 
   const handleConfirmLogout = async () => {
-    setActionButtonsDisabled(true)
-    if (buttonDisabledRef.current === false) {
-      await signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    if (buttonDisabledRef.current) {
+      return
     }
+
     buttonDisabledRef.current = true
+    setActionButtonsDisabled(true)
+
+    try {
+      await signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    } finally {
+      buttonDisabledRef.current = false
+    }
   }
 
   const toggleDropdown = () => {

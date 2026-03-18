@@ -107,12 +107,14 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   const auth = useAuth()
 
   const countdownTimerRef = useRef<number | null>(null)
+  const secondsLeftRef = useRef<number | null>(null)
 
   const clearCountdownTimer = useCallback(() => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current)
       countdownTimerRef.current = null
     }
+    secondsLeftRef.current = null
   }, [])
 
   useModalFocus(isOpen)
@@ -132,19 +134,27 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     if (isOpen && timeLeft > 0) {
       // Only start if not already running or if starting fresh
       if (!countdownTimerRef.current) {
-
         // Set initial time
+        secondsLeftRef.current = timeLeft
         auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
 
         // Start countdown that decrements every second
         countdownTimerRef.current = setInterval(() => {
-          timeLeft -= 1
+          if (secondsLeftRef.current == null) {
+            return
+          }
 
-          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
+          const nextSecondsLeft = secondsLeftRef.current - 1
+          secondsLeftRef.current = nextSecondsLeft
+
+          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: nextSecondsLeft}))
           // Auto-logout when countdown reaches 0
-          if (timeLeft <= 0) {
-            clearInterval(countdownTimerRef.current!)
-            countdownTimerRef.current = null
+          if (nextSecondsLeft <= 0) {
+            if (countdownTimerRef.current) {
+              clearInterval(countdownTimerRef.current)
+              countdownTimerRef.current = null
+            }
+            secondsLeftRef.current = null
             onTimeOut()
           }
         }, 1000) as unknown as number
@@ -156,7 +166,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
 
     // Cleanup on unmount
     return clearCountdownTimer
-  }, [isOpen]) // Only depend on showModal, not timeLeft
+  }, [isOpen, timeLeft, auth, onTimeOut, clearCountdownTimer]) // Depend on values used in effect
 
   return (
     <EpsModal
