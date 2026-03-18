@@ -66,7 +66,7 @@ const useModalFocus = (isOpen: boolean) => {
 const useAriaLiveAnnouncements = (
   isOpen: boolean,
   timeLeft: number,
-  liveRegionRef: React.RefObject<HTMLDivElement>
+  liveRegionRef: React.RefObject<HTMLSpanElement>
 ) => {
   // Initialize aria-live region when modal first opens
   useEffect(() => {
@@ -107,14 +107,12 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   const auth = useAuth()
 
   const countdownTimerRef = useRef<number | null>(null)
-  const secondsLeftRef = useRef<number | null>(null)
 
   const clearCountdownTimer = useCallback(() => {
     if (countdownTimerRef.current) {
       clearInterval(countdownTimerRef.current)
       countdownTimerRef.current = null
     }
-    secondsLeftRef.current = null
   }, [])
 
   useModalFocus(isOpen)
@@ -134,27 +132,19 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     if (isOpen && timeLeft > 0) {
       // Only start if not already running or if starting fresh
       if (!countdownTimerRef.current) {
+
         // Set initial time
-        secondsLeftRef.current = timeLeft
         auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
 
         // Start countdown that decrements every second
         countdownTimerRef.current = setInterval(() => {
-          if (secondsLeftRef.current == null) {
-            return
-          }
+          timeLeft -= 1
 
-          const nextSecondsLeft = secondsLeftRef.current - 1
-          secondsLeftRef.current = nextSecondsLeft
-
-          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: nextSecondsLeft}))
+          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
           // Auto-logout when countdown reaches 0
-          if (nextSecondsLeft <= 0) {
-            if (countdownTimerRef.current) {
-              clearInterval(countdownTimerRef.current)
-              countdownTimerRef.current = null
-            }
-            secondsLeftRef.current = null
+          if (timeLeft <= 0) {
+            clearInterval(countdownTimerRef.current!)
+            countdownTimerRef.current = null
             onTimeOut()
           }
         }, 1000) as unknown as number
@@ -166,7 +156,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
 
     // Cleanup on unmount
     return clearCountdownTimer
-  }, [isOpen, timeLeft, auth, onTimeOut, clearCountdownTimer]) // Depend on values used in effect
+  }, [isOpen]) // Only depend on showModal, not timeLeft
 
   return (
     <EpsModal

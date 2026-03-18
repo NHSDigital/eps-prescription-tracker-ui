@@ -110,12 +110,12 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           handleRestartLogin(auth, response.invalidSessionCause)
         } else {
           const remainingTime = response.remainingSessionTime
-          const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : 0
+          const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : undefined
 
-          if (remainingTime !== undefined) {
-            const twoMinutes = 2 * 60 * 1000 // Minutes into milliseconds
+          if (remainingSeconds !== undefined) {
+            const twoMinutes = 14 * 60 // Minutes into seconds
 
-            if (remainingTime <= twoMinutes && remainingTime > 0) {
+            if (remainingSeconds <= twoMinutes && remainingSeconds > 0) {
               // Show timeout modal when 2 minutes or less remaining
               logger.info("Session timeout warning triggered - showing modal", {
                 remainingTime,
@@ -128,7 +128,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
                 buttonDisabled: false,
                 action: undefined
               })
-            } else if (remainingTime <= 0) {
+            } else if (remainingSeconds <= 0) {
               logger.warn("Session expired - automatically logging out user")
               auth.updateInvalidSessionCause("Timeout")
               handleRestartLogin(auth, "Timeout")
