@@ -3,13 +3,6 @@
     "version": "1.0.0",
     "type": "module",
     "description": "![Build](https://github.com/NHSDigital/eps-prescription-tracker-ui/workflows/Build/badge.svg?branch=main)",
-    "scripts": {
-        "test": "jest",
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
-        "lint": "next lint"
-    },
     "repository": {
         "type": "git",
         "url": "https://github.com/NHSDigital/eps-prescription-tracker-ui"

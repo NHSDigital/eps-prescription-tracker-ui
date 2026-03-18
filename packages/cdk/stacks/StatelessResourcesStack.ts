@@ -322,7 +322,7 @@ export class StatelessResourcesStack extends Stack {
               tryBundle(outputDir, options) {
                 const root = resolve("../..")
                 execSync(
-                  `npm run build --workspace packages/cpt-ui`,
+                  `npm run compile --workspace packages/cpt-ui`,
                   {cwd: root, env: {...process.env, ...options.environment}, stdio: "inherit"}
                 )
                 cpSync(join(root, "packages", "cpt-ui", "dist"), outputDir, {recursive: true})
