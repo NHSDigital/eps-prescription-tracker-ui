@@ -119,11 +119,13 @@ cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
 cdk-synth-no-mock:
 	CDK_CONFIG_useMockOidc=false \
 	CDK_CONFIG_serviceName="cpt-ui" \
+	DO_NOT_GET_AWS_EXPORT=true \
 	npm run cdk-synth --workspace packages/cdk
 
 cdk-synth-mock:
 	CDK_CONFIG_useMockOidc=true \
 	CDK_CONFIG_serviceName="cpt-ui" \
+	DO_NOT_GET_AWS_EXPORT=true \
 	npm run cdk-synth --workspace packages/cdk
 
 %:

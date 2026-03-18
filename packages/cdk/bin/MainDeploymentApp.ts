@@ -24,10 +24,25 @@ async function main() {
     serviceCategory: "Silver"
   })
 
-  const exports = await getCloudFormationExports()
+  const useZoneApex = props.environment === "prod" || props.environment === "int"
+  const route53ExportName = useZoneApex ? "CPT" : "EPS"
+  let splunkDeliveryStream
+  let splunkSubscriptionFilterRole
+  let epsDomainName
+  let epsHostedZoneId
+  if (process.env.DO_NOT_GET_AWS_EXPORT) {
+    splunkDeliveryStream = "fakeSplunkDeliveryStream"
+    splunkSubscriptionFilterRole = "fakeSplunkSubscriptionFilterRole"
+    epsDomainName = "fakeDomainName"
+    epsHostedZoneId = "fakeHostedZoneId"
+  } else {
+    const exports = await getCloudFormationExports()
+    splunkDeliveryStream = getCFConfigValue(exports, "lambda-resources:SplunkDeliveryStream")
+    splunkSubscriptionFilterRole = getCFConfigValue(exports, "lambda-resources:SplunkSubscriptionFilterRole")
+    epsDomainName = getCFConfigValue(exports, `eps-route53-resources:${route53ExportName}-domain`)
+    epsHostedZoneId = getCFConfigValue(exports, `eps-route53-resources:${route53ExportName}-ZoneID`)
+  }
   const serviceName = getConfigFromEnvVar("serviceName")
-  const splunkDeliveryStream = getCFConfigValue(exports, "lambda-resources:SplunkDeliveryStream")
-  const splunkSubscriptionFilterRole = getCFConfigValue(exports, "lambda-resources:SplunkSubscriptionFilterRole")
   const logRetentionInDays = getNumberConfigFromEnvVar("logRetentionInDays")
   const csocUSWafDestination = props.environment === "prod"
     ? "arn:aws:logs:us-east-1:693466633220:destination:waf_log_destination_virginia"
@@ -80,10 +95,6 @@ async function main() {
       jwksEndpoint: `${mockIdentityBaseUrl}/protocol/openid-connect/certs`
     }
     : undefined
-  const useZoneApex = props.environment === "prod" || props.environment === "int"
-  const route53ExportName = useZoneApex ? "CPT" : "EPS"
-  const epsDomainName = getCFConfigValue(exports, `eps-route53-resources:${route53ExportName}-domain`)
-  const epsHostedZoneId = getCFConfigValue(exports, `eps-route53-resources:${route53ExportName}-ZoneID`)
   const parentCognitoDomain = useZoneApex ? "auth" : `auth.${serviceName}`
   const fullCloudfrontDomain = useZoneApex ? epsDomainName : `${serviceName}.${epsDomainName}`
   const allowLocalhostAccess = props.environment === "dev" || props.isPullRequest
