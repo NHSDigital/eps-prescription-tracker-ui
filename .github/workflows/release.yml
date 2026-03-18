@@ -88,10 +88,6 @@ jobs:
       ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
-      CREATE_INT_RELEASE_NOTES: true
-      CREATE_PROD_RELEASE_NOTES: true
-      MARK_JIRA_RELEASED: false
-      CREATE_INT_RC_RELEASE_NOTES: false
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
     secrets: inherit
@@ -204,10 +200,6 @@ jobs:
       ROUTE53_EXPORT_NAME: CPT
       REACT_LOG_LEVEL: "debug" # change this before pilot
       LOG_RETENTION_IN_DAYS: 30
-      CREATE_INT_RELEASE_NOTES: true
-      CREATE_PROD_RELEASE_NOTES: true
-      MARK_JIRA_RELEASED: false
-      CREATE_INT_RC_RELEASE_NOTES: true
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
     secrets: inherit
@@ -242,10 +234,6 @@ jobs:
       ROUTE53_EXPORT_NAME: CPT
       REACT_LOG_LEVEL: "debug" # change this before pilot
       LOG_RETENTION_IN_DAYS: 731
-      CREATE_INT_RELEASE_NOTES: true
-      CREATE_PROD_RELEASE_NOTES: true
-      MARK_JIRA_RELEASED: false
-      CREATE_INT_RC_RELEASE_NOTES: false
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: true
     secrets: inherit
