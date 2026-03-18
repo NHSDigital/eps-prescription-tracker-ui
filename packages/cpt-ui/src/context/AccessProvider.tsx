@@ -111,7 +111,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         } else {
           const remainingTime = response.remainingSessionTime
           if (remainingTime !== undefined) {
-            const twoMinutes = 14 * 60 * 1000 // Minutes into milliseconds
+            const twoMinutes = 2 * 60 * 1000 // Minutes into milliseconds
 
             if (remainingTime <= twoMinutes && remainingTime > 0) {
               // Show timeout modal when 2 minutes or less remaining
