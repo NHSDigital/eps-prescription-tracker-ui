@@ -57,3 +57,6 @@ vulnerabilities:
   - id: CVE-2026-32597
     statement: Transitive dependency vulnerability in pyjwt
     expired_at: 2026-06-01
+  - id: CVE-2026-33036
+    statement: fast-xml-parser vulnerability accepted as risk - dependency of aws-cdk/client-dynamodb
+    expired_at: 2026-06-01
