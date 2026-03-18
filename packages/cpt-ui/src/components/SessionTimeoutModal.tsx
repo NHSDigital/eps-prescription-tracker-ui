@@ -43,9 +43,9 @@ const shouldAnnounceAtTime = (timeLeft: number): boolean => {
   return timeLeft % 15 === 0
 }
 
-const updateLiveRegion = (liveRegionRef: React.RefObject<HTMLDivElement>, announcement: string): void => {
+const updateLiveRegion = (liveRegionRef: React.RefObject<HTMLSpanElement>, announcement: string): void => {
   if (liveRegionRef.current) {
-    liveRegionRef.current.innerHTML = `You will be logged out in ${announcement}.`
+    liveRegionRef.current.textContent = `You will be logged out in ${announcement}.`
   }
 }
 
@@ -103,7 +103,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   onTimeOut,
   buttonDisabledState
 }) => {
-  const liveRegionRef = useRef<HTMLDivElement>(null)
+  const liveRegionRef = useRef<HTMLSpanElement>(null)
   const auth = useAuth()
 
   const countdownTimerRef = useRef<number | null>(null)

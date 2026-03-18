@@ -110,6 +110,8 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           handleRestartLogin(auth, response.invalidSessionCause)
         } else {
           const remainingTime = response.remainingSessionTime
+          const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : 0
+
           if (remainingTime !== undefined) {
             const twoMinutes = 2 * 60 * 1000 // Minutes into milliseconds
 
@@ -117,12 +119,12 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
               // Show timeout modal when 2 minutes or less remaining
               logger.info("Session timeout warning triggered - showing modal", {
                 remainingTime,
-                remainingSeconds: Math.floor(remainingTime / 1000)
+                remainingSeconds
               })
               auth.setLogoutModalType("timeout")
               auth.setSessionTimeoutModalInfo({
                 showModal: true,
-                timeLeft: Math.floor(remainingTime / 1000),
+                timeLeft: remainingSeconds,
                 buttonDisabled: false,
                 action: undefined
               })
@@ -135,7 +137,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
               auth.setSessionTimeoutModalInfo({
                 showModal: false,
-                timeLeft: remainingTime,
+                timeLeft: remainingSeconds,
                 buttonDisabled: false,
                 action: undefined
               })
