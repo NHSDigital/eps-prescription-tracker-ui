@@ -434,31 +434,9 @@ export class StatelessResourcesStack extends Stack {
         value: props.apigeeApiSecret,
         exportName: `${props.stackName}:local:apigeeApiSecret`
       })
-      new CfnOutput(this, "apigeeCIS2TokenEndpoint", {
-        value: props.apigeeCIS2TokenEndpoint,
-        exportName: `${props.stackName}:local:apigeeCIS2TokenEndpoint`
-      })
       new CfnOutput(this, "apigeeDoHSApiKey", {
         value: props.apigeeDoHSApiKey,
         exportName: `${props.stackName}:local:apigeeDoHSApiKey`
-      })
-      if (props.mockOidcConfig) {
-        new CfnOutput(this, "apigeeMockTokenEndpoint", {
-          value: props.apigeeMockTokenEndpoint,
-          exportName: `${props.stackName}:local:apigeeMockTokenEndpoint`
-        })
-      }
-      new CfnOutput(this, "apigeePrescriptionsEndpoint", {
-        value: props.apigeePrescriptionsEndpoint,
-        exportName: `${props.stackName}:local:apigeePrescriptionsEndpoint`
-      })
-      new CfnOutput(this, "apigeePersonalDemographicsEndpoint", {
-        value: props.apigeePersonalDemographicsEndpoint,
-        exportName: `${props.stackName}:local:apigeePersonalDemographicsEndpoint`
-      })
-      new CfnOutput(this, "apigeeDoHSEndpoint", {
-        value: props.apigeeDoHSEndpoint,
-        exportName: `${props.stackName}:local:apigeeDoHSEndpoint`
       })
       new CfnOutput(this, "jwtKid", {
         value: props.jwtKid,

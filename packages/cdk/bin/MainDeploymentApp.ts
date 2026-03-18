@@ -10,21 +10,9 @@ import {UsCertsStack} from "../stacks/UsCertsStack"
 import {StatefulResourcesStack} from "../stacks/StatefulResourcesStack"
 import {StatelessResourcesStack} from "../stacks/StatelessResourcesStack"
 import {AllowList} from "../resources/WebApplicationFirewall"
-import {OidcConfig} from "../resources/Cognito"
 
 type GithubMetadata = {
   actions: Array<string>
-}
-
-function getOidcConfig(prefix: string): OidcConfig {
-  return {
-    clientId: getConfigFromEnvVar(`${prefix}OidcClientId`),
-    issuer: getConfigFromEnvVar(`${prefix}OidcIssuer`),
-    authorizeEndpoint: getConfigFromEnvVar(`${prefix}OidcAuthorizeEndpoint`),
-    userInfoEndpoint: getConfigFromEnvVar(`${prefix}OidcUserInfoEndpoint`),
-    jwksEndpoint: getConfigFromEnvVar(`${prefix}OidcJwksEndpoint`),
-    tokenEndpoint: getConfigFromEnvVar(`${prefix}OidcTokenEndpoint`)
-  }
 }
 
 async function main() {
@@ -48,8 +36,50 @@ async function main() {
     ? "arn:aws:logs:eu-west-2:693466633220:destination:waf_log_destination"
     : undefined
   const rumCloudwatchLogEnabled = getBooleanConfigFromEnvVar("rumCloudwatchLogEnabled")
-  const primaryOidcConfig = getOidcConfig("primary")
-  const mockOidcConfig = getBooleanConfigFromEnvVar("useMockOidc") ? getOidcConfig("mock") : undefined
+  const cis2Domain = props.environment === "prod"
+    ? "am.nhsidentity.spineservices.nhs.uk"
+    : "am.nhsint.auth-ptl.cis2.spineservices.nhs.uk"
+  const cis2BaseUrl = `https://${cis2Domain}:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare`
+  const primaryOidcConfig = {
+    clientId: getConfigFromEnvVar(`primaryOidcClientId`),
+    issuer: cis2BaseUrl,
+    authorizeEndpoint: `${cis2BaseUrl}/authorize`,
+    userInfoEndpoint: `${cis2BaseUrl}/userinfo`,
+    jwksEndpoint: `${cis2BaseUrl}/connect/jwk_uri`,
+    tokenEndpoint: `${cis2BaseUrl}/access_token`
+  }
+  let targetApigeeEnv
+  switch (props.environment) {
+    case "prod":
+      targetApigeeEnv = "prod"
+      break
+    case "int":
+      targetApigeeEnv = "int"
+      break
+    case "ref":
+      targetApigeeEnv = "ref"
+      break
+    case "qa":
+      targetApigeeEnv = "internal-qa"
+      break
+    default:
+      targetApigeeEnv = "internal-dev"
+  }
+  const apigeeDomain = targetApigeeEnv === "prod" ? "api.service.nhs.uk" : `${targetApigeeEnv}.api.service.nhs.uk`
+  const apigeeDoHSEndpoint = targetApigeeEnv === "prod"
+    ? "https://api.service.nhs.uk/service-search-api/"
+    : `https://int.api.service.nhs.uk/service-search-api/`
+  const mockIdentityBaseUrl = `https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-${targetApigeeEnv}`
+  const mockOidcConfig = getBooleanConfigFromEnvVar("useMockOidc")
+    ? {
+      clientId: getConfigFromEnvVar(`mockOidcClientId`),
+      issuer: mockIdentityBaseUrl,
+      authorizeEndpoint: `https://${apigeeDomain}/oauth2-mock/authorize`,
+      tokenEndpoint: `https://${apigeeDomain}/oauth2-mock/token`,
+      userInfoEndpoint: `https://${apigeeDomain}/oauth2-mock/userinfo`,
+      jwksEndpoint: `${mockIdentityBaseUrl}/protocol/openid-connect/certs`
+    }
+    : undefined
   const useZoneApex = props.environment === "prod" || props.environment === "int"
   const route53ExportName = useZoneApex ? "CPT" : "EPS"
   const epsDomainName = getCFConfigValue(exports, `eps-route53-resources:${route53ExportName}-domain`)
@@ -112,12 +142,14 @@ async function main() {
     stackName: calculateVersionedStackName(serviceName, props),
     apigeeApiKey: getConfigFromEnvVar("apigeeApiKey"),
     apigeeApiSecret: getConfigFromEnvVar("apigeeApiSecret"),
-    apigeeCIS2TokenEndpoint: getConfigFromEnvVar("apigeeCIS2TokenEndpoint"),
+    apigeeCIS2TokenEndpoint: targetApigeeEnv === "internal_qa"
+      ? `https://${apigeeDomain}/oauth2-int/token`
+      : `https://${apigeeDomain}/oauth2/token`,
     apigeeDoHSApiKey: getConfigFromEnvVar("apigeeDoHSApiKey"),
-    apigeeDoHSEndpoint: getConfigFromEnvVar("apigeeDoHSEndpoint"),
-    apigeeMockTokenEndpoint: getConfigFromEnvVar("apigeeMockTokenEndpoint"),
-    apigeePersonalDemographicsEndpoint: getConfigFromEnvVar("apigeePersonalDemographicsEndpoint"),
-    apigeePrescriptionsEndpoint: getConfigFromEnvVar("apigeePrescriptionsEndpoint"),
+    apigeeDoHSEndpoint: apigeeDoHSEndpoint,
+    apigeeMockTokenEndpoint: `https://${apigeeDomain}/oauth2-mock/token`,
+    apigeePersonalDemographicsEndpoint: `https://${apigeeDomain}/personal-demographics/FHIR/R4/`,
+    apigeePrescriptionsEndpoint: `https://${apigeeDomain}/clinical-prescription-tracker/`,
     cloudfrontCert: usCertsStack.cloudfrontCert,
     cloudfrontOriginCustomHeader: getConfigFromEnvVar("cloudfrontOriginCustomHeader"),
     cognito: statefulResourcesStack.cognito,

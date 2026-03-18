@@ -118,10 +118,6 @@ jobs:
 
   package_code:
     needs: [quality_gate, get_config_values]
-    if: |
-      always() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/cdk_package_code.yml
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -129,10 +125,6 @@ jobs:
 
   release_code:
     needs: [package_code, get_config_values]
-    if: |
-      always() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/release_all_stacks.yml
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -142,21 +134,6 @@ jobs:
       VERSION_NUMBER: PR-${{ github.event.pull_request.number }}
       COMMIT_ID: "static-pr"
       useMockOidc: true
-      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
-      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
-      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
-      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
-      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
-      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
-      mockOidcAuthorizeEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize"
-      mockOidcTokenEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
-      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
-      APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
-      APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
-      APIGEE_PDS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/personal-demographics/FHIR/R4/"
-      APIGEE_DOHS_ENDPOINT: "https://int.api.service.nhs.uk/service-search-api/"
       JWT_KID: "eps-cpt-ui-dev"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: true
@@ -166,10 +143,6 @@ jobs:
     secrets: inherit
   report_deployed_url:
     needs: [release_code]
-    if: |
-      always() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-22.04
     steps:
       - name: Report Deployed URL

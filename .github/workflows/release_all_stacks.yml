@@ -24,37 +24,7 @@ on:
       RUN_REGRESSION_TESTS:
         type: boolean
         default: true
-      primaryOidcIssuer:
-        type: string
-      primaryOidcAuthorizeEndpoint:
-        type: string
-      primaryOidcTokenEndpoint:
-        type: string
-      primaryOidcUserInfoEndpoint:
-        type: string
-      primaryOidcjwksEndpoint:
-        type: string
-      mockOidcIssuer:
-        type: string
-      mockOidcAuthorizeEndpoint:
-        type: string
-      mockOidcTokenEndpoint:
-        type: string
-      mockOidcUserInfoEndpoint:
-        type: string
-      mockOidcjwksEndpoint:
-        type: string
       LOG_LEVEL:
-        type: string
-      APIGEE_CIS2_TOKEN_ENDPOINT:
-        type: string
-      APIGEE_MOCK_TOKEN_ENDPOINT:
-        type: string
-      APIGEE_PRESCRIPTIONS_ENDPOINT:
-        type: string
-      APIGEE_PDS_ENDPOINT:
-        type: string
-      APIGEE_DOHS_ENDPOINT:
         type: string
       JWT_KID:
         type: string
@@ -136,25 +106,10 @@ jobs:
           CDK_CONFIG_rumCloudwatchLogEnabled: "true"
           CDK_CONFIG_useMockOidc: "${{ inputs.useMockOidc }}"
           CDK_CONFIG_primaryOidcClientId: "${{ secrets.primaryOidcClientId }}"
-          CDK_CONFIG_primaryOidcIssuer: "${{ inputs.primaryOidcIssuer }}"
-          CDK_CONFIG_primaryOidcAuthorizeEndpoint: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
-          CDK_CONFIG_primaryOidcTokenEndpoint: "${{ inputs.primaryOidcTokenEndpoint }}"
-          CDK_CONFIG_primaryOidcUserInfoEndpoint: "${{ inputs.primaryOidcUserInfoEndpoint }}"
-          CDK_CONFIG_primaryOidcJwksEndpoint: "${{ inputs.primaryOidcJwksEndpoint }}"
           CDK_CONFIG_mockOidcClientId: "${{ secrets.mockOidcClientId }}"
-          CDK_CONFIG_mockOidcIssuer: "${{ inputs.mockOidcIssuer }}"
-          CDK_CONFIG_mockOidcAuthorizeEndpoint: "${{ inputs.mockOidcAuthorizeEndpoint }}"
-          CDK_CONFIG_mockOidcTokenEndpoint: "${{ inputs.mockOidcTokenEndpoint }}"
-          CDK_CONFIG_mockOidcUserInfoEndpoint: "${{ inputs.mockOidcUserInfoEndpoint }}"
-          CDK_CONFIG_mockOidcJwksEndpoint: "${{ inputs.mockOidcJwksEndpoint }}"
           CDK_CONFIG_apigeeApiKey: "${{ secrets.apigeeApiKey }}"
           CDK_CONFIG_apigeeApiSecret: "${{ secrets.apigeeApiSecret }}"
           CDK_CONFIG_apigeeDoHSApiKey: "${{ secrets.apigeeDoHSApiKey }}"
-          CDK_CONFIG_apigeeCIS2TokenEndpoint: "${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}"
-          CDK_CONFIG_apigeePrescriptionsEndpoint: "${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}"
-          CDK_CONFIG_apigeePersonalDemographicsEndpoint: "${{ inputs.APIGEE_PDS_ENDPOINT }}"
-          CDK_CONFIG_apigeeDoHSEndpoint: "${{ inputs.APIGEE_DOHS_ENDPOINT }}"
-          CDK_CONFIG_apigeeMockTokenEndpoint: "${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}"
           CDK_CONFIG_logRetentionInDays: "${{ inputs.LOG_RETENTION_IN_DAYS }}"
           CDK_CONFIG_logLevel: "${{ inputs.LOG_LEVEL }}"
           CDK_CONFIG_reactLogLevel: "${{ inputs.REACT_LOG_LEVEL }}"
