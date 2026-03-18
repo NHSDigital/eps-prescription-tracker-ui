@@ -49,6 +49,7 @@ export class ApiFunctions extends Construct {
   public readonly patientSearchLambda: NodejsFunction
   public readonly primaryJwtPrivateKey: Secret
   public readonly clearActiveSessionLambda: NodejsFunction
+  public readonly setLastActivityTimerLambda: NodejsFunction
 
   public constructor(scope: Construct, id: string, props: ApiFunctionsProps) {
     super(scope, id)
@@ -281,6 +282,28 @@ export class ApiFunctions extends Construct {
       apiFunctionsPolicies.push(clearActiveSessionLambda.executionPolicy)
 
       this.clearActiveSessionLambda = clearActiveSessionLambda.function
+
+      const setLastActivityTimerLambda = new TypescriptLambdaFunction(this, "SetLastActivityTimer", {
+        functionName: `${props.stackName}-fake-timer`,
+        projectBaseDir: baseDir,
+        additionalPolicies: additionalPolicies,
+        logRetentionInDays: props.logRetentionInDays,
+        logLevel: props.logLevel,
+        packageBasePath: "packages/testingSupport/setLastActivityTime",
+        entryPoint: "src/handler.ts",
+        environmentVariables: {
+          ...commonLambdaEnv,
+          TokenMappingTableName: props.dynamodb.tokenMappingTable.tableName,
+          SessionManagementTableName: props.dynamodb.sessionManagementTable.tableName
+        },
+        version: props.version,
+        commitId: props.commitId
+      })
+
+      // Add the policy to apiFunctionsPolicies
+      apiFunctionsPolicies.push(setLastActivityTimerLambda.executionPolicy)
+
+      this.setLastActivityTimerLambda = setLastActivityTimerLambda.function
     }
 
     // Outputs

@@ -6,7 +6,7 @@
 // eslint-disable-next-line object-curly-spacing
 import type { JestConfigWithTsJest } from "ts-jest"
 
-const esModules = ["@middy"].join("|")
+const esModules = ["@middy", "@cpt-ui-common"].join("|")
 const jestConfig: JestConfigWithTsJest = {
   preset: "ts-jest/presets/default-esm",
   moduleFileExtensions: ["js", "json", "ts", "d.ts", "jsx", "tsx"],

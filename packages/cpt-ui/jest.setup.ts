@@ -81,15 +81,26 @@ jest.mock("@/constants/environment", () => ({
     PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
     PRESCRIPTION_LIST_FUTURE: "/prescription-list-future",
     PRESCRIPTION_LIST_PAST: "/prescription-list-past",
+    COOKIES: "/cookies",
     LOGIN: "/login",
     LOGOUT: "/logout",
+    SESSION_LOGGED_OUT: "/session-logged-out",
     SELECT_YOUR_ROLE: "/select-your-role",
     YOUR_SELECTED_ROLE: "/your-selected-role",
     CHANGE_YOUR_ROLE: "/change-your-role",
     SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
     SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
     SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
-    TOO_MANY_SEARCH_RESULTS: "/too-many-search-results"
+    PRESCRIPTION_DETAILS_PAGE: "/prescription-details",
+    PATIENT_SEARCH_RESULTS: "/patient-search-results",
+    TOO_MANY_SEARCH_RESULTS: "/too-many-search-results",
+    PATIENT_NOT_FOUND: "/patient-not-found",
+    NO_PATIENT_FOUND: "/no-patient-found",
+    NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
+    PRIVACY_NOTICE: "/privacy-notice",
+    COOKIES_SELECTED: "/cookies-selected",
+    SESSION_SELECTION: "/select-active-session",
+    NOT_FOUND: "/notfound"
   },
   ALLOWED_NO_ROLE_PATHS: [
     "/login",
@@ -99,7 +110,31 @@ jest.mock("@/constants/environment", () => ({
     "/session-logged-out",
     "/cookies-selected",
     "/",
-    "/select-active-session"
+    "/select-active-session",
+    "/select-your-role",
+    "/change-your-role"
+  ],
+  ALLOWED_NO_REDIRECT_PATHS: [
+    "/login",
+    "/logout",
+    "/cookies",
+    "/privacy-notice",
+    "/session-logged-out",
+    "/cookies-selected",
+    "/",
+    "/session-logged-out"
+  ],
+  BANNER_ALLOWED_PATHS: [
+    "/prescription-list-current",
+    "/prescription-list-past",
+    "/prescription-list-future",
+    "/prescription-details"
+  ],
+  AUTO_LOGIN_ENVIRONMENTS: [
+    {environment: "dev", loginMethod: "mock"},
+    {environment: "dev-pr", loginMethod: "mock"},
+    {environment: "int", loginMethod: "cis2"},
+    {environment: "prod", loginMethod: "cis2"}
   ],
   PUBLIC_PATHS: [
     "/login",

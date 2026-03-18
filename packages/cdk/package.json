@@ -10,11 +10,10 @@
   "dependencies": {
     "@nhsdigital/eps-cdk-constructs": "^1.4.3",
     "@nhsdigital/eps-deployment-utils": "^1.4.3",
-    "aws-cdk": "^2.1109.0",
-    "aws-cdk-lib": "^2.241.0",
+    "aws-cdk": "^2.1111.0",
+    "aws-cdk-lib": "^2.243.0",
     "cdk-nag": "^2.37.55",
     "constructs": "^10.4.5",
-    "glob": "^10.5.0",
     "tsx": "^4.21.0"
   }
 }

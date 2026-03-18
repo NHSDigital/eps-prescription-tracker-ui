@@ -71,6 +71,7 @@ lint-node: compile-node
 	npm run lint --workspace packages/common/doHSClient
 	npm run lint --workspace packages/common/dynamoFunctions
 	npm run lint --workspace packages/testingSupport/clearActiveSessions
+	npm run lint --workspace packages/testingSupport/setLastActivityTime
 
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
@@ -95,6 +96,7 @@ test: compile
 	npm run test --workspace packages/common/doHSClient
 	npm run test --workspace packages/common/dynamoFunctions
 	npm run test --workspace packages/testingSupport/clearActiveSessions
+	npm run test --workspace packages/testingSupport/setLastActivityTime
 
 clean:
 	find . -name 'coverage' -type d -prune -exec rm -rf '{}' +

@@ -21,6 +21,7 @@ export interface RestApiGatewayMethodsProps {
   readonly patientSearchLambda: NodejsFunction
   readonly authorizer?: CognitoUserPoolsAuthorizer
   readonly clearActiveSessionLambda: NodejsFunction
+  readonly setLastActivityTimerLambda: NodejsFunction
   readonly useMockOidc: boolean
 }
 
@@ -116,7 +117,17 @@ export class RestApiGatewayMethods extends Construct {
       const clearActiveSessionResource = apiRoot.addResource("test-support-clear-active-session")
       clearActiveSessionResource.addMethod("POST", new LambdaIntegration(props.clearActiveSessionLambda, {
         credentialsRole: props.restAPiGatewayRole
-      }), {})
+      }), {
+        authorizationType: AuthorizationType.NONE
+      })
+
+      // testing-support-fake-timer
+      const setLastActivityTimerResource = apiRoot.addResource("test-support-fake-timer")
+      setLastActivityTimerResource.addMethod("POST", new LambdaIntegration(props.setLastActivityTimerLambda, {
+        credentialsRole: props.restAPiGatewayRole
+      }), {
+        authorizationType: AuthorizationType.NONE
+      })
     }
 
     //Outputs

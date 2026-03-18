@@ -105,7 +105,8 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
           "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
           "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
           "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
-          "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session/POST/Resource"
+          "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session/POST/Resource",
+          "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-fake-timer/POST/Resource"
         ],
         endpointSuppressions
       )
@@ -140,6 +141,7 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
         stack,
         [
           "/StatelessStack/ApiFunctions/ClearActiveSessions/LambdaPutLogsManagedPolicy/Resource",
+          "/StatelessStack/ApiFunctions/SetLastActivityTimer/LambdaPutLogsManagedPolicy/Resource",
           "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
           "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
           "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource"

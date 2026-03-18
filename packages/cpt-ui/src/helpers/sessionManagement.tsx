@@ -32,3 +32,29 @@ export const postSessionManagementUpdate = async (auth: AuthContextType): Promis
     return false
   }
 }
+
+export const extendUserSession = async (): Promise<boolean> => {
+  try {
+    // updates lastActivityTime in dynamoDB
+    //middleware authentication handles the actual dynamodb interaction, and updates the lastActivityTime
+    const response = await http.get(API_ENDPOINTS.TRACKER_USER_INFO)
+    logger.info("Extended user session")
+
+    if (response.status === 200) {
+      logger.info("Session successfully extended.")
+      return true
+    }
+
+    if (response.status === 401) {
+      logger.warn("Session expired or invalid during extension attempt.")
+      return false
+    }
+
+    logger.error("Unexpected response when extending session", {status: response.status})
+    return false
+
+  } catch (err) {
+    logger.error("Error extending user session", err)
+    return false
+  }
+}

@@ -250,6 +250,7 @@ export class StatelessResourcesStack extends Stack {
       patientSearchLambda: apiFunctions.patientSearchLambda,
       authorizer: apiGateway.authorizer,
       clearActiveSessionLambda: apiFunctions.clearActiveSessionLambda,
+      setLastActivityTimerLambda: apiFunctions.setLastActivityTimerLambda,
       useMockOidc: !!props.mockOidcConfig
     })
 
