@@ -146,7 +146,12 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         return handleSignoutEvent(auth, navigate, "Rule 2", auth.invalidSessionCause)
       }
 
-      return redirect(FRONTEND_PATHS.LOGIN, "Not signed in - redirecting to login page")
+      if (checkForRecentLogoutMarker()) {
+        logger.info("Recent logout marker found, not redirecting, awaiting completion")
+        return
+      }
+
+      return redirect(FRONTEND_PATHS.LOGIN, `Not signed in - redirecting to login page ${auth.isSigningIn}`)
     }
 
     // Signed in - check states in priority order
@@ -178,12 +183,12 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       return
     }
 
-    if (auth.isSignedIn && !auth.isSigningOut) {
+    if (auth.isSignedIn && !auth.isSigningOut && !checkForRecentLogoutMarker()) {
       logger.debug("Refreshing user info")
 
       auth.updateTrackerUserInfo().then((response) => {
         if (response.error) {
-          logger.debug("Restarting login")
+          logger.debug("updateTrackerUserInfo returned error, signing out user", response.error)
           handleSignoutEvent(auth, navigate, "UserInfoCheck", response.invalidSessionCause)
         } else {
           const remainingTime = response.remainingSessionTime

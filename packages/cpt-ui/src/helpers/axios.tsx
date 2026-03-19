@@ -42,6 +42,7 @@ http.interceptors.request.use(
     config.headers[Headers.x_request_id] = crypto.randomUUID()
     config.headers[Headers.x_correlation_id] = crypto.randomUUID()
     config.headers[Headers.x_rum_session_id] = getRumSessionIdFromCookie()
+    logger.info(`amplify ${config.url?.toString()}`)
     try {
       const sessionGroup = readItemGroupFromLocalStorage("sessionId")
       // if we have a session id from auth context then add it to the header
@@ -54,13 +55,14 @@ http.interceptors.request.use(
 
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
-    if (idToken === undefined) {
+    const isAmplifyHostRequest = config.url?.includes("/api/cis2-signout") ?? false
+    if (idToken === undefined && !isAmplifyHostRequest) {
       controller.abort()
-      // TODO: CIS2 sign-out multiple times won't have an ID Token on subsequent calls
-      // Maybe use CIS2 endpoint check before throwing exception?
       throw new Error("Could not get a cognito token")
     }
-    config.headers.Authorization = `Bearer ${idToken?.toString()}`
+    if (idToken) {
+      config.headers.Authorization = `Bearer ${idToken.toString()}`
+    }
 
     // Make sure we have a retry counter in headers so we can track how many times we've retried
     if (!config.headers[x_retry_header]) {

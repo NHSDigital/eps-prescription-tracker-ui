@@ -74,6 +74,8 @@ export const signOut = async (
       console.error("[signOut] Error:", current.message, current)
       current = current.cause
     }
+    clearLogoutMarkerFromStorage()
+    authParam.clearAuthState()
 
     navigate?.(FRONTEND_PATHS.LOGOUT)
   }
@@ -116,16 +118,16 @@ const writeLogoutMarker = (marker: LogoutMarker) => {
 }
 
 /* Exported functions used within this helper, AuthProvider or AccessProvider */
-export const checkForRecentLogoutMarker = () => {
+export const checkForRecentLogoutMarker = (caller?: string) => {
   const existingMarker = readLogoutMarker()
   if (existingMarker) {
-    logger.info("Found existing logout marker in storage", existingMarker)
+    logger.info(`Found existing logout marker in storage. ${caller ? `Called by ${caller}` : ""}`, existingMarker)
     if (isRecentMarker(existingMarker)) {
-      logger.info("Existing market is recent", existingMarker)
+      logger.info(`Existing marker is recent. ${caller ? `Called by ${caller}` : ""}`, existingMarker)
       return existingMarker
     }
   }
-  logger.info("No recent logout marker found")
+  logger.info(`No recent logout marker found. ${caller ? `Called by ${caller}` : ""}`)
   return undefined
 }
 

@@ -5,7 +5,6 @@ import {useAuth} from "@/context/AuthProvider"
 import EpsSpinner from "@/components/EpsSpinner"
 import {EpsLogoutStrings} from "@/constants/ui-strings/EpsLogoutPageStrings"
 import {handleSignoutEvent} from "@/helpers/logout"
-import {AUTH_CONFIG} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function LogoutPage() {
@@ -16,11 +15,11 @@ export default function LogoutPage() {
 
   useEffect(() => {
     if (auth.isSignedIn || auth.isSigningIn) {
-      handleSignoutEvent(auth, navigate, "LogoutPage", AUTH_CONFIG.REDIRECT_SIGN_OUT)
+      handleSignoutEvent(auth, navigate, "LogoutPage")
     } else if (auth.isSigningOut) {
       auth.setIsSigningOut(false)
     }
-  }, [auth.isSignedIn, auth.isSigningIn, auth.isSigningOut])
+  }, [auth.isSignedIn, auth.isSigningIn, auth.isSigningOut, auth.logoutMarker])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">

@@ -58,7 +58,7 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
-  setStateForSignOut: () => Promise<void>
+  setStateForSignOut: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -140,10 +140,14 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
     if (!trackerUserInfo.error) {
-      setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-      setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-      setSelectedRole(trackerUserInfo.selectedRole)
-      setUserDetails(trackerUserInfo.userDetails)
+      if (!(rolesWithAccess === trackerUserInfo.rolesWithAccess))
+        setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+      if (!(rolesWithoutAccess === trackerUserInfo.rolesWithoutAccess))
+        setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+      if (!(selectedRole === trackerUserInfo.selectedRole))
+        setSelectedRole(trackerUserInfo.selectedRole)
+      if (!(userDetails === trackerUserInfo.userDetails))
+        setUserDetails(trackerUserInfo.userDetails)
     }
     setInvalidSessionCause(trackerUserInfo.invalidSessionCause) // Set first
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
@@ -163,13 +167,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         // On successful signIn or token refresh, get the latest user state
         case "signedIn": {
           logger.info("Processing signedIn event")
-          logger.info("User %s logged in", payload.data.username)
+          logger.info(`User ${payload.data.username} logged in at ${new Date().toISOString()}`)
           await updateTrackerUserInfo()
 
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
-          logger.info("Finished the signedIn event ")
+          logger.info("Finished the signedIn event")
           break
         }
         case "tokenRefresh":
@@ -178,6 +182,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           break
         case "signInWithRedirect":
           logger.info("Processing signInWithRedirect event")
+          setIsSigningIn(true)
           setError(null)
           break
 

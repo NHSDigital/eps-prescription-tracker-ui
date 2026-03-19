@@ -138,6 +138,17 @@ describe("HTTP Axios Instance", () => {
     await expect(http.get("/test")).rejects.toThrow("Could not get a cognito token")
   })
 
+  it("does not abort when request targets Amplify hosted login domain without a token", async () => {
+    (fetchAuthSession as jest.Mock)
+      .mockReturnValueOnce("not a token")
+    mock.onGet("https://test.domain/oauth2/token").reply(200, {success: true})
+
+    const response = await http.get("https://test.domain/oauth2/token")
+
+    expect(response.status).toBe(200)
+    expect(response.data).toEqual({success: true})
+  })
+
   it("Does not retry if response says to restart login", async () => {
     mock.onGet("/test").reply(401, {restartLogin: true})
 
