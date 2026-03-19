@@ -5,9 +5,10 @@ interface EpsModalProps {
   readonly isOpen: boolean
   readonly onClose: () => void
   readonly ariaLabelledBy?: string
+  readonly ariaDescribedBy?: string
 }
 
-export function EpsModal({children, isOpen, onClose, ariaLabelledBy}: EpsModalProps) {
+export function EpsModal({children, isOpen, onClose, ariaLabelledBy, ariaDescribedBy}: EpsModalProps) {
   const modalRef = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export function EpsModal({children, isOpen, onClose, ariaLabelledBy}: EpsModalPr
       ref={modalRef}
       className="eps-modal-overlay eps-modal-content"
       aria-labelledby={ariaLabelledBy}
+      aria-describedby={ariaDescribedBy}
       aria-modal="true"
       data-testid="eps-modal-overlay"
     >
