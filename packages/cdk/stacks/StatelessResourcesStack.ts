@@ -3,9 +3,7 @@ import {
   App,
   Fn,
   CfnOutput,
-  ArnFormat,
-  DockerImage,
-  RemovalPolicy
+  ArnFormat
 } from "aws-cdk-lib"
 import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
 import {AccessLevel} from "aws-cdk-lib/aws-cloudfront"
@@ -14,12 +12,7 @@ import {RestApiOrigin, S3BucketOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {RestApiGateway} from "../resources/RestApiGateway"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {nagSuppressions} from "../nagSuppressions"
-import {
-  ManagedPolicy,
-  PolicyStatement,
-  Role,
-  ServicePrincipal
-} from "aws-cdk-lib/aws-iam"
+import {Role} from "aws-cdk-lib/aws-iam"
 import {SharedSecrets} from "../resources/SharedSecrets"
 import {OAuth2Functions} from "../resources/api/oauth2Functions"
 import {ApiFunctions} from "../resources/api/apiFunctions"
@@ -35,14 +28,9 @@ import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
 import {Dynamodb} from "../resources/Dynamodb"
 import {Cognito, OidcConfig} from "../resources/Cognito"
 import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
-import {BucketDeployment, Source} from "aws-cdk-lib/aws-s3-deployment"
-import {execSync} from "child_process"
 import {Rum} from "../resources/Rum"
-import {resolve, join, basename} from "path"
-import {cpSync, globSync} from "fs"
-import {LogGroup} from "aws-cdk-lib/aws-logs"
 import {StaticContentBucket} from "../resources/StaticContentBucket"
-import {NagSuppressions} from "cdk-nag"
+import {StaticContentDeployment} from "../resources/StaticContentDeployment"
 
 export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly serviceName: string
@@ -251,119 +239,25 @@ export class StatelessResourcesStack extends Stack {
 
     // - Cloudfront
     // --- Origins for bucket and api gateway
-    const staticContentDeploymentLogGroup = new LogGroup(this, "StaticContentDeploymentLogGroup", {
-      encryptionKey: cloudwatchKmsKey,
-      logGroupName: `/aws/lambda/${props.stackName}-static-content-deployment`,
-      retention: props.logRetentionInDays,
-      removalPolicy: RemovalPolicy.DESTROY
-    })
-    const staticContentDeploymentPolicy = new ManagedPolicy(this, "StaticContentDeploymentPolicy", {
-      statements: [
-        new PolicyStatement({
-          actions: [
-            "s3:ListBucket",
-            "s3:DeleteObject",
-            "s3:PutObject"
-          ],
-          resources: [
-            props.staticContentBucket.bucket.bucketArn,
-            props.staticContentBucket.bucket.arnForObjects(props.version + "/*")
-          ]
-        }),
-        new PolicyStatement({
-          actions: [
-            "kms:Decrypt",
-            "kms:Encrypt",
-            "kms:GenerateDataKey"
-          ],
-          resources: [props.staticContentBucket.kmsKey.keyArn]
-        }),
-        new PolicyStatement({
-          actions: [
-            "logs:CreateLogStream",
-            "logs:PutLogEvents"
-          ],
-          resources: [
-            staticContentDeploymentLogGroup.logGroupArn,
-            `${staticContentDeploymentLogGroup.logGroupArn}:log-stream:*`
-          ]
-        })
-      ]
-    })
-    NagSuppressions.addResourceSuppressions(staticContentDeploymentPolicy, [
-      {
-        id: "AwsSolutions-IAM5",
-        // eslint-disable-next-line max-len
-        reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-      }
-    ])
-    const staticContentDeploymentRole = new Role(this, "StaticContentDeploymentRole", {
-      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: [staticContentDeploymentPolicy]
-    }).withoutPolicyUpdates()
-    const mainDeployment = new BucketDeployment(this, "StaticContentDeployment", {
-      sources: [
-        Source.asset("../cpt-ui/dist", {
-          bundling: {
-            local: {
-              tryBundle(outputDir, options) {
-                const root = resolve("../..")
-                execSync(
-                  `npm run compile --workspace packages/cpt-ui`,
-                  {cwd: root, env: {...process.env, ...options.environment}, stdio: "inherit"}
-                )
-                cpSync(join(root, "packages", "cpt-ui", "dist"), outputDir, {recursive: true})
-                return true
-              }
-            },
-            image: DockerImage.fromRegistry("alpine"), // unused but required
-            environment: {
-              VITE_userPoolId: props.cognito.userPool.userPoolId,
-              VITE_userPoolClientId: props.cognito.userPoolClient.userPoolClientId,
-              VITE_hostedLoginDomain: props.fullCognitoDomain,
-              VITE_fullCloudfrontDomain: props.fullCloudfrontDomain,
-              VITE_TARGET_ENVIRONMENT: props.environment,
-              VITE_SERVICE_NAME: props.serviceName,
-              VITE_COMMIT_ID: props.commitId,
-              VITE_VERSION_NUMBER: props.version,
-              VITE_RUM_GUEST_ROLE_ARN: props.rum.guestRole.roleArn,
-              VITE_RUM_IDENTITY_POOL_ID: props.rum.identityPool.ref,
-              VITE_RUM_APPLICATION_ID: props.rum.rumApp.attrId,
-              VITE_REACT_LOG_LEVEL: props.reactLogLevel
-            }
-          }
-        }),
-        Source.asset("../staticContent", {exclude: ["jwks"]}),
-        Source.asset(`../staticContent/jwks/${props.environment}`)
-      ],
-      destinationKeyPrefix: props.version,
-      destinationBucket: props.staticContentBucket.bucket,
-      retainOnDelete: false,
-      role: staticContentDeploymentRole,
-      logGroup: staticContentDeploymentLogGroup
-    })
-    const sourceMapsDeployment = new BucketDeployment(this, "SourceMapsDeployment", {
-      sources: [Source.asset("../cpt-ui/dist", {
-        bundling: {
-          local: {
-            tryBundle(outputDir) {
-              for (const file of globSync(resolve("../..") + "/packages/cpt-ui/dist/**/*.map")) {
-                cpSync(file, join(outputDir, basename(file)))
-              }
-              return true
-            }
-          },
-          image: DockerImage.fromRegistry("alpine") // unused but required
-        }
-      })],
-      destinationKeyPrefix: `source_maps/${props.commitId}/site/assets`,
-      destinationBucket: mainDeployment.deployedBucket,
-      retainOnDelete: false,
-      role: staticContentDeploymentRole,
-      logGroup: staticContentDeploymentLogGroup
+    const staticContentDeployment = new StaticContentDeployment(this, "StaticContentDeployment", {
+      account: this.account,
+      region: this.region,
+      serviceName: props.serviceName,
+      stackName: props.stackName,
+      environment: props.environment,
+      version: props.version,
+      commitId: props.commitId,
+      cloudwatchKmsKey,
+      cognito: props.cognito,
+      fullCloudfrontDomain: props.fullCloudfrontDomain,
+      fullCognitoDomain: props.fullCognitoDomain,
+      logRetentionInDays: props.logRetentionInDays,
+      reactLogLevel: props.reactLogLevel,
+      rum: props.rum,
+      staticContentBucket: props.staticContentBucket
     })
     const staticContentBucketOrigin = S3BucketOrigin.withOriginAccessControl(
-      sourceMapsDeployment.deployedBucket,
+      staticContentDeployment.deployedBucket,
       {
         originAccessLevels: [AccessLevel.READ],
         originPath: "/" + props.version
