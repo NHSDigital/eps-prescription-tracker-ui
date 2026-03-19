@@ -421,13 +421,11 @@ describe("RoleSelectionPage", () => {
     render(<RoleSelectionPage contentText={defaultContentText} />)
 
     expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
-      ...mockAuthState,
       logId: "some-log-id-uuid-value",
       sessionId: "session-1234",
       userId: "12345",
       pageName: "/",
       authContext: {
-        ...mockAuthState,
         cognitoUsername: "cognito-user",
         name:"Test User",
         currentlySelectedRole: {

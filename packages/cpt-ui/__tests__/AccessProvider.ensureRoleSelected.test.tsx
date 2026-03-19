@@ -391,8 +391,7 @@ describe("ensureRoleSelected", () => {
       FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID
     )
 
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGIN)
-    })
+    // Initiating tab should not be force-redirected; recent logout marker causes early return
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 })

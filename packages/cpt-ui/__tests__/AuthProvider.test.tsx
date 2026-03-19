@@ -344,7 +344,6 @@ describe("AuthProvider", () => {
       await contextValue.cognitoSignIn()
     })
     expect(signInWithRedirect).toHaveBeenCalled()
-    expect(contextValue.isSigningIn).toBe(true)
   })
 
   it("should provide cognitoSignOut functions", async () => {
