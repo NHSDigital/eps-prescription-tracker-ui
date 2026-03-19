@@ -1,0 +1,15 @@
+.nhsuk-card--disabled:not(.nhsuk-card--selected),
+.nhsuk-card--disabled:not(.nhsuk-card--selected):hover,
+.nhsuk-card--disabled:not(.nhsuk-card--selected):focus {
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+.disabled-card-link:not(.selected-card-link),
+.disabled-card-link:not(.selected-card-link):hover,
+.disabled-card-link:not(.selected-card-link):focus {
+  color: inherit !important;
+  text-decoration: none !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}

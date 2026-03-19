@@ -11,6 +11,8 @@ import {
   Card
 } from "nhsuk-react-components"
 
+import "@/styles/roleselectionpage.scss"
+
 import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
@@ -97,6 +99,7 @@ export default function RoleSelectionPage({
   const navigate = useNavigate()
   const redirecting = useRef(false)
   const [isSelectingRole, setIsSelectingRole] = useState(false)
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
 
   const [roleComponentProps, setRoleComponentProps] = useState<RoleComponentProps>({
     rolesWithAccess: [],
@@ -119,6 +122,7 @@ export default function RoleSelectionPage({
     }
 
     setIsSelectingRole(true)
+    setSelectedCardId(roleCardProps.uuid)
 
     try {
       await auth.updateSelectedRole(roleCardProps.role)
@@ -131,6 +135,7 @@ export default function RoleSelectionPage({
       }
       logger.error("Error selecting role:", err)
       setIsSelectingRole(false) // Reset loading state on error
+      setSelectedCardId(null)
     }
   }
 
@@ -344,68 +349,85 @@ export default function RoleSelectionPage({
                 <Col width="two-thirds">
                   <div className="section">
                     {roleComponentProps.rolesWithAccess
-                      .map((roleCardProps: RolesWithAccessProps) => (
-                        <Card
-                          key={roleCardProps.uuid}
-                          data-testid="eps-card"
-                          className={`nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4 ${
-                            isSelectingRole ? "nhsuk-card--disabled" : ""
-                          }`}
-                          tabIndex={isSelectingRole ? -1 : 0}
-                          onKeyDown={isSelectingRole ? undefined : (e) => handleCardKeyDown(e, roleCardProps)}
-                          onClick={isSelectingRole ? undefined : (e) => handleCardClick(e, roleCardProps)}
-                          style={{
-                            cursor: isSelectingRole ? "not-allowed" : "pointer",
-                            opacity: isSelectingRole ? 0.5 : 1
-                          }}
-                          role="button"
-                          aria-disabled={isSelectingRole}
-                        >
-                          <Card.Content>
-                            <div className="eps-card__layout">
-                              <div>
-                                <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                                  <a
-                                    href="#"
-                                    onClick={isSelectingRole ?
-                                      (e) => e.preventDefault() :
-                                      (e) => handleCardClick(e, roleCardProps)
-                                    }
-                                    onKeyDown={isSelectingRole ? undefined : (e) => handleCardKeyDown(e, roleCardProps)}
-                                    style={{
-                                      textDecoration: "none",
-                                      color: "inherit",
-                                      pointerEvents: isSelectingRole ? "none" : "auto"
-                                    }}
-                                    tabIndex={isSelectingRole ? -1 : 0}
-                                    aria-disabled={isSelectingRole}
-                                    role="button"
-                                  >
-                                    {roleCardProps.role.org_name || noOrgName}
-                                    <br />
+                      .map((roleCardProps: RolesWithAccessProps) => {
+                        const isThisCardSelected = selectedCardId === roleCardProps.uuid
+                        const isOtherCardDisabled = isSelectingRole && !isThisCardSelected
+
+                        return (
+                          <Card
+                            key={roleCardProps.uuid}
+                            data-testid="eps-card"
+                            className={`nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4 ${
+                              isOtherCardDisabled ? "nhsuk-card--disabled" : ""
+                            } ${
+                              isThisCardSelected ? "nhsuk-card--selected" : ""
+                            }`}
+                            tabIndex={isOtherCardDisabled ? -1 : 0}
+                            onKeyDown={isOtherCardDisabled ? undefined : (e) => handleCardKeyDown(e, roleCardProps)}
+                            onClick={isOtherCardDisabled ? undefined : (e) => handleCardClick(e, roleCardProps)}
+                            style={{
+                              cursor: isOtherCardDisabled ? "not-allowed" : "pointer",
+                              opacity: isOtherCardDisabled ? 0.5 : 1,
+                              pointerEvents: isOtherCardDisabled ? "none" : "auto"
+                            }}
+                            role="button"
+                            aria-disabled={isOtherCardDisabled}
+                          >
+                            <Card.Content>
+                              <div className="eps-card__layout">
+                                <div>
+                                  <Card.Heading className="nhsuk-heading-s eps-card__org-name">
+                                    <a
+                                      href="#"
+                                      onClick={isOtherCardDisabled ?
+                                        (e) => e.preventDefault() :
+                                        (e) => handleCardClick(e, roleCardProps)
+                                      }
+                                      onKeyDown={isOtherCardDisabled ?
+                                        undefined :
+                                        (e) => handleCardKeyDown(e, roleCardProps)
+                                      }
+                                      style={{
+                                        textDecoration: "none",
+                                        color: "inherit",
+                                        pointerEvents: isOtherCardDisabled ? "none" : "auto",
+                                        cursor: isOtherCardDisabled ? "not-allowed" : "pointer"
+                                      }}
+                                      tabIndex={isOtherCardDisabled ? -1 : 0}
+                                      aria-disabled={isOtherCardDisabled}
+                                      role="button"
+                                      className={`${
+                                        isOtherCardDisabled ? "disabled-card-link" : ""
+                                      } ${
+                                        isThisCardSelected ? "selected-card-link" : ""
+                                      }`}
+                                    >
+                                      {roleCardProps.role.org_name || noOrgName}
+                                      <br />
                                     (ODS: {roleCardProps.role.org_code || noODSCode})
-                                  </a>
-                                </Card.Heading>
-                                <Card.Description className="nhsuk-u-margin-top-2">
-                                  {roleCardProps.role.role_name || noRoleName}
-                                </Card.Description>
+                                    </a>
+                                  </Card.Heading>
+                                  <Card.Description className="nhsuk-u-margin-top-2">
+                                    {roleCardProps.role.role_name || noRoleName}
+                                  </Card.Description>
+                                </div>
+                                <div className="eps-card__address">
+                                  <Card.Description>
+                                    {(roleCardProps.role.site_address || contentText.noAddress)
+                                      .split("\n")
+                                      .map((line: string, index: number) => (
+                                        <span key={index}>
+                                          {line}
+                                          <br />
+                                        </span>
+                                      ))}
+                                  </Card.Description>
+                                </div>
                               </div>
-                              <div className="eps-card__address">
-                                <Card.Description>
-                                  {(roleCardProps.role.site_address || contentText.noAddress)
-                                    .split("\n")
-                                    .map((line: string, index: number) => (
-                                      <span key={index}>
-                                        {line}
-                                        <br />
-                                      </span>
-                                    ))}
-                                </Card.Description>
-                              </div>
-                            </div>
-                          </Card.Content>
-                        </Card>
-                      ))}
+                            </Card.Content>
+                          </Card>
+                        )
+                      })}
                   </div>
                 </Col>
               )}
