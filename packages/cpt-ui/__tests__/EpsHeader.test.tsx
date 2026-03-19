@@ -86,16 +86,9 @@ const renderWithProviders = (
 
   const authValue = {...defaultAuthContext, ...authOverrides}
 
-  const mockAccessContext = {
-    sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-    onStayLoggedIn: jest.fn(),
-    onLogOut: jest.fn(),
-    onTimeout: jest.fn()
-  }
-
   return render(
     <AuthContext.Provider value={authValue}>
-      <AccessContext.Provider value={mockAccessContext}>
+      <AccessContext.Provider value={null}>
         <EpsHeader />
       </AccessContext.Provider>
     </AuthContext.Provider>
