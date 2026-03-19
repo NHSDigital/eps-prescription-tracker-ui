@@ -6,16 +6,18 @@ import {
   Row,
   SummaryList
 } from "nhsuk-react-components"
-import {Link} from "react-router-dom"
+import {Link, useNavigate} from "react-router-dom"
 
 import {YOUR_SELECTED_ROLE_STRINGS} from "@/constants/ui-strings/YourSelectedRoleStrings"
 import {useAuth} from "@/context/AuthProvider"
 import {Button} from "@/components/ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {logger} from "@/helpers/logger"
 
 export default function YourSelectedRolePage() {
-  const {selectedRole} = useAuth()
+  const {selectedRole, sessionId, userDetails} = useAuth()
+  const navigate = useNavigate()
   usePageTitle(YOUR_SELECTED_ROLE_STRINGS.pageTitle)
 
   const [roleName, setRoleName] = useState<string>(YOUR_SELECTED_ROLE_STRINGS.noRoleName)
@@ -35,6 +37,19 @@ export default function YourSelectedRolePage() {
     setOrgName(selectedRole.org_name || YOUR_SELECTED_ROLE_STRINGS.noOrgName)
     setOdsCode(selectedRole.org_code || YOUR_SELECTED_ROLE_STRINGS.noODSCode)
   }, [selectedRole])
+
+  const onConfirmRole = () => {
+    logger.debug("Role confirmed", {
+      sessionId: sessionId,
+      pageName: location.pathname,
+      userId: userDetails?.sub,
+      roleName: selectedRole?.role_name,
+      roleId: selectedRole?.role_id,
+      orgName: selectedRole?.org_name,
+      orgCode: selectedRole?.org_code
+    }, true)
+    navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+  }
 
   const {
     heading,
@@ -113,7 +128,8 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="two-thirds">
             <Button
-              to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
+              // to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
+              onClick={onConfirmRole}
               data-testid="confirm-and-continue"
             >
               {confirmButtonText}
