@@ -42,7 +42,6 @@ http.interceptors.request.use(
     config.headers[Headers.x_request_id] = crypto.randomUUID()
     config.headers[Headers.x_correlation_id] = crypto.randomUUID()
     config.headers[Headers.x_rum_session_id] = getRumSessionIdFromCookie()
-    logger.info(`amplify ${config.url?.toString()}`)
     try {
       const sessionGroup = readItemGroupFromLocalStorage("sessionId")
       // if we have a session id from auth context then add it to the header

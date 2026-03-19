@@ -64,8 +64,9 @@ export const signOut = async (
   try {
     logger.info("Signing out with specified redirect path", redirectUri)
     await authParam?.cognitoSignOut(redirectUri)
-    clearLogoutMarkerFromStorage()
     authParam.clearAuthState()
+    // Don't clear logout marker here - let login sequence reset it
+    // That way mid-logout redirections don't occur
   } catch (err) {
     logger.error(`Error during sign out` + (redirectUri ? ` with specified redirect path: ${redirectUri}` : ""), err)
 

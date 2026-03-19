@@ -41,6 +41,7 @@ export const mockAuthState = {
   updateInvalidSessionCause: jest.fn(),
   setIsSigningOut: jest.fn(),
   setStateForSignOut: jest.fn().mockImplementation(() => Promise.resolve()),
+  setStateForSignIn: jest.fn().mockImplementation(() => Promise.resolve()),
   setSessionTimeoutModalInfo: jest.fn(),
   setLogoutModalType: jest.fn(),
   remainingSessionTime: undefined
