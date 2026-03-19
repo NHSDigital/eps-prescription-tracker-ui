@@ -158,7 +158,6 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
     if (auth.isSignedIn) {
       if (auth.isSigningOut &&
         (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
-        // TODO: Check if && !auth.invalidSessionCause needed
         return handleSignoutEvent(auth, navigate, "Rule 3", auth.invalidSessionCause)
       }
 
