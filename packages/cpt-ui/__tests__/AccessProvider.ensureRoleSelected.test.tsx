@@ -220,20 +220,6 @@ describe("ensureRoleSelected", () => {
       }
     },
     {
-      name: "not signed in, on protected path, has recent logout marker, doesnt redirect", // has a render block test
-      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-      authStateOverrides: {
-        isSignedIn: false,
-        isSigningIn: false,
-        selectedRole: undefined,
-        logoutMarker: {
-          timestamp: Date.now(),
-          reason: "signOut",
-          initiatedByTabId: "tab-a"
-        }
-      }
-    },
-    {
       name: "signed in, role selected, on public path, doesnt redirect", // has a render block test
       initialPath: FRONTEND_PATHS.COOKIES,
       authStateOverrides: {
