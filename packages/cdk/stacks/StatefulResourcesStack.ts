@@ -125,6 +125,6 @@ export class StatefulResourcesStack extends Stack {
       }
     }
 
-    nagSuppressions(this)
+    nagSuppressions(this, !!props.mockOidcConfig)
   }
 }
