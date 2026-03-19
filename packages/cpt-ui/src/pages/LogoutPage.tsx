@@ -14,17 +14,19 @@ export default function LogoutPage() {
   usePageTitle(EpsLogoutStrings.PAGE_TITLE)
 
   useEffect(() => {
-    if (auth.isSignedIn || auth.isSigningIn) {
+    // Only call signOut if we arrived here without already starting the logout process
+    if (!auth.isSigningOut && (auth.isSignedIn || auth.isSigningIn)) {
       signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
-    } else if (auth.isSigningOut) {
+    } else if (auth.isSigningOut && !auth.isSignedIn && !auth.isSigningIn) {
+      // Reset signing out state if logout completed
       auth.setIsSigningOut(false)
     }
-  }, [auth.isSignedIn, auth.isSigningIn])
+  }, [auth.isSignedIn, auth.isSigningIn, auth.isSigningOut])
 
   return (
     <main id="main-content" className="nhsuk-main-wrapper">
       <Container>
-        {!auth?.isSignedIn && !auth.isSigningIn ? (
+        {(!auth?.isSignedIn && !auth.isSigningIn && !auth.isSigningOut) ? (
           <Fragment>
             <h1>{EpsLogoutStrings.TITLE}</h1>
             <p>{EpsLogoutStrings.BODY}</p>
