@@ -60,6 +60,32 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
         }
       ]
     )
+
+    const secretSuppressions = [
+      {
+        id: "AwsSolutions-SMG4",
+        reason: "Suppress error for not rotating secret. This is by design."
+      }
+    ]
+
+    safeAddNagSuppressionGroup(
+      stack,
+      [
+        "/StatefulStack/SharedSecrets/PrimaryJwtPrivateKey/Resource",
+        "/StatefulStack/SharedSecrets/ApigeeApiKeySecret/Resource",
+        "/StatefulStack/SharedSecrets/ApigeeSecretKeySecret/Resource",
+        "/StatefulStack/SharedSecrets/ApigeeDoHSApiKeySecret/Resource"
+      ],
+      secretSuppressions
+    )
+
+    if (useMockOidc) {
+      safeAddNagSuppression(
+        stack,
+        "/StatefulStack/SharedSecrets/MockJwtPrivateKey/Resource",
+        secretSuppressions
+      )
+    }
   }
 
   if (stack.artifactId === "StatelessStack") {
@@ -147,32 +173,6 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
           "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource"
         ],
         lambdaLogPolicySuppressions
-      )
-    }
-
-    const secretSuppressions = [
-      {
-        id: "AwsSolutions-SMG4",
-        reason: "Suppress error for not rotating secret. This is by design."
-      }
-    ]
-
-    safeAddNagSuppressionGroup(
-      stack,
-      [
-        "/StatelessStack/SharedSecrets/PrimaryJwtPrivateKey/Resource",
-        "/StatelessStack/SharedSecrets/ApigeeApiKeySecret/Resource",
-        "/StatelessStack/SharedSecrets/ApigeeSecretKeySecret/Resource",
-        "/StatelessStack/SharedSecrets/ApigeeDoHSApiKeySecret/Resource"
-      ],
-      secretSuppressions
-    )
-
-    if (useMockOidc) {
-      safeAddNagSuppression(
-        stack,
-        "/StatelessStack/SharedSecrets/MockJwtPrivateKey/Resource",
-        secretSuppressions
       )
     }
 
