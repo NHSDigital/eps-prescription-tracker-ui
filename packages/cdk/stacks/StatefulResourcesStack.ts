@@ -1,6 +1,7 @@
 import {
   App,
   CfnOutput,
+  CfnParameter,
   Fn,
   Stack
 } from "aws-cdk-lib"
@@ -46,6 +47,28 @@ export class StatefulResourcesStack extends Stack {
 
   public constructor(scope: App, id: string, props: StatefulResourcesStackProps){
     super(scope, id, props)
+
+    // Parameters (must remain at the top in a fixed order so that names do not change)
+    const apigeeApiKey = new CfnParameter(this, "ApigeeApiKey", {
+      type: "String",
+      description: "The Apigee API key.",
+      noEcho: true
+    })
+    const apigeeSecretKey = new CfnParameter(this, "ApigeeSecretKey", {
+      type: "String",
+      description: "The Apigee secret key.",
+      noEcho: true
+    })
+    const apigeeDoHSApiKey = new CfnParameter(this, "ApigeeDoHSApiKey", {
+      type: "String",
+      description: "The Apigee DoHS API key.",
+      noEcho: true
+    })
+    const jwtPrivateKey = new CfnParameter(this, "JwtPrivateKey", {
+      type: "String",
+      description: "The JWT private key used for signing tokens.",
+      noEcho: true
+    })
 
     // Imports
     const auditLoggingBucketImport = Fn.importValue("account-resources:AuditLoggingBucket")
@@ -103,7 +126,11 @@ export class StatefulResourcesStack extends Stack {
     this.sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
       stackName: props.stackName,
       deploymentRole: deploymentRole,
-      useMockOidc: !!props.mockOidcConfig
+      useMockOidc: !!props.mockOidcConfig,
+      apigeeApiKey,
+      apigeeSecretKey,
+      apigeeDoHSApiKey,
+      jwtPrivateKey
     })
 
     // Exports

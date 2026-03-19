@@ -21,6 +21,10 @@ export interface SharedSecretsProps {
   readonly stackName: string
   readonly deploymentRole: IRole
   readonly useMockOidc?: boolean
+  readonly apigeeApiKey: CfnParameter
+  readonly apigeeSecretKey: CfnParameter
+  readonly apigeeDoHSApiKey: CfnParameter
+  readonly jwtPrivateKey: CfnParameter
 }
 
 // Construct for managing shared secrets and associated resources
@@ -93,36 +97,19 @@ export class SharedSecrets extends Construct {
       })
     })
 
-    const apigeeApiKeyParameter = new CfnParameter(this, "ApigeeApiKey", {
-      type: "String",
-      description: "The Apigee API key.",
-      noEcho: true
-    })
     this.apigeeApiKey = new Secret(this, "ApigeeApiKeySecret", {
       secretName: `${props.stackName}-apigeeApiKey`,
-      secretStringValue: SecretValue.cfnParameter(apigeeApiKeyParameter),
+      secretStringValue: SecretValue.cfnParameter(props.apigeeApiKey),
       encryptionKey: this.apigeeSecretsKmsKey
-    })
-
-    const apigeeSecretKeyParameter = new CfnParameter(this, "ApigeeSecretKey", {
-      type: "String",
-      description: "The Apigee secret key.",
-      noEcho: true
     })
     this.apigeeSecretKey = new Secret(this, "ApigeeSecretKeySecret", {
       secretName: `${props.stackName}-apigeeSecretKey`,
-      secretStringValue: SecretValue.cfnParameter(apigeeSecretKeyParameter),
+      secretStringValue: SecretValue.cfnParameter(props.apigeeSecretKey),
       encryptionKey: this.apigeeSecretsKmsKey
-    })
-
-    const apigeeDoHSApiKeyParameter = new CfnParameter(this, "ApigeeDoHSApiKey", {
-      type: "String",
-      description: "The Apigee DoHS API key.",
-      noEcho: true
     })
     this.apigeeDoHSApiKey = new Secret(this, "ApigeeDoHSApiKeySecret", {
       secretName: `${props.stackName}-apigeeDoHSApiKey`,
-      secretStringValue: SecretValue.cfnParameter(apigeeDoHSApiKeyParameter),
+      secretStringValue: SecretValue.cfnParameter(props.apigeeDoHSApiKey),
       encryptionKey: this.apigeeSecretsKmsKey
     })
 
@@ -156,16 +143,10 @@ export class SharedSecrets extends Construct {
       ]
     })
 
-    const jwtPrivateKeyParameter = new CfnParameter(this, "JwtPrivateKey", {
-      type: "String",
-      description: "The JWT private key used for signing tokens.",
-      noEcho: true
-    })
-
     // Create the primary JWT private key secret
     this.primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKey`,
-      secretStringValue: SecretValue.cfnParameter(jwtPrivateKeyParameter),
+      secretStringValue: SecretValue.cfnParameter(props.jwtPrivateKey),
       encryptionKey: this.jwtKmsKey
     })
 
@@ -183,7 +164,7 @@ export class SharedSecrets extends Construct {
     if (props.useMockOidc) {
       this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
-        secretStringValue: SecretValue.cfnParameter(jwtPrivateKeyParameter),
+        secretStringValue: SecretValue.cfnParameter(props.jwtPrivateKey),
         encryptionKey: this.jwtKmsKey
       })
 
