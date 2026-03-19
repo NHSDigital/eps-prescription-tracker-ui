@@ -128,7 +128,6 @@ export default function YourSelectedRolePage() {
         <Row>
           <Col width="two-thirds">
             <Button
-              // to={FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID}
               onClick={onConfirmRole}
               data-testid="confirm-and-continue"
             >
