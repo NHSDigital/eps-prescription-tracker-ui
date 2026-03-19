@@ -13,3 +13,20 @@
   pointer-events: none !important;
   cursor: not-allowed !important;
 }
+
+// Maintain selected card styling
+.nhsuk-card--selected .selected-card-link,
+.nhsuk-card--selected .selected-card-link:hover,
+.nhsuk-card--selected .selected-card-link:focus,
+.nhsuk-card--selected .selected-card-link:active {
+  color: #7c2d12 !important;
+  text-decoration: underline !important;
+  text-underline-offset: .1578947368em;
+  text-decoration-thickness: max(.08em, 1px);
+}
+
+.nhsuk-card--selected .selected-card-link:focus {
+  background: #fd0 !important;
+  box-shadow: 0 -2px #fd0, 0 4px #212b32 !important;
+  outline: 4px solid transparent;
+}
