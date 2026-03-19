@@ -598,8 +598,8 @@ describe("AccessProvider", () => {
     })
 
     it("should show timeout modal when remaining time is within threshold", async () => {
-      const fourteenMinutes = 14 * 60 * 1000
-      const remainingTime = fourteenMinutes - 1000 // 1 second less than threshold
+      const oneMinuteInMs = 60 * 1000
+      const remainingTime = oneMinuteInMs // 1 minute remaining, within 2-minute threshold
       mockUpdateTrackerUserInfo.mockResolvedValue({
         error: null,
         remainingSessionTime: remainingTime
