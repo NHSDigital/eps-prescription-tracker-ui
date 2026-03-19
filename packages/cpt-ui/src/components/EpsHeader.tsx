@@ -24,6 +24,7 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [actionButtonsDisabled, setActionButtonsDisabled] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
@@ -75,15 +76,24 @@ export default function EpsHeader() {
 
   const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    setShowLogoutModal(true)
     authContext.setLogoutModalType("userInitiated")
   }
 
   const handleConfirmLogout = async () => {
-    setActionButtonsDisabled(true)
-    if (buttonDisabledRef.current === false) {
-      await handleSignoutEvent(authContext, navigate, "UserInitiatedHeaderLogout")
+    if (buttonDisabledRef.current) {
+      return
     }
+
     buttonDisabledRef.current = true
+    setActionButtonsDisabled(true)
+
+    try {
+      await handleSignoutEvent(authContext, navigate, "UserInitiatedHeaderLogout")
+    } finally {
+      buttonDisabledRef.current = false
+      setShowLogoutModal(false)
+    }
   }
 
   const toggleDropdown = () => {
@@ -266,7 +276,7 @@ export default function EpsHeader() {
       </header>
 
       <EpsLogoutModal
-        isOpen={authContext?.logoutModalType === "userInitiated"}
+        isOpen={showLogoutModal && authContext?.logoutModalType === "userInitiated"}
         onClose={() => {
           authContext?.setLogoutModalType(undefined)
           buttonDisabledRef.current = false

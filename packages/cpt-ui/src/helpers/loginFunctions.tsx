@@ -14,6 +14,8 @@ export const handleSignIn = async (
   navigate: (path: string) => void) => {
   logger.info(`Redirecting user to ${type} login`)
 
+  auth.setStateForSignIn()
+
   try {
     await auth?.cognitoSignIn({
       provider: {

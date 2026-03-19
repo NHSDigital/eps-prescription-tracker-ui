@@ -192,23 +192,25 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           handleSignoutEvent(auth, navigate, "UserInfoCheck", response.invalidSessionCause)
         } else {
           const remainingTime = response.remainingSessionTime
-          if (remainingTime !== undefined) {
-            const twoMinutes = 14 * 60 * 1000
+          const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : undefined
 
-            if (remainingTime <= twoMinutes && remainingTime > 0) {
+          if (remainingSeconds !== undefined) {
+            const twoMinutes = 14 * 60 // Minutes into seconds
+
+            if (remainingSeconds <= twoMinutes && remainingSeconds > 0) {
               // Show timeout modal when 2 minutes or less remaining
               logger.info("Session timeout warning triggered - showing modal", {
                 remainingTime,
-                remainingSeconds: Math.floor(remainingTime / 1000)
+                remainingSeconds
               })
               auth.setLogoutModalType("timeout")
               auth.setSessionTimeoutModalInfo({
                 showModal: true,
-                timeLeft: remainingTime,
+                timeLeft: remainingSeconds,
                 buttonDisabled: false,
                 action: undefined
               })
-            } else if (remainingTime <= 0) {
+            } else if (remainingSeconds <= 0) {
               logger.warn("Session expired - automatically logging out user")
               auth.updateInvalidSessionCause("Timeout")
               handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
@@ -217,7 +219,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
               auth.setSessionTimeoutModalInfo({
                 showModal: false,
-                timeLeft: remainingTime,
+                timeLeft: remainingSeconds,
                 buttonDisabled: false,
                 action: undefined
               })

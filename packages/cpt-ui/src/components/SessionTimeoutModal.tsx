@@ -43,9 +43,9 @@ const shouldAnnounceAtTime = (timeLeft: number): boolean => {
   return timeLeft % 15 === 0
 }
 
-const updateLiveRegion = (liveRegionRef: React.RefObject<HTMLDivElement>, announcement: string): void => {
+const updateLiveRegion = (liveRegionRef: React.RefObject<HTMLSpanElement>, announcement: string): void => {
   if (liveRegionRef.current) {
-    liveRegionRef.current.innerHTML = `You will be logged out in ${announcement}.`
+    liveRegionRef.current.textContent = `You will be logged out in ${announcement}.`
   }
 }
 
@@ -66,7 +66,7 @@ const useModalFocus = (isOpen: boolean) => {
 const useAriaLiveAnnouncements = (
   isOpen: boolean,
   timeLeft: number,
-  liveRegionRef: React.RefObject<HTMLDivElement>
+  liveRegionRef: React.RefObject<HTMLSpanElement>
 ) => {
   // Initialize aria-live region when modal first opens
   useEffect(() => {
@@ -103,7 +103,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   onTimeOut,
   buttonDisabledState
 }) => {
-  const liveRegionRef = useRef<HTMLDivElement>(null)
+  const liveRegionRef = useRef<HTMLSpanElement>(null)
   const auth = useAuth()
 
   const countdownTimerRef = useRef<number | null>(null)
@@ -132,18 +132,17 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     if (isOpen && timeLeft > 0) {
       // Only start if not already running or if starting fresh
       if (!countdownTimerRef.current) {
-        let secondsLeft = Math.floor(timeLeft / 1000)
 
         // Set initial time
-        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: secondsLeft}))
+        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
 
         // Start countdown that decrements every second
         countdownTimerRef.current = setInterval(() => {
-          secondsLeft -= 1
+          timeLeft -= 1
 
-          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: secondsLeft}))
+          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
           // Auto-logout when countdown reaches 0
-          if (secondsLeft <= 0) {
+          if (timeLeft <= 0) {
             clearInterval(countdownTimerRef.current!)
             countdownTimerRef.current = null
             onTimeOut()

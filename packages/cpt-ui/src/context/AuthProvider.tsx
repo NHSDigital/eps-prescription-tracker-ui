@@ -47,7 +47,9 @@ export interface AuthContextType {
   remainingSessionTime: number | undefined
   logoutMarker: LogoutMarker | undefined
   sessionTimeoutModalInfo: SessionTimeoutModal
-  logoutModalType: string | undefined
+  logoutModalType: "userInitiated" | "timeout" | undefined
+  sentRumRoleLogs: boolean,
+  setSentRumRoleLogs: (value: boolean) => void,
   setSessionTimeoutModalInfo: (value: SetStateAction<SessionTimeoutModal>) => void
   setLogoutModalType: (value: "userInitiated" | "timeout" | undefined) => Promise<void>
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
@@ -59,6 +61,7 @@ export interface AuthContextType {
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
   setStateForSignOut: () => void
+  setStateForSignIn: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -115,6 +118,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "logoutModalType",
     undefined
   )
+  const [sentRumRoleLogs, setSentRumRoleLogs] = useLocalStorageState<boolean>(
+    "sentRumRoleLogs",
+    "sentRumRoleLogs",
+    false
+  )
 
   /**
    * Fetch and update the auth tokens
@@ -133,7 +141,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRemainingSessionTime(undefined)
     setSessionTimeoutModalInfo({showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined})
     setSessionId(undefined)
-    setInvalidSessionCause(undefined)
+    setSentRumRoleLogs(false)
     // clearLogoutMarkerFromStorage()
   }
 
@@ -225,6 +233,14 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSigningOut(true)
   }
 
+  /** signOut state helper
+   * Don't use outside of logout helper
+  */
+  const setStateForSignIn = () => {
+    setIsSigningIn(true)
+    setInvalidSessionCause(undefined)
+  }
+
   /**
    * Cognito signout process with redirect URL.
    * Don't use directly, use the helper functions signOut or handleLogoutEvent
@@ -269,8 +285,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
     clearLogoutMarkerFromStorage()
-    setIsSigningIn(true)
-    setInvalidSessionCause(undefined)
 
     await signInWithRedirect(input)
   }
@@ -316,6 +330,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logoutMarker,
       sessionTimeoutModalInfo,
       logoutModalType,
+      sentRumRoleLogs,
+      setSentRumRoleLogs,
       setSessionTimeoutModalInfo,
       setLogoutModalType: setLogoutModalTypeAsync,
       cognitoSignIn,
@@ -326,7 +342,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateTrackerUserInfo,
       updateInvalidSessionCause,
       setIsSigningOut,
-      setStateForSignOut
+      setStateForSignOut,
+      setStateForSignIn
     }}>
       {children}
     </AuthContext.Provider>

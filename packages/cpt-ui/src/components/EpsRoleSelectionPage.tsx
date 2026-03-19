@@ -176,7 +176,8 @@ export default function RoleSelectionPage({
       odsCode: role.org_code || noODSCode
     }))
 
-    if(auth.userDetails?.sub) {
+    if(auth.userDetails?.sub && !auth.sentRumRoleLogs ) {
+      auth.setSentRumRoleLogs(true)
       /* RUM has a 6kb event payload size limit so we need to split up the information we want to log.
       All logs generated at this point will include the same logId so that we can tie them all back to the
       same occurrence when trying to debug issues*/
