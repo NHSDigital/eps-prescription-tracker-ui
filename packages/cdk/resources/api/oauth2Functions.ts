@@ -1,7 +1,6 @@
 import {Construct} from "constructs"
 import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
-import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
 import {SharedSecrets} from "../SharedSecrets"
 import {resolve} from "path"
@@ -28,8 +27,6 @@ export interface OAuth2FunctionsProps {
   readonly logRetentionInDays: number
   readonly logLevel: string
   readonly jwtKid: string
-  readonly apigeeApiKey: ISecret
-  readonly apigeeSecretKey: ISecret
   readonly version: string
   readonly commitId: string
 }
@@ -39,7 +36,6 @@ export interface OAuth2FunctionsProps {
  */
 export class OAuth2Functions extends Construct {
   public readonly oAuth2Policies: Array<IManagedPolicy>
-  public readonly primaryJwtPrivateKey: Secret
   public readonly authorizeLambda: NodejsFunction
   public readonly mockAuthorizeLambda: NodejsFunction
   public readonly callbackLambda: NodejsFunction
@@ -152,7 +148,7 @@ export class OAuth2Functions extends Construct {
           OIDC_CLIENT_ID: props.mockOidcConfig.clientId,
           COGNITO_CLIENT_ID: props.cognito.userPoolClient.userPoolClientId,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
-          APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn
+          APIGEE_API_KEY_ARN: props.sharedSecrets.apigeeApiKey.secretArn
         },
         version: props.version,
         commitId: props.commitId
@@ -193,8 +189,8 @@ export class OAuth2Functions extends Construct {
           MOCK_OIDC_ISSUER: props.mockOidcConfig.issuer,
           FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain,
           jwtKid: props.jwtKid,
-          APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
-          APIGEE_API_SECRET_ARN: props.apigeeSecretKey.secretArn
+          APIGEE_API_KEY_ARN: props.sharedSecrets.apigeeApiKey.secretArn,
+          APIGEE_API_SECRET_ARN: props.sharedSecrets.apigeeSecretKey.secretArn
         },
         version: props.version,
         commitId: props.commitId
@@ -236,8 +232,6 @@ export class OAuth2Functions extends Construct {
 
     // Outputs
     this.oAuth2Policies = oauth2Policies
-    this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
-
     this.authorizeLambda = authorizeLambda.function
     this.callbackLambda = callbackLambda.function
     this.tokenLambda = tokenLambda.function

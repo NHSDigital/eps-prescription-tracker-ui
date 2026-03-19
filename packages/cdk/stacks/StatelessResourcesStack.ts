@@ -73,6 +73,7 @@ export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly logDelivery: CloudfrontLogDelivery
   readonly allowLocalhostAccess: boolean
   readonly rum: Rum
+  readonly sharedSecrets: SharedSecrets
 }
 
 /**
@@ -92,8 +93,6 @@ export class StatelessResourcesStack extends Stack {
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
       this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
 
-    const deploymentRole = Role.fromRoleArn(this, "deploymentRole",
-      Fn.importValue("ci-resources:CloudFormationDeployRole"))
     const epsHostedZoneId = Fn.importValue(`eps-route53-resources:${props.route53ExportName}-ZoneID`)
     const epsDomainName = Fn.importValue(`eps-route53-resources:${props.route53ExportName}-domain`)
     const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
@@ -102,13 +101,6 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // Resources
-
-    // SharedSecrets
-    const sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
-      stackName: props.stackName,
-      deploymentRole: deploymentRole,
-      useMockOidc: !!props.mockOidcConfig
-    })
 
     // Functions for the login OAuth2 proxy lambdas
     const oauth2Functions = new OAuth2Functions(this, "OAuth2Functions", {
@@ -124,13 +116,11 @@ export class StatelessResourcesStack extends Stack {
 
       dynamodb: props.dynamodb,
 
-      sharedSecrets,
+      sharedSecrets: props.sharedSecrets,
 
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
       jwtKid: props.jwtKid,
-      apigeeApiKey: sharedSecrets.apigeeApiKey,
-      apigeeSecretKey: sharedSecrets.apigeeSecretKey,
       version: props.version,
       commitId: props.commitId
     })
@@ -145,14 +135,11 @@ export class StatelessResourcesStack extends Stack {
       cognito: props.cognito,
       logRetentionInDays: props.logRetentionInDays,
       logLevel: props.logLevel,
-      sharedSecrets: sharedSecrets,
+      sharedSecrets: props.sharedSecrets,
       apigeeCIS2TokenEndpoint: props.apigeeCIS2TokenEndpoint,
       apigeeMockTokenEndpoint: props.apigeeMockTokenEndpoint,
       apigeePrescriptionsEndpoint: props.apigeePrescriptionsEndpoint,
       apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
-      apigeeApiKey: sharedSecrets.apigeeApiKey,
-      apigeeDoHSApiKey: sharedSecrets.apigeeDoHSApiKey,
-      apigeeSecretKey: sharedSecrets.apigeeSecretKey,
       jwtKid: props.jwtKid,
       apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
       fullCloudfrontDomain: props.fullCloudfrontDomain,

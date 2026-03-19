@@ -121,22 +121,27 @@ jobs:
 
       - name: Initial Deploy of Stateful Stack
         if: ${{ steps.check_fresh_stateful_stack.outputs.FRESH_STATEFUL_STACK == 'true' }}
-        run: CDK_STACK_NAME=StatefulStack CDK_CONFIG_rumCloudwatchLogEnabled=false npm run cdk-deploy --workspace packages/cdk
+        run: |
+          CDK_STACK_NAME=StatefulStack CDK_CONFIG_rumCloudwatchLogEnabled=false npm run cdk-deploy --workspace packages/cdk -- \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
         shell: bash
         env: *deployment_env_vars
 
       - name: Deploy Stateful Stack
-        run: CDK_STACK_NAME=StatefulStack npm run cdk-deploy --workspace packages/cdk
+        run: |
+          CDK_STACK_NAME=StatefulStack npm run cdk-deploy --workspace packages/cdk -- \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
         shell: bash
         env: *deployment_env_vars
 
       - name: Deploy Stateless Stack
-        run: |
-          CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk -- \
-            --parameters "JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
-            --parameters "ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
-            --parameters "ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
-            --parameters "ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
+        run: CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk
         shell: bash
         env: *deployment_env_vars
 

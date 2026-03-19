@@ -177,7 +177,8 @@ async function main() {
     webAclUS: usCertsStack.webAcl,
     allowLocalhostAccess,
     csocUKWafDestination,
-    rum: statefulResourcesStack.rum
+    rum: statefulResourcesStack.rum,
+    sharedSecrets: statefulResourcesStack.sharedSecrets
   })
 }
 

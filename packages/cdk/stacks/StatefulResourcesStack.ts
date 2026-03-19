@@ -15,6 +15,7 @@ import {Role} from "aws-cdk-lib/aws-iam"
 import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Rum} from "../resources/Rum"
 import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
+import {SharedSecrets} from "../resources/SharedSecrets"
 
 export interface StatefulResourcesStackProps extends StandardStackProps {
   readonly serviceName: string
@@ -41,6 +42,7 @@ export class StatefulResourcesStack extends Stack {
   public readonly dynamodb: Dynamodb
   public readonly cognito: Cognito
   public readonly rum: Rum
+  public readonly sharedSecrets: SharedSecrets
 
   public constructor(scope: App, id: string, props: StatefulResourcesStackProps){
     super(scope, id, props)
@@ -95,6 +97,13 @@ export class StatefulResourcesStack extends Stack {
       cwLogEnabled: props.rumCloudwatchLogEnabled,
       allowLocalhostAccess: props.allowLocalhostAccess,
       staticContentBucket: this.staticContentBucket.bucket
+    })
+
+    // SharedSecrets
+    this.sharedSecrets = new SharedSecrets(this, "SharedSecrets", {
+      stackName: props.stackName,
+      deploymentRole: deploymentRole,
+      useMockOidc: !!props.mockOidcConfig
     })
 
     // Exports

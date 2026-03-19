@@ -3,7 +3,6 @@ import {TypescriptLambdaFunction} from "@nhsdigital/eps-cdk-constructs"
 import {SharedSecrets} from "../SharedSecrets"
 import {IManagedPolicy} from "aws-cdk-lib/aws-iam"
 import {NodejsFunction} from "aws-cdk-lib/aws-lambda-nodejs"
-import {ISecret, Secret} from "aws-cdk-lib/aws-secretsmanager"
 import {resolve} from "path"
 import {Dynamodb} from "../Dynamodb"
 import {Cognito, OidcConfig} from "../Cognito"
@@ -25,9 +24,6 @@ export interface ApiFunctionsProps {
   readonly apigeeDoHSEndpoint: string
   readonly apigeePrescriptionsEndpoint: string
   readonly apigeePersonalDemographicsEndpoint: string
-  readonly apigeeApiKey: ISecret
-  readonly apigeeSecretKey: ISecret
-  readonly apigeeDoHSApiKey: ISecret
   readonly jwtKid: string
   readonly logLevel: string
   readonly fullCloudfrontDomain: string
@@ -47,7 +43,6 @@ export class ApiFunctions extends Construct {
   public readonly sessionManagementLambda: NodejsFunction
   public readonly selectedRoleLambda: NodejsFunction
   public readonly patientSearchLambda: NodejsFunction
-  public readonly primaryJwtPrivateKey: Secret
   public readonly clearActiveSessionLambda: NodejsFunction
   public readonly setLastActivityTimerLambda: NodejsFunction
 
@@ -90,8 +85,8 @@ export class ApiFunctions extends Construct {
       // Indicate if mock mode is available
       MOCK_MODE_ENABLED: props.mockOidcConfig ? "true" : "false",
 
-      APIGEE_API_SECRET_ARN: props.apigeeSecretKey.secretArn,
-      APIGEE_API_KEY_ARN: props.apigeeApiKey.secretArn,
+      APIGEE_API_SECRET_ARN: props.sharedSecrets.apigeeSecretKey.secretArn,
+      APIGEE_API_KEY_ARN: props.sharedSecrets.apigeeApiKey.secretArn,
       FULL_CLOUDFRONT_DOMAIN: props.fullCloudfrontDomain
     }
 
@@ -251,7 +246,7 @@ export class ApiFunctions extends Construct {
         apigeeDoHSEndpoint: props.apigeeDoHSEndpoint,
         apigeePersonalDemographicsEndpoint: props.apigeePersonalDemographicsEndpoint,
         jwtKid: props.jwtKid,
-        APIGEE_DOHS_API_KEY_ARN: props.apigeeDoHSApiKey.secretArn
+        APIGEE_DOHS_API_KEY_ARN: props.sharedSecrets.apigeeDoHSApiKey.secretArn
       },
       version: props.version,
       commitId: props.commitId
@@ -308,8 +303,6 @@ export class ApiFunctions extends Construct {
 
     // Outputs
     this.apiFunctionsPolicies = apiFunctionsPolicies
-    this.primaryJwtPrivateKey = props.sharedSecrets.primaryJwtPrivateKey
-
     this.CIS2SignOutLambda = CIS2SignOutLambda.function
     this.prescriptionListLambda = prescriptionListLambda.function
     this.prescriptionDetailsLambda = prescriptionDetailsLambda.function
