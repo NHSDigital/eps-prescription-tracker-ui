@@ -108,8 +108,19 @@ react-lint:
 	npm run lint --workspace packages/cpt-ui
 
 cdk-deploy:
-	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
-	npm run cdk-deploy --workspace packages/cdk
+	export REQUIRE_APPROVAL=any-change
+	CDK_STACK_NAME=UsCertsStack npm run cdk-deploy --workspace packages/cdk
+ 	CDK_STACK_NAME=StatefulStack CDK_CONFIG_rumCloudwatchLogEnabled=false npm run cdk-deploy --workspace packages/cdk -- \
+ 		--parameters "JwtPrivateKey=undefined" \
+ 		--parameters "ApigeeApiKey=undefined" \
+ 		--parameters "ApigeeSecretKey=undefined" \
+ 		--parameters "ApigeeDoHSApiKey=undefined"
+	CDK_STACK_NAME=StatefulStack npm run cdk-deploy --workspace packages/cdk -- \
+		--parameters "JwtPrivateKey=undefined" \
+		--parameters "ApigeeApiKey=undefined" \
+		--parameters "ApigeeSecretKey=undefined" \
+		--parameters "ApigeeDoHSApiKey=undefined"
+	CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk
 
 cdk-watch:
 	./scripts/run_sync.sh

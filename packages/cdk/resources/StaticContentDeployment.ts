@@ -1,4 +1,4 @@
-import {DockerImage, RemovalPolicy} from "aws-cdk-lib"
+import {DockerImage, Fn, RemovalPolicy} from "aws-cdk-lib"
 import {
   ManagedPolicy,
   PolicyStatement,
@@ -59,7 +59,7 @@ export class StaticContentDeployment extends Construct {
           ],
           resources: [
             assetBucket.bucketArn,
-            assetBucket.arnForObjects(props.version + "/*")
+            assetBucket.arnForObjects("*")
           ]
         }),
         new PolicyStatement({
@@ -70,7 +70,8 @@ export class StaticContentDeployment extends Construct {
           ],
           resources: [
             props.staticContentBucket.bucket.bucketArn,
-            props.staticContentBucket.bucket.arnForObjects(props.version + "/*")
+            props.staticContentBucket.bucket.arnForObjects(props.version + "/*"),
+            props.staticContentBucket.bucket.arnForObjects(`source_maps/${props.commitId}/site/assets/*`)
           ]
         }),
         new PolicyStatement({
@@ -79,7 +80,10 @@ export class StaticContentDeployment extends Construct {
             "kms:Encrypt",
             "kms:GenerateDataKey"
           ],
-          resources: [props.staticContentBucket.kmsKey.keyArn]
+          resources: [
+            props.staticContentBucket.kmsKey.keyArn,
+            Fn.importValue("CdkBootstrap-hnb659fds-FileAssetKeyArn")
+          ]
         }),
         new PolicyStatement({
           actions: [

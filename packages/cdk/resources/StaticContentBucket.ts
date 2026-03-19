@@ -1,4 +1,4 @@
-import {RemovalPolicy} from "aws-cdk-lib"
+import {Annotations, RemovalPolicy} from "aws-cdk-lib"
 import {
   AccountRootPrincipal,
   Effect,
@@ -105,6 +105,11 @@ export class StaticContentBucket extends Construct{
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true
     })
+
+    Annotations.of(bucket).acknowledgeWarning(
+      "@aws-cdk/aws-s3:accessLogsPolicyNotAdded",
+      "The audit logging bucket already has the correct permissions"
+    )
 
     // we need to add a policy to the bucket so that our deploy role can use the bucket
     bucket.addToResourcePolicy(new PolicyStatement({
