@@ -96,6 +96,7 @@ export default function RoleSelectionPage({
 
   const navigate = useNavigate()
   const redirecting = useRef(false)
+  const [isSelectingRole, setIsSelectingRole] = useState(false)
 
   const [roleComponentProps, setRoleComponentProps] = useState<RoleComponentProps>({
     rolesWithAccess: [],
@@ -111,6 +112,14 @@ export default function RoleSelectionPage({
     roleCardProps: RolesWithAccessProps
   ) => {
     e.preventDefault()
+
+    // Prevent multiple submissions
+    if (isSelectingRole) {
+      return
+    }
+
+    setIsSelectingRole(true)
+
     try {
       await auth.updateSelectedRole(roleCardProps.role)
       navigate(roleCardProps.link)
@@ -121,6 +130,7 @@ export default function RoleSelectionPage({
         return
       }
       logger.error("Error selecting role:", err)
+      setIsSelectingRole(false) // Reset loading state on error
     }
   }
 
@@ -321,6 +331,7 @@ export default function RoleSelectionPage({
                     <Button
                       to={confirmButton.link}
                       data-testid="confirm-and-continue"
+                      disabled={isSelectingRole}
                     >
                       {confirmButton.text}
                     </Button>
@@ -337,19 +348,43 @@ export default function RoleSelectionPage({
                         <Card
                           key={roleCardProps.uuid}
                           data-testid="eps-card"
-                          className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
-                          tabIndex={0}
-                          onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
-                          onClick={(e) => handleCardClick(e, roleCardProps)}
-                          style={{cursor: "pointer"}}
+                          className={`nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4 ${
+                            isSelectingRole ? "nhsuk-card--disabled" : ""
+                          }`}
+                          tabIndex={isSelectingRole ? -1 : 0}
+                          onKeyDown={isSelectingRole ? undefined : (e) => handleCardKeyDown(e, roleCardProps)}
+                          onClick={isSelectingRole ? undefined : (e) => handleCardClick(e, roleCardProps)}
+                          style={{
+                            cursor: isSelectingRole ? "not-allowed" : "pointer",
+                            opacity: isSelectingRole ? 0.5 : 1
+                          }}
+                          role="button"
+                          aria-disabled={isSelectingRole}
                         >
                           <Card.Content>
                             <div className="eps-card__layout">
                               <div>
                                 <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                                  {roleCardProps.role.org_name || noOrgName}
-                                  <br />
-                                  (ODS: {roleCardProps.role.org_code || noODSCode})
+                                  <a
+                                    href="#"
+                                    onClick={isSelectingRole ?
+                                      (e) => e.preventDefault() :
+                                      (e) => handleCardClick(e, roleCardProps)
+                                    }
+                                    onKeyDown={isSelectingRole ? undefined : (e) => handleCardKeyDown(e, roleCardProps)}
+                                    style={{
+                                      textDecoration: "none",
+                                      color: "inherit",
+                                      pointerEvents: isSelectingRole ? "none" : "auto"
+                                    }}
+                                    tabIndex={isSelectingRole ? -1 : 0}
+                                    aria-disabled={isSelectingRole}
+                                    role="button"
+                                  >
+                                    {roleCardProps.role.org_name || noOrgName}
+                                    <br />
+                                    (ODS: {roleCardProps.role.org_code || noODSCode})
+                                  </a>
                                 </Card.Heading>
                                 <Card.Description className="nhsuk-u-margin-top-2">
                                   {roleCardProps.role.role_name || noRoleName}
