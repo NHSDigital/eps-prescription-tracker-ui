@@ -38,3 +38,5 @@ export type {
 
 export {Headers} from "./headers"
 export type {ApigeeConfig} from "./headers"
+
+export type {SessionTimeoutModal} from "./sessionTimeoutModalState"

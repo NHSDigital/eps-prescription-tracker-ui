@@ -14,7 +14,7 @@ export CDK_CONFIG_reactLogLevel=debug
 export CDK_CONFIG_jwtKid=foo
 export CDK_CONFIG_cloudfrontOriginCustomHeader=foo
 
-.PHONY: install compile test publish release clean lint cdk-synth
+.PHONY: install compile test publish release clean lint cdk-synth cdk-deploy cdk-diff react-dev react-build react-start react-lint cdk-synth-no-mock cdk-synth-mock
 
 install: install-node install-python install-hooks
 
@@ -88,12 +88,6 @@ clean:
 deep-clean: clean
 	rm -rf .venv
 	find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
-
-aws-configure:
-	aws configure sso --region eu-west-2
-
-aws-login:
-	aws sso login --sso-session sso-session
 
 react-dev:
 	npm run dev --workspace packages/cpt-ui

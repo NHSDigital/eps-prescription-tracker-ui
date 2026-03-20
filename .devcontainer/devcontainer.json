@@ -1,5 +1,5 @@
 {
-  "name": "cpt-ui",
+  "name": "eps-prescription-tracker-ui",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "..",
@@ -9,8 +9,7 @@
       "IMAGE_VERSION": "v1.0.7",
       "USER_UID": "${localEnv:USER_ID:}",
       "USER_GID": "${localEnv:GROUP_ID:}"
-    },
-    "updateRemoteUserUID": false
+    }
   },
   "mounts": [
     "source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind",
@@ -21,31 +20,34 @@
   "runArgs": [
     "--network=host"
   ],
-  "remoteEnv": { "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}" },
+  "remoteEnv": {
+    "LOCAL_WORKSPACE_FOLDER": "${localWorkspaceFolder}"
+  },
   "postAttachCommand": "git-secrets --register-aws; git-secrets --add-provider -- cat /usr/share/secrets-scanner/nhsd-rules-deny.txt",
+  "features": {},
   "customizations": {
     "vscode": {
       "extensions": [
-          "AmazonWebServices.aws-toolkit-vscode",
-          "redhat.vscode-yaml",
-          "ms-python.python",
-          "ms-python.flake8",
-          "eamodio.gitlens",
-          "github.vscode-pull-request-github",
-          "orta.vscode-jest",
-          "42crunch.vscode-openapi",
-          "mermade.openapi-lint",
-          "christian-kohler.npm-intellisense",
-          "dbaeumer.vscode-eslint",
-          "lfm.vscode-makefile-term",
-          "GrapeCity.gc-excelviewer",
-          "redhat.vscode-xml",
-          "streetsidesoftware.code-spell-checker",
-          "timonwong.shellcheck",
-          "mkhl.direnv",
-          "github.vscode-github-actions",
-          "Gruntfuggly.todo-tree",
-          "ms-vscode.makefile-tools"
+        "AmazonWebServices.aws-toolkit-vscode",
+        "redhat.vscode-yaml",
+        "ms-python.python",
+        "ms-python.flake8",
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        "orta.vscode-jest",
+        "42crunch.vscode-openapi",
+        "mermade.openapi-lint",
+        "christian-kohler.npm-intellisense",
+        "dbaeumer.vscode-eslint",
+        "lfm.vscode-makefile-term",
+        "GrapeCity.gc-excelviewer",
+        "redhat.vscode-xml",
+        "streetsidesoftware.code-spell-checker",
+        "timonwong.shellcheck",
+        "mkhl.direnv",
+        "github.vscode-github-actions",
+        "Gruntfuggly.todo-tree",
+        "ms-vscode.makefile-tools"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/workspaces/eps-prescription-tracker-ui/.venv/bin/python",
@@ -60,9 +62,13 @@
         "editor.formatOnType": false,
         "editor.formatOnSave": true,
         "editor.formatOnSaveMode": "file",
-        "cSpell.words": ["fhir", "Formik", "pino", "serialisation"],
+        "cSpell.words": [
+          "fhir",
+          "Formik",
+          "pino",
+          "serialisation"
+        ],
         "editor.defaultFormatter": "dbaeumer.vscode-eslint"
-
       },
       "eslint.useFlatConfig": true,
       "eslint.format.enable": true

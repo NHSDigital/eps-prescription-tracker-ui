@@ -53,6 +53,8 @@ jobs:
     permissions:
       id-token: write
       contents: write
+    env:
+      AWS_MAX_ATTEMPTS: 20
     steps:
       - name: copy .tool-versions
         run: |
@@ -75,8 +77,6 @@ jobs:
 
       - name: check if fresh stateful stack deployment
         id: check_fresh_stateful_stack
-        env:
-          AWS_MAX_ATTEMPTS: 20
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
