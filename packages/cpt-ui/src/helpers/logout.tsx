@@ -137,6 +137,7 @@ export const checkForRecentLogoutMarker = (caller?: string) => {
       logger.info(`Existing marker is recent. ${caller ? `Called by ${caller}` : ""}`, existingMarker)
       return existingMarker
     }
+    clearLogoutMarkerFromStorage()
     return undefined
   }
   logger.info(`No recent logout marker found. ${caller ? `Called by ${caller}` : ""}`)
@@ -160,5 +161,6 @@ export const clearLogoutMarkerFromStorage = () => {
 }
 
 export const isRecentMarker = (marker: LogoutMarker | undefined) => {
-  return !!marker && Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+  const isRecent = !!marker && Date.now() - marker.timestamp <= LOGOUT_MARKER_MAX_AGE_MS
+  return isRecent
 }

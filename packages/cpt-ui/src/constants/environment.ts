@@ -131,7 +131,7 @@ if (!validateEnvironment(ENV_CONFIG.TARGET_ENVIRONMENT)) {
 
 export const LOGOUT_MARKER_STORAGE_KEY = "logoutMarker"
 export const LOGOUT_MARKER_STORAGE_GROUP = "logoutMarker"
-export const LOGOUT_MARKER_MAX_AGE_MS = 10000
+export const LOGOUT_MARKER_MAX_AGE_MS = 2000
 
 export const TAB_ID_SESSION_KEY = "tabId"
 export const OPEN_TABS_STORAGE_KEY = "openTabIds"

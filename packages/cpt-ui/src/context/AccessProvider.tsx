@@ -249,6 +249,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
     auth.isSigningOut,
     auth.selectedRole,
     auth.isConcurrentSession,
+    auth.logoutMarker,
     location.pathname
   ])
 
