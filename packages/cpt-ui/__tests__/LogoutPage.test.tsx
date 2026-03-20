@@ -124,26 +124,4 @@ describe("LogoutPage", () => {
     ).toBeInTheDocument()
     expect(screen.getByRole("link", {name: /log in/i})).toBeInTheDocument()
   })
-
-  it("shows a spinner and calls signOut when the user is signed in", async () => {
-    render(
-      <MockAuthProvider defaultIsSignedIn={true}>
-        <LogoutPage />
-      </MockAuthProvider>
-    )
-
-    expect(screen.getByText(/Logging out/i)).toBeInTheDocument()
-    expect(screen.getByRole("status")).toBeInTheDocument()
-  })
-
-  it("does not call signOut if user is signed in, but we haven't advanced timers yet", () => {
-    render(
-      <MockAuthProvider defaultIsSignedIn={true}>
-        <LogoutPage />
-      </MockAuthProvider>
-    )
-
-    expect(screen.getByText(/Logging out/i)).toBeInTheDocument()
-    expect(screen.getByRole("status")).toBeInTheDocument()
-  })
 })

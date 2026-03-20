@@ -104,22 +104,8 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       navigate(to)
     }
 
-    if (auth.isSignedIn && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
-      if (auth.selectedRole) {
-        return redirect(
-          FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-          `Signed-in user on ${path} - redirecting to search page`
-        )
-      } else {
-        return redirect(
-          FRONTEND_PATHS.SELECT_YOUR_ROLE,
-          `Signed-in user on ${path} with no selected role - redirecting to select your role`
-        )
-      }
-    }
-
     // Public paths (except root) don't need protection
-    if (PUBLIC_PATHS.includes(path) && path !== "/") {
+    if (PUBLIC_PATHS.includes(path) && path !== "/" && path !== FRONTEND_PATHS.LOGIN) {
       return
     }
 
@@ -178,7 +164,8 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         return redirect(FRONTEND_PATHS.SESSION_SELECTION, "Concurrent session found - redirecting to session selection")
       }
 
-      if (!auth.selectedRole && !ALLOWED_NO_ROLE_PATHS.includes(path)) {
+      if (!auth.selectedRole &&
+        (path === "/" || path === FRONTEND_PATHS.LOGIN || !ALLOWED_NO_ROLE_PATHS.includes(path))) {
         return redirect(FRONTEND_PATHS.SELECT_YOUR_ROLE, `No selected role - Redirecting from ${path}`)
       }
 

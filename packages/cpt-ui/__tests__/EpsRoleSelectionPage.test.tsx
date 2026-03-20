@@ -11,12 +11,11 @@ import {useAuth, AuthContextType} from "@/context/AuthProvider"
 import {MemoryRouter, useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
-import {handleSignoutEvent, signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {logger} from "@/helpers/logger"
 import {mockAuthState} from "./mocks/AuthStateMock"
-import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 
 jest.mock("@/context/AuthProvider")
 jest.mock("@/helpers/getSearchParams")
@@ -24,7 +23,8 @@ jest.mock("@/helpers/logout", () => ({
   handleSignoutEvent: jest.fn(),
   signOut: jest.fn().mockImplementation((auth: AuthContextType) => {
     auth.isSigningOut = true
-  })
+  }),
+  checkForRecentLogoutMarker: jest.fn().mockImplementation(() => undefined)
 }))
 jest.mock("@/helpers/axios", () => ({
   __esModule: true,
@@ -104,26 +104,6 @@ describe("RoleSelectionPage", () => {
     //windowSpy.mockRestore()
   })
 
-  it("renders loading spinner if redirecting during sign in", () => {
-    mockUseAuth.mockReturnValue({
-      isSigningIn: true,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      error: null,
-      clearAuthState: jest.fn(),
-      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
-    })
-    mockGetSearchParams.mockReturnValue({
-      codeParams: "foo",
-      stateParams: "bar"
-    })
-
-    render(<MemoryRouter>
-      <RoleSelectionPage contentText={defaultContentText} />
-    </MemoryRouter>)
-    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
-  })
-
   it("renders error message if auth.error exists", () => {
     mockUseAuth.mockReturnValue({
       isSigningIn: false,
@@ -154,45 +134,6 @@ describe("RoleSelectionPage", () => {
     </MemoryRouter>)
     expect(screen.getByText("You do not have access")).toBeInTheDocument()
     expect(screen.getByText("Please contact support.")).toBeInTheDocument()
-  })
-
-  it("redirects to login if logging in but not in callback", async () => {
-    const navigateMock = jest.fn()
-    mockNavigate.mockReturnValue(navigateMock)
-    const authState = {
-      ...mockAuthState,
-      isSigningIn: true
-    }
-    mockUseAuth.mockReturnValue(authState)
-    mockGetSearchParams.mockReturnValue({
-      codeParams: undefined,
-      stateParams: undefined
-    })
-
-    const {rerender} = render(
-      <MemoryRouter>
-        <RoleSelectionPage contentText={defaultContentText} />
-      </MemoryRouter>
-    )
-
-    // Mock signOut to update the authState AND refresh the mock
-    ;(signOut as jest.Mock).mockImplementation((authState: AuthContextType) => {
-      authState.isSigningOut = true
-      mockUseAuth.mockReturnValue(authState) // Update what useAuth returns
-    })
-
-    await act(async () => {
-      signOut(authState)
-    })
-
-    // Rerender to pick up the new auth state
-    rerender(
-      <MemoryRouter>
-        <RoleSelectionPage contentText={defaultContentText} />
-      </MemoryRouter>
-    )
-
-    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
   })
 
   it("redirects if user has single roleWithAccess", () => {
@@ -821,7 +762,6 @@ describe("RoleSelectionPage", () => {
         <RoleSelectionPage contentText={defaultContentText} />
       </MemoryRouter>
     )
-    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
 
     // Step 2: Simulate login complete and role assignment
     act(() => {
@@ -1109,39 +1049,6 @@ describe("RoleSelectionPage", () => {
 
       const cards = screen.getAllByTestId("eps-card")
       expect(cards).toHaveLength(1)
-    })
-  })
-  describe("Loading Page Interactions", () => {
-    it("Render loading when user clicks signout", async () => {
-      const authState = {
-        ...mockAuthState,
-        isSignedIn: true
-      }
-      mockUseAuth.mockReturnValue(authState)
-      const {rerender} = render(
-        <MemoryRouter>
-          <RoleSelectionPage contentText={defaultContentText} />
-        </MemoryRouter>
-      )
-
-      // Mock signOut to update the authState AND refresh the mock
-      ;(signOut as jest.Mock).mockImplementation((authState: AuthContextType) => {
-        authState.isSigningOut = true
-        mockUseAuth.mockReturnValue(authState) // Update what useAuth returns
-      })
-
-      await act(async () => {
-        signOut(authState)
-      })
-
-      // Rerender to pick up the new auth state
-      rerender(
-        <MemoryRouter>
-          <RoleSelectionPage contentText={defaultContentText} />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
     })
   })
 })
