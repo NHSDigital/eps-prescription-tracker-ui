@@ -10,22 +10,20 @@ import {BrowserRouter, MemoryRouter} from "react-router-dom"
 import React from "react"
 import App from "@/App"
 import {FRONTEND_PATHS} from "@/constants/environment"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock all the context providers
 jest.mock("@/context/AuthProvider", () => ({
   AuthProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>,
   useAuth: () => ({
+    ...mockAuthState,
     remainingSessionTime: undefined
   })
 }))
 
 jest.mock("@/context/AccessProvider", () => ({
   AccessProvider: ({children}: {children: React.ReactNode}) => <div>{children}</div>,
-  useAccess: () => ({
-    sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-    onStayLoggedIn: jest.fn(),
-    onLogOut: jest.fn()
-  })
+  useAccess: () => ({})
 }))
 
 jest.mock("@/context/SearchProvider", () => ({

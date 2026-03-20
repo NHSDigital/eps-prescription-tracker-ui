@@ -268,6 +268,15 @@ export default function RoleSelectionPage({
 
   useEffect(() => {
     if (auth.hasSingleRoleAccess() && auth.isSignedIn) {
+      logger.debug("Role confirmed", {
+        sessionId: auth.sessionId,
+        pageName: location.pathname,
+        userId: auth.userDetails?.sub,
+        roleName: auth.selectedRole?.role_name,
+        roleId: auth.selectedRole?.role_id,
+        orgName: auth.selectedRole?.org_name,
+        orgCode: auth.selectedRole?.org_code
+      }, true)
       navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     }
   }, [auth.hasSingleRoleAccess, auth.isSignedIn])

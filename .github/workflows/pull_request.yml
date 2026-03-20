@@ -8,30 +8,16 @@ env:
   BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
 
 jobs:
+  get_config_values:
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@141907b215220e95e3ed3811d0fe8fa18675dbed
+    with:
+      verify_published_from_main_image: false
   dependabot-auto-approve-and-merge:
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@141907b215220e95e3ed3811d0fe8fa18675dbed
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@e208462679dedaded1e066c25c9830b9c0bf1930
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
-  get_asdf_version:
-    runs-on: ubuntu-22.04
-    outputs:
-      asdf_version: ${{ steps.asdf-version.outputs.version }}
-      tag_format: ${{ steps.load-config.outputs.TAG_FORMAT }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-
-      - name: Get asdf version
-        id: asdf-version
-        run: echo "version=$(awk '!/^#/ && NF {print $1; exit}' .tool-versions.asdf)" >> "$GITHUB_OUTPUT"
-      - name: Load config value
-        id: load-config
-        run: |
-          TAG_FORMAT=$(yq '.TAG_FORMAT' .github/config/settings.yml)
-          echo "TAG_FORMAT=$TAG_FORMAT" >> "$GITHUB_OUTPUT"
-
   get_commit_message:
     runs-on: ubuntu-22.04
     outputs:
@@ -49,10 +35,10 @@ jobs:
 
   quality_checks:
     # always run, but only block in the non-skip case
-    needs: [get_commit_message, get_asdf_version]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@141907b215220e95e3ed3811d0fe8fa18675dbed
+    needs: [get_commit_message, get_config_values]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
     with:
-      asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -120,7 +106,7 @@ jobs:
         run: echo "Skipping QC gate per commit message."
 
   pr_title_format_check:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@141907b215220e95e3ed3811d0fe8fa18675dbed
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
 
   get_issue_number:
     runs-on: ubuntu-22.04
@@ -149,13 +135,16 @@ jobs:
           result-encoding: string
 
   tag_release:
-    needs: [get_asdf_version]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@141907b215220e95e3ed3811d0fe8fa18675dbed
+    needs: [get_config_values]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@7a89b111ae752548e8e3f3fbaeb89bd6ecca0698
+    permissions:
+      id-token: write
+      contents: write
     with:
       dry_run: true
-      asdfVersion: ${{ needs.get_asdf_version.outputs.asdf_version }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
-      tag_format: ${{ needs.get_asdf_version.outputs.tag_format }}
+      tag_format: ${{ needs.get_config_values.outputs.tag_format }}
     secrets: inherit
 
   get_commit_id:
@@ -169,7 +158,7 @@ jobs:
           echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
 
   package_code:
-    needs: [get_issue_number, get_commit_id, quality_gate]
+    needs: [get_issue_number, get_commit_id, quality_gate, get_config_values]
     if: |
       always() &&
       ! contains(needs.*.result, 'failure') &&
@@ -178,15 +167,17 @@ jobs:
     with:
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
       COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
 
   release_code:
-    needs: [get_issue_number, package_code, get_commit_id]
+    needs: [get_issue_number, package_code, get_commit_id, get_config_values]
     if: |
       always() &&
       ! contains(needs.*.result, 'failure') &&
       ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/release_all_stacks.yml
     with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
       TARGET_ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}

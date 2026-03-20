@@ -94,12 +94,7 @@ const renderWithProviders = (
   return render(
     <MemoryRouter initialEntries={initialEntries}>
       <AuthContext.Provider value={authContext}>
-        <AccessContext.Provider value={{
-          sessionTimeoutInfo: {showModal: false, timeLeft: 0},
-          onStayLoggedIn: jest.fn(),
-          onLogOut: jest.fn(),
-          onTimeout: jest.fn()
-        }}>
+        <AccessContext.Provider value={{}}>
           <SearchContext.Provider value={searchContext}>
             {ui}
           </SearchContext.Provider>
