@@ -11,7 +11,7 @@ import {
   Card
 } from "nhsuk-react-components"
 
-import "@/styles/roleselectionpage.scss"
+import "../styles/roleselectionpage.scss"
 
 import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
