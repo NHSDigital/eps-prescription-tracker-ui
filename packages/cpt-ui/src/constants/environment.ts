@@ -135,3 +135,5 @@ export const LOGOUT_MARKER_MAX_AGE_MS = 10000
 
 export const TAB_ID_SESSION_KEY = "tabId"
 export const OPEN_TABS_STORAGE_KEY = "openTabIds"
+export const TAB_HEARTBEATS_STORAGE_KEY = "tabHeartbeats"
+export const TAB_STALE_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes

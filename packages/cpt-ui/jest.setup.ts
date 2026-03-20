@@ -153,7 +153,9 @@ jest.mock("@/constants/environment", () => ({
   LOGOUT_MARKER_STORAGE_GROUP: "logoutMarker",
   LOGOUT_MARKER_MAX_AGE_MS: 10000,
   TAB_ID_SESSION_KEY: "tabId",
-  OPEN_TABS_STORAGE_KEY: "openTabIds"
+  OPEN_TABS_STORAGE_KEY: "openTabIds",
+  TAB_HEARTBEATS_STORAGE_KEY: "tabHeartbeats",
+  TAB_STALE_THRESHOLD_MS: 5 * 60 * 1000
 }))
 
 // Allows for tab selection

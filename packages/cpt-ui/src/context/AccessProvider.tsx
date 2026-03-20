@@ -8,7 +8,13 @@ import {useLocation, useNavigate} from "react-router-dom"
 
 import {normalizePath} from "@/helpers/utils"
 import {useAuth} from "./AuthProvider"
-import {getOpenTabCount, getOrCreateTabId, updateOpenTabs} from "@/helpers/tabHelpers"
+import {
+  getOpenTabCount,
+  getOrCreateTabId,
+  updateOpenTabs,
+  heartbeatTab,
+  pruneStaleTabIds
+} from "@/helpers/tabHelpers"
 import {checkForRecentLogoutMarker} from "@/helpers/logout"
 
 import {ALLOWED_NO_ROLE_PATHS, FRONTEND_PATHS, PUBLIC_PATHS} from "@/constants/environment"
@@ -42,7 +48,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   }, [])
 
   const shouldRedirectDueToCrossTabLogout = () => {
-    const marker = checkForRecentLogoutMarker()
+    const marker = checkForRecentLogoutMarker("CrossTabCheck")
     if (!marker) {
       return false
     }
@@ -98,11 +104,18 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       navigate(to)
     }
 
-    if (auth.isSignedIn && auth.selectedRole && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
-      return redirect(
-        FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
-        `Signed-in user on ${path} - redirecting to default page`
-      )
+    if (auth.isSignedIn && (path === "/" || path === FRONTEND_PATHS.LOGIN)) {
+      if (auth.selectedRole) {
+        return redirect(
+          FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+          `Signed-in user on ${path} - redirecting to search page`
+        )
+      } else {
+        return redirect(
+          FRONTEND_PATHS.SELECT_YOUR_ROLE,
+          `Signed-in user on ${path} with no selected role - redirecting to select your role`
+        )
+      }
     }
 
     // Public paths (except root) don't need protection
@@ -129,7 +142,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       }
 
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
-      if (auth.isSigningOut && !checkForRecentLogoutMarker()
+      if (auth.isSigningOut && !checkForRecentLogoutMarker("Rule 1")
         && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
         return handleSignoutEvent(auth, navigate, "Rule 1", auth.invalidSessionCause)
       }
@@ -146,12 +159,12 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         return handleSignoutEvent(auth, navigate, "Rule 2", auth.invalidSessionCause)
       }
 
-      if (checkForRecentLogoutMarker()) {
+      if (checkForRecentLogoutMarker("Rule 4")) {
         logger.info("Recent logout marker found, not redirecting, awaiting completion")
         return
       }
 
-      return redirect(FRONTEND_PATHS.LOGIN, `Not signed in - redirecting to login page ${auth.isSigningIn}`)
+      return redirect(FRONTEND_PATHS.LOGIN, `Not signed in - redirecting to login page`)
     }
 
     // Signed in - check states in priority order
@@ -224,7 +237,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
               })
             }
           } else {
-            // No remaining session time info available - this indicates a session integrity issue
+          // No remaining session time info available - this indicates a session integrity issue
             logger.warn("No remainingSessionTime in response - session may be corrupted, logging out user")
             auth.updateInvalidSessionCause("InvalidSession")
             handleSignoutEvent(auth, navigate, "InvalidSession", "InvalidSession")
@@ -253,13 +266,19 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
   ])
 
   useEffect(() => {
+    const tabId = getOrCreateTabId()
+
     // Check if user is logged in on page load.
     logger.debug("On load user info check")
+    heartbeatTab(tabId)
+    pruneStaleTabIds()
     checkUserInfo()
 
     // Then check every minute
     const interval = setInterval(() => {
       logger.debug("Periodic user info check")
+      heartbeatTab(tabId)
+      pruneStaleTabIds()
       checkUserInfo()
     }, 60000) // 60000 ms = 1 minute
 

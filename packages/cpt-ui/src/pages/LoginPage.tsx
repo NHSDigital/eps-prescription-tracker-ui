@@ -27,14 +27,14 @@ export default function LoginPage() {
       target_environment
     )
 
-    if (isAutoLoginEnvironment) {
+    if (isAutoLoginEnvironment && !auth.isSignedIn) {
       logger.info("performing auto login")
       const autoLoginDetails = AUTO_LOGIN_ENVIRONMENTS.find(x => x.environment === target_environment)
       handleSignIn(auth, autoLoginDetails?.loginMethod === "cis2" ? "Primary" : "Mock", navigate)
     }
   }, [])
 
-  if (isAutoLoginEnvironment) {
+  if (isAutoLoginEnvironment && !auth.isSignedIn) {
     return (
       <main className="nhsuk-main-wrapper">
         <Container>

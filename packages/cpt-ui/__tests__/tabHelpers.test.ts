@@ -2,7 +2,9 @@ import type * as TabHelpersModule from "@/helpers/tabHelpers"
 
 jest.mock("@/constants/environment", () => ({
   TAB_ID_SESSION_KEY: "tabId",
-  OPEN_TABS_STORAGE_KEY: "openTabIds"
+  OPEN_TABS_STORAGE_KEY: "openTabIds",
+  TAB_HEARTBEATS_STORAGE_KEY: "tabHeartbeats",
+  TAB_STALE_THRESHOLD_MS: 5 * 60 * 1000
 }))
 
 const mockUUID = "mock-uuid-1234"
@@ -193,5 +195,114 @@ describe("getOpenTabCount", () => {
     setOpenTabIds(["tab-1", "tab-2", "tab-3"])
 
     expect(getOpenTabCount()).toBe(3)
+  })
+})
+
+describe("heartbeatTab", () => {
+  it("records a timestamp for the given tab ID", () => {
+    const {heartbeatTab} = importFreshTabHelpers()
+
+    heartbeatTab("tab-1")
+
+    const heartbeats = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+    expect(heartbeats["tab-1"]).toBeDefined()
+    expect(typeof heartbeats["tab-1"]).toBe("number")
+  })
+
+  it("updates the timestamp on subsequent calls", () => {
+    const {heartbeatTab} = importFreshTabHelpers()
+
+    const before = Date.now()
+    heartbeatTab("tab-1")
+    const heartbeats1 = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+
+    expect(heartbeats1["tab-1"]).toBeGreaterThanOrEqual(before)
+  })
+
+  it("tracks multiple tabs independently", () => {
+    const {heartbeatTab} = importFreshTabHelpers()
+
+    heartbeatTab("tab-1")
+    heartbeatTab("tab-2")
+
+    const heartbeats = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+    expect(heartbeats["tab-1"]).toBeDefined()
+    expect(heartbeats["tab-2"]).toBeDefined()
+  })
+})
+
+describe("pruneStaleTabIds", () => {
+  it("removes tabs with no heartbeat from the open list", () => {
+    const {setOpenTabIds, pruneStaleTabIds, getOpenTabIds} = importFreshTabHelpers()
+    setOpenTabIds(["tab-1", "tab-2"])
+    // No heartbeats recorded — both should be pruned
+
+    pruneStaleTabIds()
+
+    expect(getOpenTabIds()).toEqual([])
+  })
+
+  it("removes tabs whose heartbeat is older than the threshold", () => {
+    const {setOpenTabIds, heartbeatTab, pruneStaleTabIds, getOpenTabIds} = importFreshTabHelpers()
+    setOpenTabIds(["fresh-tab", "stale-tab"])
+
+    heartbeatTab("fresh-tab")
+    // Manually write a stale heartbeat
+    const heartbeats = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+    heartbeats["stale-tab"] = Date.now() - (6 * 60 * 1000) // 6 minutes ago
+    window.localStorage.setItem("tabHeartbeats", JSON.stringify(heartbeats))
+
+    pruneStaleTabIds()
+
+    expect(getOpenTabIds()).toEqual(["fresh-tab"])
+    const updatedHeartbeats = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+    expect(updatedHeartbeats["stale-tab"]).toBeUndefined()
+    expect(updatedHeartbeats["fresh-tab"]).toBeDefined()
+  })
+
+  it("does nothing when all tabs are fresh", () => {
+    const {setOpenTabIds, heartbeatTab, pruneStaleTabIds, getOpenTabIds} = importFreshTabHelpers()
+    setOpenTabIds(["tab-1", "tab-2"])
+    heartbeatTab("tab-1")
+    heartbeatTab("tab-2")
+
+    pruneStaleTabIds()
+
+    expect(getOpenTabIds()).toEqual(["tab-1", "tab-2"])
+  })
+
+  it("accepts a custom threshold", () => {
+    const {setOpenTabIds, pruneStaleTabIds, getOpenTabIds} = importFreshTabHelpers()
+    setOpenTabIds(["tab-1"])
+
+    // Write heartbeat 2 seconds ago
+    const heartbeats = {"tab-1": Date.now() - 2000}
+    window.localStorage.setItem("tabHeartbeats", JSON.stringify(heartbeats))
+
+    // Prune with 1-second threshold
+    pruneStaleTabIds(1000)
+
+    expect(getOpenTabIds()).toEqual([])
+  })
+})
+
+describe("updateOpenTabs heartbeat integration", () => {
+  it("records a heartbeat when adding a tab", () => {
+    const {updateOpenTabs} = importFreshTabHelpers()
+
+    updateOpenTabs("tab-1", "add")
+
+    const heartbeats = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+    expect(heartbeats["tab-1"]).toBeDefined()
+  })
+
+  it("removes the heartbeat when removing a tab", () => {
+    const {updateOpenTabs} = importFreshTabHelpers()
+
+    updateOpenTabs("tab-1", "add")
+    updateOpenTabs("tab-1", "remove")
+
+    const heartbeats = JSON.parse(window.localStorage.getItem("tabHeartbeats")!)
+    expect(heartbeats["tab-1"]).toBeUndefined()
   })
 })

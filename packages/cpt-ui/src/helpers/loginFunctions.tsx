@@ -1,7 +1,7 @@
 import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
 import {AuthContextType} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
-import {signOut} from "@/helpers/logout"
+import {signOut, checkForRecentLogoutMarker} from "@/helpers/logout"
 import {AuthError} from "@aws-amplify/auth"
 
 export const getHomeLink = (isSignedIn: boolean) => {
@@ -12,9 +12,12 @@ export const handleSignIn = async (
   auth: AuthContextType,
   type: "Primary" | "Mock",
   navigate: (path: string) => void) => {
-  logger.info(`Redirecting user to ${type} login`)
+  if (checkForRecentLogoutMarker("SignIn")) {
+    logger.info("Attempting to sign-out, prohibit sign as well")
+  }
 
   auth.setStateForSignIn()
+  logger.info(`Redirecting user to ${type} login`)
 
   try {
     await auth?.cognitoSignIn({

@@ -24,7 +24,7 @@ import {
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
 import {LOGOUT_MARKER_STORAGE_KEY, LOGOUT_MARKER_STORAGE_GROUP} from "@/constants/environment"
-import {clearLogoutMarkerFromStorage, LogoutMarker} from "@/helpers/logout"
+import {LogoutMarker, clearLogoutMarkerFromStorage} from "@/helpers/logout"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
 
@@ -51,6 +51,7 @@ export interface AuthContextType {
   sentRumRoleLogs: boolean,
   setSentRumRoleLogs: (value: boolean) => void,
   setSessionTimeoutModalInfo: (value: SetStateAction<SessionTimeoutModal>) => void
+  setLogoutMarker: (LogoutMarker: LogoutMarker | undefined) => void
   setLogoutModalType: (value: "userInitiated" | "timeout" | undefined) => Promise<void>
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
@@ -102,7 +103,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "remainingSessionTime",
     undefined
   )
-  const [logoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
+  const [logoutMarker, setLogoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
     LOGOUT_MARKER_STORAGE_KEY,
     LOGOUT_MARKER_STORAGE_GROUP,
     undefined
@@ -162,6 +163,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setSessionId(trackerUserInfo.sessionId)
     setRemainingSessionTime(trackerUserInfo.remainingSessionTime)
     setError(trackerUserInfo.error)
+
+    getOrCreateTabId() // Ensure tab ID is set in session/local storage for logout marker logic
     return trackerUserInfo
   }
 
@@ -209,6 +212,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         case "signedOut":
           logger.info("Processing signedOut event")
           clearAuthState()
+          // clearLogoutMarkerFromStorage()
           setError(null)
           break
 
@@ -238,7 +242,10 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   */
   const setStateForSignIn = () => {
     setIsSigningIn(true)
+    setIsSigningOut(false)
     setInvalidSessionCause(undefined)
+    logger.info("Setting log out marker to undefined")
+    clearLogoutMarkerFromStorage()
   }
 
   /**
@@ -284,7 +291,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
-    clearLogoutMarkerFromStorage()
 
     await signInWithRedirect(input)
   }
@@ -333,6 +339,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       sentRumRoleLogs,
       setSentRumRoleLogs,
       setSessionTimeoutModalInfo,
+      setLogoutMarker,
       setLogoutModalType: setLogoutModalTypeAsync,
       cognitoSignIn,
       cognitoSignOut,

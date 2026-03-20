@@ -32,7 +32,9 @@ jest.mock("@/helpers/tabHelpers", () => {
     ...actual,
     getOrCreateTabId: jest.fn().mockReturnValue("default-tab"),
     getOpenTabCount: jest.fn().mockReturnValue(1),
-    updateOpenTabs: jest.fn()
+    updateOpenTabs: jest.fn(),
+    heartbeatTab: jest.fn(),
+    pruneStaleTabIds: jest.fn()
   }
 })
 

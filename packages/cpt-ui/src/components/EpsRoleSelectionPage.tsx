@@ -15,7 +15,6 @@ import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
 import {FRONTEND_PATHS} from "@/constants/environment"
-import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
@@ -234,24 +233,6 @@ export default function RoleSelectionPage({
     })
 
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
-
-  // Handle auto-redirect for single role
-  useEffect(() => {
-    if (auth.isSigningIn) {
-      const {codeParams, stateParams} = getSearchParams(window)
-      if (codeParams && stateParams) {
-        // we are in a redirect from login flow so carry on
-        redirecting.current = true
-        return
-      } else {
-        // TODO: May conflict with ensureRoleSelected
-        // something has gone wrong so go back to login
-        handleSignoutEvent(auth, navigate, "NoSearchParams")
-      }
-    } else {
-      redirecting.current = false
-    }
-  }, [auth.isSigningIn])
 
   useEffect(() => {
     if (auth.hasSingleRoleAccess() && auth.isSignedIn) {

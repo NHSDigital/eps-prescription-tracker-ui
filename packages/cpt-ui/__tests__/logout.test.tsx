@@ -1,7 +1,18 @@
 import "@testing-library/jest-dom"
-import {handleSignoutEvent, signOut} from "@/helpers/logout"
+import {
+  handleSignoutEvent,
+  signOut,
+  clearLogoutMarkerFromStorage,
+  LogoutMarker
+} from "@/helpers/logout"
 import {logger} from "@/helpers/logger"
-import {AUTH_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
+import {
+  AUTH_CONFIG,
+  FRONTEND_PATHS,
+  LOGOUT_MARKER_STORAGE_KEY,
+  LOGOUT_MARKER_STORAGE_GROUP,
+  OPEN_TABS_STORAGE_KEY
+} from "@/constants/environment"
 import {AuthContextType} from "@/context/AuthProvider"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
@@ -178,6 +189,100 @@ describe("logout helpers", () => {
 
       await expect(handleSignoutEvent(mockAuth, mockNavigate, "Reason", "Timeout"))
         .rejects.toThrow("Update failed")
+    })
+  })
+
+  describe("signOut duplicate marker handling", () => {
+    const writeMarkerToStorage = (marker: LogoutMarker) => {
+      const markerGroup: Record<string, LogoutMarker> = {[LOGOUT_MARKER_STORAGE_KEY]: marker}
+      localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+    }
+
+    it("skips signOut when recent marker exists from an active tab", async () => {
+      const activeTabId = "active-tab-123"
+      writeMarkerToStorage({
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: activeTabId
+      })
+      // Register the tab as active
+      localStorage.setItem(OPEN_TABS_STORAGE_KEY, JSON.stringify([activeTabId]))
+
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
+
+      await signOut(mockAuth)
+
+      expect(mockAuth.cognitoSignOut).not.toHaveBeenCalled()
+      expect(logger.info).toHaveBeenCalledWith(
+        "Skipping duplicate signOut call due to in-progress marker from active tab"
+      )
+    })
+
+    it("proceeds with signOut when recent marker exists from an inactive tab", async () => {
+      const deadTabId = "dead-tab-456"
+      writeMarkerToStorage({
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: deadTabId
+      })
+      // No tabs registered as active (dead tab closed)
+      localStorage.setItem(OPEN_TABS_STORAGE_KEY, JSON.stringify([]))
+
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
+
+      await signOut(mockAuth)
+
+      expect(mockAuth.setStateForSignOut).toHaveBeenCalled()
+      expect(mockAuth.cognitoSignOut).toHaveBeenCalled()
+      expect(logger.info).toHaveBeenCalledWith(
+        "Logout marker exists from inactive tab - allowing signOut to proceed"
+      )
+    })
+
+    it("bypasses duplicate check when duplicateSignout is true", async () => {
+      const activeTabId = "active-tab-123"
+      writeMarkerToStorage({
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: activeTabId
+      })
+      localStorage.setItem(OPEN_TABS_STORAGE_KEY, JSON.stringify([activeTabId]))
+
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
+
+      await signOut(mockAuth, mockNavigate, "/redirect", true)
+
+      expect(mockAuth.cognitoSignOut).toHaveBeenCalled()
+    })
+  })
+
+  describe("clearLogoutMarkerFromStorage", () => {
+    it("removes the logout marker from localStorage", () => {
+      const marker: LogoutMarker = {
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: "tab-123"
+      }
+      const markerGroup: Record<string, LogoutMarker> = {[LOGOUT_MARKER_STORAGE_KEY]: marker}
+      localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+
+      clearLogoutMarkerFromStorage()
+
+      const stored = JSON.parse(localStorage.getItem(LOGOUT_MARKER_STORAGE_GROUP)!)
+      expect(stored[LOGOUT_MARKER_STORAGE_KEY]).toBeUndefined()
+    })
+
+    it("does not throw when localStorage is empty", () => {
+      expect(() => clearLogoutMarkerFromStorage()).not.toThrow()
     })
   })
 })

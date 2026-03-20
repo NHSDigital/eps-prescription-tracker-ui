@@ -2,7 +2,7 @@ import {AuthContextType} from "@/context/AuthProvider"
 import {logger} from "./logger"
 import {AUTH_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {readItemGroupFromLocalStorage} from "@/helpers/useLocalStorageState"
-import {getOrCreateTabId} from "@/helpers/tabHelpers"
+import {getOrCreateTabId, getOpenTabIds} from "@/helpers/tabHelpers"
 import {
   LOGOUT_MARKER_STORAGE_KEY,
   LOGOUT_MARKER_STORAGE_GROUP,
@@ -46,9 +46,16 @@ export const signOut = async (
   redirectUri?: string | undefined,
   duplicateSignout?: boolean
 ) => {
-  if (!duplicateSignout && checkForRecentLogoutMarker()) {
-    logger.info("Skipping duplicate signOut call due to in-progress marker")
-    return
+  if (!duplicateSignout) {
+    const existingMarker = checkForRecentLogoutMarker("SignOut")
+    if (existingMarker) {
+      const openTabs = getOpenTabIds()
+      if (openTabs.includes(existingMarker.initiatedByTabId)) {
+        logger.info("Skipping duplicate signOut call due to in-progress marker from active tab")
+        return
+      }
+      logger.info("Logout marker exists from inactive tab - allowing signOut to proceed")
+    }
   }
 
   // Prepare state before actioning logout
@@ -77,7 +84,6 @@ export const signOut = async (
       console.error("[signOut] Error:", current.message, current)
       current = current.cause
     }
-    clearLogoutMarkerFromStorage()
     authParam.clearAuthState()
 
     navigate?.(FRONTEND_PATHS.LOGOUT)
@@ -86,9 +92,10 @@ export const signOut = async (
 }
 
 const createOrUpdateLogoutMarker = (): LogoutMarker => {
-  const existingMarker = checkForRecentLogoutMarker()
+  const existingMarker = checkForRecentLogoutMarker("CheckOrUpdate")
   if (existingMarker) {
     existingMarker.timestamp = Date.now()
+    existingMarker.initiatedByTabId = getOrCreateTabId()
     writeLogoutMarker(existingMarker)
     return existingMarker
   }
@@ -110,6 +117,7 @@ export const readLogoutMarker = () => {
 }
 
 const writeLogoutMarker = (marker: LogoutMarker) => {
+  logger.info("Writing log out marker to storage", marker)
   try {
     const markerGroup =
     readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
@@ -129,17 +137,26 @@ export const checkForRecentLogoutMarker = (caller?: string) => {
       logger.info(`Existing marker is recent. ${caller ? `Called by ${caller}` : ""}`, existingMarker)
       return existingMarker
     }
+    return undefined
   }
   logger.info(`No recent logout marker found. ${caller ? `Called by ${caller}` : ""}`)
   return undefined
 }
 
 export const clearLogoutMarkerFromStorage = () => {
-  if (typeof window === "undefined") return
-  const markerGroup =
-  readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
-  delete markerGroup[LOGOUT_MARKER_STORAGE_KEY]
-  window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+  if (typeof window === "undefined") {
+    logger.info("No window defined, unable to clear logout marker from storage")
+    return
+  }
+
+  try {
+    let markerGroup =
+      readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
+    markerGroup[LOGOUT_MARKER_STORAGE_KEY] = undefined
+    window.localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+  } catch (error) {
+    logger.error("Unable to clear logout marker from storage", error)
+  }
 }
 
 export const isRecentMarker = (marker: LogoutMarker | undefined) => {

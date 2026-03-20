@@ -92,6 +92,18 @@ jest.mock("@/helpers/userInfo", () => ({
   updateRemoteSelectedRole: jest.fn().mockResolvedValue({currentlySelectedRole: {}})
 }))
 
+jest.mock("@/helpers/tabHelpers", () => {
+  const actual = jest.requireActual("@/helpers/tabHelpers")
+  return {
+    ...actual,
+    getOrCreateTabId: jest.fn().mockReturnValue("default-tab"),
+    getOpenTabCount: jest.fn().mockReturnValue(1),
+    updateOpenTabs: jest.fn(),
+    heartbeatTab: jest.fn(),
+    pruneStaleTabIds: jest.fn()
+  }
+})
+
 const TestComponent = () => {
   useAccess() // Just to test the context
   return <div>Test Component</div>
