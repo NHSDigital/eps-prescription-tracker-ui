@@ -95,20 +95,6 @@ VITE_VERSION_NUMBER=$(echo "$CF_LONDON_EXPORTS" | \
 REACT_LOG_LEVEL=debug
 VITE_REACT_LOG_LEVEL=debug
 VITE_TARGET_ENVIRONMENT=dev
-REACT_APP_hostedLoginDomain=$VITE_hostedLoginDomain
-REACT_APP_userPoolClientId=$VITE_userPoolClientId
-REACT_APP_userPoolId=$VITE_userPoolId
-REACT_APP_redirectSignIn=$VITE_redirectSignIn
-REACT_APP_redirectSignOut=$VITE_redirectSignOut
-REACT_APP_redirectSessionSignOut=$VITE_redirectSessionSignOut
-
-REACT_APP_RUM_GUEST_ROLE_ARN=$VITE_RUM_GUEST_ROLE_ARN
-REACT_APP_RUM_IDENTITY_POOL_ID=$VITE_RUM_IDENTITY_POOL_ID
-REACT_APP_RUM_APPLICATION_ID=$VITE_RUM_APPLICATION_ID
-REACT_APP_RUM_ALLOW_COOKIES_ARN=$VITE_RUM_ALLOW_COOKIES
-REACT_APP_RUM_ENABLE_XRAY=$VITE_RUM_ENABLE_XRAY
-REACT_APP_RUM_SESSION_SAMPLE_RATE=$VITE_RUM_SESSION_SAMPLE_RATE
-REACT_APP_RUM_TELEMETRIES=$VITE_RUM_TELEMETRIES
 RUM_ERROR_TIMER_INTERVAL=10000
 
 # vars needed for cdk
@@ -267,19 +253,6 @@ export VITE_redirectSignOut
 export VITE_redirectSessionSignOut
 export VITE_COMMIT_ID
 export VITE_VERSION_NUMBER
-export REACT_APP_hostedLoginDomain
-export REACT_APP_userPoolClientId
-export REACT_APP_userPoolId
-export REACT_APP_redirectSignIn
-export REACT_APP_redirectSignOut
-export REACT_APP_redirectSessionSignOut
-export REACT_APP_RUM_GUEST_ROLE_ARN
-export REACT_APP_RUM_IDENTITY_POOL_ID
-export REACT_APP_RUM_APPLICATION_ID
-export REACT_APP_RUM_ALLOW_COOKIES_ARN
-export REACT_APP_RUM_ENABLE_XRAY
-export REACT_APP_RUM_SESSION_SAMPLE_RATE
-export REACT_APP_RUM_TELEMETRIES
 export REACT_LOG_LEVEL
 export VITE_REACT_LOG_LEVEL
 
@@ -346,12 +319,11 @@ echo "Generating config for ${STATELESS_CONFIG}"
 sync_stateful_app() {
     echo "Starting sync stateful CDK app"
     echo "Stateful CDK app log file at ${STATEFUL_LOG}"
-    CONFIG_FILE_NAME="${STATEFUL_CONFIG}" npx cdk deploy \
-        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
-        --watch \
-        --all \
-        --ci true \
-        --require-approval never \
+    CONFIG_FILE_NAME="${STATEFUL_CONFIG}" \
+    CDK_APP_NAME="StatefulResourcesApp" \
+    REQUIRE_APPROVAL="never" \
+    npm run cdk-watch \
+        --workspace packages/cdk \
         --output .local_config/stateful_app.out/ \
         > $STATEFUL_LOG 2>&1
 }
@@ -359,12 +331,11 @@ sync_stateful_app() {
 sync_stateless_app() {
     echo "Starting sync stateless CDK app"
     echo "Stateless CDK app log file at ${STATELESS_LOG}"
-    CONFIG_FILE_NAME="${STATELESS_CONFIG}" npx cdk deploy \
-        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
-        --watch \
-        --all \
-        --ci true \
-        --require-approval never \
+    CONFIG_FILE_NAME="${STATELESS_CONFIG}" \
+    CDK_APP_NAME="StatelessResourcesApp" \
+    REQUIRE_APPROVAL="never" \
+    npm run cdk-watch \
+        --workspace packages/cdk \
         --output .local_config/stateless_app.out/ \
         > $STATELESS_LOG  2>&1
 }

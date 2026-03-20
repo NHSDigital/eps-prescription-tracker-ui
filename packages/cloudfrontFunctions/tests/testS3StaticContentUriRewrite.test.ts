@@ -4,139 +4,49 @@ import {handler} from "../src/s3StaticContentUriRewrite"
 describe("S3 Content URI Rewrite", () => {
   const testCases = [
     {
-      description: "Current version site root",
+      description: "Site root",
       requestUri: "/site",
-      expectedOriginUri: "/v1.0.0/index.html"
+      expectedOriginUri: "/index.html"
     },
     {
-      description: "Current version site root with trailing /",
+      description: "Site root with trailing /",
       requestUri: "/site/",
-      expectedOriginUri: "/v1.0.0/index.html"
+      expectedOriginUri: "/index.html"
     },
     {
-      description: "Current version site nested page",
+      description: "Site nested page",
       requestUri: "/site/page",
-      expectedOriginUri: "/v1.0.0/index.html"
+      expectedOriginUri: "/index.html"
     },
     {
-      description: "Current version site nested page with trailing /",
+      description: "Site nested page with trailing /",
       requestUri: "/site/page/",
-      expectedOriginUri: "/v1.0.0/index.html"
+      expectedOriginUri: "/index.html"
     },
     {
-      description: "Current version site deeply nested page",
+      description: "Site deeply nested page",
       requestUri: "/site/area1/area2/page",
-      expectedOriginUri: "/v1.0.0/index.html"
+      expectedOriginUri: "/index.html"
     },
     {
-      description: "Current version site deeply nested page with trailing /",
+      description: "Site deeply nested page with trailing /",
       requestUri: "/site/area1/area2/page/",
-      expectedOriginUri: "/v1.0.0/index.html"
+      expectedOriginUri: "/index.html"
     },
     {
-      description: "Specified version site root",
-      requestUri: "/site/v0.9.9",
-      expectedOriginUri: "/v0.9.9/index.html"
-    },
-    {
-      description: "Specified version site root with trailing /",
-      requestUri: "/site/v0.9.9/",
-      expectedOriginUri: "/v0.9.9/index.html"
-    },
-    {
-      description: "Specified version site nested page",
-      requestUri: "/site/v0.9.9/page",
-      expectedOriginUri: "/v0.9.9/index.html"
-    },
-    {
-      description: "Specified version site nested page with trailing /",
-      requestUri: "/site/v0.9.9/page/",
-      expectedOriginUri: "/v0.9.9/index.html"
-    },
-    {
-      description: "Specified version site deeply nested page",
-      requestUri: "/site/v0.9.9/area1/area2/page",
-      expectedOriginUri: "/v0.9.9/index.html"
-    },
-    {
-      description: "Specified version site deeply nested page with trailing /",
-      requestUri: "/site/v0.9.9/area1/area2/page/",
-      expectedOriginUri: "/v0.9.9/index.html"
-    },
-    {
-      description: "Specified PR site root",
-      requestUri: "/site/pr-1234",
-      expectedOriginUri: "/pr-1234/index.html"
-    },
-    {
-      description: "Specified PR site root with trailing /",
-      requestUri: "/site/pr-1234/",
-      expectedOriginUri: "/pr-1234/index.html"
-    },
-    {
-      description: "Specified PR site nested page",
-      requestUri: "/site/pr-1234/page",
-      expectedOriginUri: "/pr-1234/index.html"
-    },
-    {
-      description: "Specified PR site nested page with trailing /",
-      requestUri: "/site/pr-1234/page/",
-      expectedOriginUri: "/pr-1234/index.html"
-    },
-    {
-      description: "Specified PR site deeply nested page",
-      requestUri: "/site/pr-1234/area1/area2/page",
-      expectedOriginUri: "/pr-1234/index.html"
-    },
-    {
-      description: "Specified PR site deeply nested page with trailing /",
-      requestUri: "/site/pr-1234/area1/area2/page/",
-      expectedOriginUri: "/pr-1234/index.html"
-    },
-    {
-      description: "Current version static file",
+      description: "Static file",
       requestUri: "/site/file.ext",
-      expectedOriginUri: "/v1.0.0/file.ext"
+      expectedOriginUri: "/file.ext"
     },
     {
-      description: "Current version nested static file",
+      description: "Nested static file",
       requestUri: "/site/files/file.ext",
-      expectedOriginUri: "/v1.0.0/files/file.ext"
+      expectedOriginUri: "/files/file.ext"
     },
     {
-      description: "Specified version static file",
-      requestUri: "/site/v0.9.9/file.ext",
-      expectedOriginUri: "/v0.9.9/file.ext"
-    },
-    {
-      description: "Specified version nested static file",
-      requestUri: "/site/v0.9.9/files/file.ext",
-      expectedOriginUri: "/v0.9.9/files/file.ext"
-    },
-    {
-      description: "Specified PR static file",
-      requestUri: "/site/pr-1234/file.ext",
-      expectedOriginUri: "/pr-1234/file.ext"
-    },
-    {
-      description: "Specified PR nested static file",
-      requestUri: "/site/pr-1234/files/file.ext",
-      expectedOriginUri: "/pr-1234/files/file.ext"
-    },
-    {
-      description: "Malformed uri",
-      requestUri: "/sitepage",
-      expectedOriginUri: "/404.html"
-    },
-    {
-      description: "Malformed version",
-      requestUri: "/site/v0.9.9page",
-      expectedOriginUri: "/404.html"
-    },
-    {
-      description: "Malformed pr",
-      requestUri: "/site/pr-1234page",
-      expectedOriginUri: "/404.html"
+      description: "Another url",
+      requestUri: "/other/url",
+      expectedOriginUri: "/index.html"
     }
   ]
 

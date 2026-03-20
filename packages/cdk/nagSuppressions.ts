@@ -1,9 +1,9 @@
 /* eslint-disable max-len */
 
 import {Stack} from "aws-cdk-lib"
-import {NagPackSuppression, NagSuppressions} from "cdk-nag"
+import {safeAddNagSuppression, safeAddNagSuppressionGroup} from "@nhsdigital/eps-cdk-constructs"
 
-export const nagSuppressions = (stack: Stack) => {
+export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
   if (stack.artifactId === "StatefulStack") {
     safeAddNagSuppression(
       stack,
@@ -14,41 +14,12 @@ export const nagSuppressions = (stack: Stack) => {
           reason: "Suppress error for not implementing AdvancedSecurityMode on cognito. We do not need this"
         },
         {
+          id: "AwsSolutions-COG2",
+          reason: "Suppress warning for not requiring MFA on cognito. We are using cognito in federated IdP mode so do not need it"
+        },
+        {
           id: "AwsSolutions-COG1",
           reason: "Suppress error for not implementing password policy. We are using cognito in federated IdP mode so do not need it"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatefulStack/Cognito/UserPoolDomain/CloudFrontDomainName/CustomResourcePolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for wildcard permissions. This is an auto generated one for cognito domain"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatefulStack/AWS679f53fac002430cb0da5b7982bd2287/ServiceRole/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM4",
-          reason: "Suppress error for using AWS managed policy. This is an auto generated one for cognito domain"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatefulStack/AWS679f53fac002430cb0da5b7982bd2287/Resource",
-      [
-        {
-          id: "AwsSolutions-L1",
-          reason: "AWS supplied lambda does not use latest runtime"
         }
       ]
     )
@@ -58,10 +29,6 @@ export const nagSuppressions = (stack: Stack) => {
       [
         "/StatefulStack/DynamoDB/TableReadManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/TableWriteManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/StateTableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/StateTableWriteManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/SessionStateTableReadManagedPolicy/Resource",
-        "/StatefulStack/DynamoDB/SessionStateTableWriteManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/SessionManagementReadManagedPolicy/Resource",
         "/StatefulStack/DynamoDB/SessionManagementWriteManagedPolicy/Resource"
       ],
@@ -94,6 +61,31 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
+    const secretSuppressions = [
+      {
+        id: "AwsSolutions-SMG4",
+        reason: "Suppress error for not rotating secret. This is by design."
+      }
+    ]
+
+    safeAddNagSuppressionGroup(
+      stack,
+      [
+        "/StatefulStack/SharedSecrets/PrimaryJwtPrivateKey/Resource",
+        "/StatefulStack/SharedSecrets/ApigeeApiKeySecret/Resource",
+        "/StatefulStack/SharedSecrets/ApigeeSecretKeySecret/Resource",
+        "/StatefulStack/SharedSecrets/ApigeeDoHSApiKeySecret/Resource"
+      ],
+      secretSuppressions
+    )
+
+    if (useMockOidc) {
+      safeAddNagSuppression(
+        stack,
+        "/StatefulStack/SharedSecrets/MockJwtPrivateKey/Resource",
+        secretSuppressions
+      )
+    }
   }
 
   if (stack.artifactId === "StatelessStack") {
@@ -111,143 +103,78 @@ export const nagSuppressions = (stack: Stack) => {
       ]
     )
 
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/SharedSecrets/GetRandomPasswordPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for having a wildcard in the GetRandomPasswordPolicy. Cant apply this to the specific ARN"
-        }
-      ]
-    )
+    const endpointSuppressions = [
+      {
+        id: "AwsSolutions-APIG4",
+        reason: "Suppress error for not implementing authorization. Auth endpoints should not have an authorizer"
+      },
+      {
+        id: "AwsSolutions-COG4",
+        reason: "Suppress error for not implementing a Cognito user pool authorizer. Auth endpoints should not have an authorizer"
+      }
+    ]
 
     safeAddNagSuppressionGroup(
       stack,
       [
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/authorize/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-authorize/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/callback/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-callback/GET/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/token/POST/Resource",
-        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/mock-token/POST/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-clear-active-session/POST/Resource",
-        "/StatelessStack/ApiGateway/ApiGateway/Default/test-support-fake-timer/POST/Resource"
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/authorize/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/callback/GET/Resource",
+        "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/token/POST/Resource"
       ],
-      [
-        {
-          id: "AwsSolutions-APIG4",
-          reason: "Suppress error for not implementing authorization. Token endpoint should not have an authorizer"
-        },
-        {
-          id: "AwsSolutions-COG4",
-          reason: "Suppress error for not implementing a Cognito user pool authorizer. Token endpoint should not have an authorizer"
-        }
-      ]
+      endpointSuppressions
     )
 
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/CIS2SignOut/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for wildcard permissions. This suppression is necessary as the Lambda log group requires access to all log streams."
-        }
-      ]
-    )
+    if (useMockOidc) {
+      safeAddNagSuppressionGroup(
+        stack,
+        [
+          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/mock-authorize/GET/Resource",
+          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/mock-callback/GET/Resource",
+          "/StatelessStack/OAuth2Gateway/ApiGateway/Default/oauth2/mock-token/POST/Resource",
+          "/StatelessStack/ApiGateway/ApiGateway/Default/api/test-support-clear-active-session/POST/Resource",
+          "/StatelessStack/ApiGateway/ApiGateway/Default/api/test-support-fake-timer/POST/Resource"
+        ],
+        endpointSuppressions
+      )
+    }
+
+    const lambdaLogPolicySuppressions = [
+      {
+        id: "AwsSolutions-IAM5",
+        reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
+      }
+    ]
 
     safeAddNagSuppressionGroup(
       stack,
       [
+        "/StatelessStack/ApiFunctions/CIS2SignOut/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/TrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/ApiFunctions/MockTrackerUserInfo/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SelectedRole/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/PatientSearch/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/ApiFunctions/ClearActiveSessions/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/ApiFunctions/SetLastActivityTimer/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/ApiFunctions/PrescriptionList/LambdaPutLogsManagedPolicy/Resource",
+        "/StatelessStack/ApiFunctions/PrescriptionDetails/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/ApiFunctions/SessionMgmt/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/TokenResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
         "/StatelessStack/OAuth2Functions/AuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/CallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-        "/StatelessStack/OAuth2Functions/MockIDPResponseLambdaResources/LambdaPutLogsManagedPolicy/Resource"
+        "/StatelessStack/OAuth2Functions/CallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource"
       ],
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
+      lambdaLogPolicySuppressions
     )
 
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/PrescriptionList/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/ApiFunctions/PrescriptionDetails/LambdaPutLogsManagedPolicy/Resource",
-      [
-        {
-          id: "AwsSolutions-IAM5",
-          reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/SharedSecrets/PrimaryJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
-
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/SharedSecrets/MockJwtPrivateKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not having automatic rotation. This is a false positive - it does have rotation enabled"
-        }
-      ]
-    )
+    if (useMockOidc) {
+      safeAddNagSuppressionGroup(
+        stack,
+        [
+          "/StatelessStack/ApiFunctions/ClearActiveSessions/LambdaPutLogsManagedPolicy/Resource",
+          "/StatelessStack/ApiFunctions/SetLastActivityTimer/LambdaPutLogsManagedPolicy/Resource",
+          "/StatelessStack/OAuth2Functions/MockTokenResources/LambdaPutLogsManagedPolicy/Resource",
+          "/StatelessStack/OAuth2Functions/MockCallbackLambdaResources/LambdaPutLogsManagedPolicy/Resource",
+          "/StatelessStack/OAuth2Functions/MockAuthorizeLambdaResources/LambdaPutLogsManagedPolicy/Resource"
+        ],
+        lambdaLogPolicySuppressions
+      )
+    }
 
     safeAddNagSuppression(
       stack,
@@ -262,53 +189,11 @@ export const nagSuppressions = (stack: Stack) => {
 
     safeAddNagSuppression(
       stack,
-      "/StatelessStack/SharedSecrets/ApigeeApiKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not rotating secret. This is by design."
-        }
-      ]
+      "/StatelessStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/Resource",
+      [{
+        id: "AwsSolutions-L1",
+        reason: "CDK creates Python 3.13 lambdas for custom resources but Python 3.14 is now available. This can be removed once CDK updates to Python 3.14 runtimes."
+      }]
     )
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/SharedSecrets/ApigeeApiSecret/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not rotating secret. This is by design."
-        }
-      ]
-    )
-    safeAddNagSuppression(
-      stack,
-      "/StatelessStack/SharedSecrets/ApigeeDoHSApiKey/Resource",
-      [
-        {
-          id: "AwsSolutions-SMG4",
-          reason: "Suppress error for not rotating secret. This is by design."
-        }
-      ]
-    )
-
-  }
-
-}
-
-const safeAddNagSuppression = (stack: Stack, path: string, suppressions: Array<NagPackSuppression>) => {
-  try {
-    NagSuppressions.addResourceSuppressionsByPath(stack, path, suppressions)
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.log(`Could not find path ${path}`)
-  }
-}
-
-// Apply the same nag suppression to multiple resources
-const safeAddNagSuppressionGroup = (stack: Stack, path: Array<string>, suppressions: Array<NagPackSuppression>) => {
-  for (const p of path) {
-    safeAddNagSuppression(stack, p, suppressions)
   }
 }

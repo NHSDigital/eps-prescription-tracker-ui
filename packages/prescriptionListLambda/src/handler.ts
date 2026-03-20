@@ -1,6 +1,7 @@
 import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
@@ -34,7 +35,6 @@ TokenMappingTableName
 jwtPrivateKeyArn
 apigeeApiKey
 jwtKid
-roleId
 MOCK_MODE_ENABLED
 
 CIS2_OIDC_ISSUER
@@ -325,7 +325,7 @@ export const handler = middy(lambdaHandler)
   .use(
     inputOutputLogger({
       logger: (request) => {
-        logger.info(request)
+        logger.info(request as LogItemMessage)
       }
     })
   )

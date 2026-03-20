@@ -7,6 +7,7 @@ import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 import axios, {isAxiosError} from "axios"
 import {parse, ParsedUrlQuery, stringify} from "querystring"
 
@@ -172,7 +173,7 @@ export const handler = middy(lambdaHandler)
   .use(
     inputOutputLogger({
       logger: (request) => {
-        logger.info(request)
+        logger.info(request as LogItemMessage)
       }
     })
   )
