@@ -12,6 +12,9 @@ export const EpsLogoutStrings = {
   LOGOUT_CONCURRENT_CONTACT: "Contact the NHS national service desk at",
   LOGOUT_CONCURRENT_EMAIL: "ssd.nationalservicedesk@nhs.net",
   LOGOUT_CONCURRENT_FURTHER: "if you did not start another session in another window or browser.",
+  LOGOUT_SESSION_EXPIRED_TITLE: "Your session has expired",
+  LOGOUT_SESSION_EXPIRED_DESCRIPTION: "We have logged you out because your session has expired.",
+  LOGOUT_SESSION_EXPIRED_FURTHER: "This is to protect patient information.",
   LOGOUT_TIMEOUT_TITLE: "For your security, we have logged you out",
   LOGOUT_TIMEOUT_DESCRIPTION: "We have logged you out because you did not do anything for 15 minutes.",
   LOGOUT_TIMEOUT_FURTHER: "This is to protect patient information."
