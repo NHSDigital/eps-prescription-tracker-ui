@@ -135,7 +135,18 @@ describe("HTTP Axios Instance", () => {
       .mockReturnValueOnce("not a token")
     mock.onGet("/test").reply(200)
 
-    await expect(http.get("/test")).rejects.toThrow("canceled")
+    await expect(http.get("/test")).rejects.toThrow("Could not get a cognito token")
+  })
+
+  it("does not abort when request targets CIS2 signout endpoint without a token", async () => {
+    (fetchAuthSession as jest.Mock)
+      .mockReturnValueOnce("not a token")
+    mock.onGet("/api/cis2-signout").reply(200, {success: true})
+
+    const response = await http.get("/api/cis2-signout")
+
+    expect(response.status).toBe(200)
+    expect(response.data).toEqual({success: true})
   })
 
   it("Does not retry if response says to restart login", async () => {

@@ -1,15 +1,22 @@
 import {renderHook, act} from "@testing-library/react"
 import {useSessionTimeout} from "@/hooks/useSessionTimeout"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {logger} from "@/helpers/logger"
 import {useAuth, AuthContextType} from "@/context/AuthProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Create mock implementations
 const mockSetSessionTimeoutModalInfo = jest.fn()
 const mockSetLogoutModalType = jest.fn()
 const mockUpdateTrackerUserInfo = jest.fn()
 const mockUpdateInvalidSessionCause = jest.fn()
+
+const mockNavigate = jest.fn()
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  useNavigate: () => mockNavigate
+}))
 
 // Mock modules using factory functions to avoid hoisting issues
 jest.mock("@/helpers/userInfo")
@@ -54,6 +61,7 @@ jest.mock("@/constants/environment", () => ({
 }))
 
 const createAuthMock = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
+  ...mockAuthState,
   error: null,
   user: null,
   isSignedIn: true,
@@ -94,8 +102,7 @@ describe("useSessionTimeout", () => {
     jest.clearAllMocks()
 
     jest.mocked(updateRemoteSelectedRole).mockResolvedValue({currentlySelectedRole: {}})
-    jest.mocked(signOut).mockResolvedValue(undefined)
-    jest.mocked(handleRestartLogin).mockResolvedValue(undefined)
+    jest.mocked(handleSignoutEvent).mockResolvedValue(undefined)
     mockUpdateTrackerUserInfo.mockResolvedValue(undefined)
 
     jest.mocked(useAuth).mockReturnValue(createAuthMock())
@@ -162,8 +169,9 @@ describe("useSessionTimeout", () => {
       expect(updatedState.action).toBeUndefined()
     })
 
-    it("should log error when selectedRole is missing", async () => {
-      jest.mocked(useAuth).mockReturnValue(createAuthMock({selectedRole: undefined}))
+    it("should log error when selectedRole is missing and trigger logout", async () => {
+      const authMock = createAuthMock({selectedRole: undefined})
+      jest.mocked(useAuth).mockReturnValue(authMock)
 
       const {result} = renderHook(() => useSessionTimeout())
 
@@ -173,9 +181,12 @@ describe("useSessionTimeout", () => {
 
       expect(logger.error).toHaveBeenCalledWith("No selected role available to extend session")
       expect(updateRemoteSelectedRole).not.toHaveBeenCalled()
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
     })
 
     it("should handle error from updateRemoteSelectedRole", async () => {
+      const authMock = createAuthMock()
+      jest.mocked(useAuth).mockReturnValue(authMock)
       jest.mocked(updateRemoteSelectedRole).mockRejectedValue(new Error("API Error"))
 
       const {result} = renderHook(() => useSessionTimeout())
@@ -192,6 +203,8 @@ describe("useSessionTimeout", () => {
       })
       expect(updatedState.action).toBe("loggingOut")
       expect(updatedState.buttonDisabled).toBe(true)
+      // Should call handleSignoutEvent after error
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
     })
 
     it("should prevent duplicate calls via actionLockRef", async () => {
@@ -221,7 +234,7 @@ describe("useSessionTimeout", () => {
   })
 
   describe("onLogOut", () => {
-    it("should call signOut with redirect URL", async () => {
+    it("should call handleSignoutEvent and clear modal type", async () => {
       const authMock = createAuthMock()
       jest.mocked(useAuth).mockReturnValue(authMock)
 
@@ -231,7 +244,7 @@ describe("useSessionTimeout", () => {
         await result.current.onLogOut()
       })
 
-      expect(signOut).toHaveBeenCalledWith(authMock, "mock-redirect-url")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
       expect(mockSetLogoutModalType).toHaveBeenCalledWith(undefined)
       expect(logger.info).toHaveBeenCalledWith(
         "User chose to log out from session timeout modal"
@@ -254,7 +267,7 @@ describe("useSessionTimeout", () => {
     })
 
     it("should prevent duplicate logout calls", async () => {
-      jest.mocked(signOut).mockImplementation(() => new Promise(() => {}))
+      jest.mocked(handleSignoutEvent).mockImplementation(() => new Promise(() => {}))
 
       const {result} = renderHook(() => useSessionTimeout())
 
@@ -269,7 +282,7 @@ describe("useSessionTimeout", () => {
       expect(logger.info).toHaveBeenCalledWith(
         "Session action already in progress, ignoring duplicate request"
       )
-      expect(signOut).toHaveBeenCalledTimes(1)
+      expect(handleSignoutEvent).toHaveBeenCalledTimes(1)
     })
 
     it("should prevent cross-calls (stay logged in then log out)", async () => {
@@ -289,7 +302,7 @@ describe("useSessionTimeout", () => {
         await result.current.onLogOut()
       })
 
-      expect(signOut).not.toHaveBeenCalled()
+      expect(handleSignoutEvent).not.toHaveBeenCalled()
     })
   })
 
@@ -306,7 +319,7 @@ describe("useSessionTimeout", () => {
 
       expect(logger.warn).toHaveBeenCalledWith("Session automatically timed out")
       expect(mockUpdateInvalidSessionCause).toHaveBeenCalledWith("Timeout")
-      expect(handleRestartLogin).toHaveBeenCalledWith(authMock, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
       // clearCountdownTimer should have reset timeLeft to 0
       const updaterFn = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
       const updatedState = updaterFn({

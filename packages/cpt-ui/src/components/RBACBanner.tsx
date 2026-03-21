@@ -8,10 +8,10 @@ import {logger} from "@/helpers/logger"
 
 export default function RBACBanner() {
   const [bannerText, setBannerText] = useState<string>("")
-  const {selectedRole, userDetails} = useAuth()
+  const {isSignedIn, selectedRole, userDetails} = useAuth()
 
   useEffect(() => {
-    if (!selectedRole || !userDetails) {
+    if (!isSignedIn || !selectedRole || !userDetails) {
       logger.info("No selected role or user details - hiding RBAC banner.")
       setBannerText("")
       return
@@ -46,14 +46,14 @@ export default function RBACBanner() {
         .replace("{orgName}", orgName)
         .replace("{odsCode}", selectedRole.org_code || RBAC_BANNER_STRINGS.NO_ODS_CODE)
     )
-  }, [selectedRole, userDetails])
+  }, [isSignedIn, selectedRole, userDetails])
 
   /**
   * Hide the banner if the user session is missing or incomplete.
   * The component should render only after a role is selected.
   * This check must come after the effect logic to prevent hydration errors in SSR.
   */
-  if (!selectedRole) {
+  if (!isSignedIn || !selectedRole || !userDetails) {
     return null
   }
 

@@ -99,11 +99,6 @@ export const ALLOWED_NO_ROLE_PATHS = [
   FRONTEND_PATHS.CHANGE_YOUR_ROLE
 ] as const
 
-export const ALLOWED_NO_REDIRECT_PATHS = [
-  ...PUBLIC_PATHS,
-  FRONTEND_PATHS.SESSION_LOGGED_OUT
-] as const
-
 // pages where patient and prescription banners should be shown
 export const BANNER_ALLOWED_PATHS = [
   FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT,
@@ -133,3 +128,12 @@ const validateEnvironment = (env: string): env is Environment => {
 if (!validateEnvironment(ENV_CONFIG.TARGET_ENVIRONMENT)) {
   throw new Error(`Invalid environment: ${ENV_CONFIG.TARGET_ENVIRONMENT}`)
 }
+
+export const LOGOUT_MARKER_STORAGE_KEY = "logoutMarker"
+export const LOGOUT_MARKER_STORAGE_GROUP = "logoutMarker"
+export const LOGOUT_MARKER_MAX_AGE_MS = 2000
+
+export const TAB_ID_SESSION_KEY = "tabId"
+export const OPEN_TABS_STORAGE_KEY = "openTabIds"
+export const TAB_HEARTBEATS_STORAGE_KEY = "tabHeartbeats"
+export const TAB_STALE_THRESHOLD_MS = 5 * 60 * 1000 // 5 minutes

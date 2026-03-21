@@ -2,9 +2,8 @@ import {useCallback, useRef} from "react"
 import {logger} from "@/helpers/logger"
 import {useAuth} from "@/context/AuthProvider"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
-import {AUTH_CONFIG} from "@/constants/environment"
-
+import {handleSignoutEvent} from "@/helpers/logout"
+import {useNavigate} from "react-router-dom"
 export interface SessionTimeoutProps {
   onStayLoggedIn: () => Promise<void>
   onLogOut: () => Promise<void>
@@ -13,6 +12,7 @@ export interface SessionTimeoutProps {
 
 export const useSessionTimeout = () => {
   const auth = useAuth()
+  const navigate = useNavigate()
   const actionLockRef = useRef<"extending" | "loggingOut" | undefined>(undefined)
 
   const clearCountdownTimer = () => {
@@ -67,7 +67,7 @@ export const useSessionTimeout = () => {
     actionLockRef.current = "loggingOut"
     logger.info("User chose to log out from session timeout modal")
     auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
-    await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    await handleSignoutEvent(auth, navigate, "Timeout")
     auth.setLogoutModalType(undefined)
   }, [auth])
 
@@ -75,7 +75,7 @@ export const useSessionTimeout = () => {
     logger.warn("Session automatically timed out")
     clearCountdownTimer()
     auth.updateInvalidSessionCause("Timeout")
-    await handleRestartLogin(auth, "Timeout")
+    await handleSignoutEvent(auth, navigate, "Timeout")
   }, [auth])
 
   return {
