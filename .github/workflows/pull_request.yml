@@ -36,7 +36,7 @@ jobs:
   quality_checks:
     # always run, but only block in the non-skip case
     needs: [get_commit_message, get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
