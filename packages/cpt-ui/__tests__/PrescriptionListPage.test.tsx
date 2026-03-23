@@ -220,7 +220,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockReturnValue(pendingPromise)
 
       render(
-        <TestWrapper searchState={{prescriptionId: "ABC123"}}>
+        <TestWrapper searchState={{prescriptionId: "ABC123", searchType: "prescriptionId"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -242,7 +242,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper>
+        <TestWrapper searchState={{searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -275,7 +275,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper>
+        <TestWrapper searchState={{searchType: "prescriptionId"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -298,7 +298,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{searchType: "basicDetails"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -317,7 +317,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -340,7 +340,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{prescriptionId: "ABC123-A83008-C2D93O"}}>
+        <TestWrapper searchState={{prescriptionId: "ABC123-A83008-C2D93O", searchType: "prescriptionId"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -383,7 +383,8 @@ describe("PrescriptionListPage", () => {
       render(
         <TestWrapper searchState={{
           prescriptionId: "ABC123-A83008-C2D93O",
-          issueNumber: undefined
+          issueNumber: undefined,
+          searchType: "prescriptionId"
         }}>
           <PrescriptionListPage />
         </TestWrapper>
@@ -410,7 +411,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -432,7 +433,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -453,7 +454,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -487,7 +488,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(axiosError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -524,7 +525,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(axiosError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -561,7 +562,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(axiosError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -598,7 +599,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(axiosError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -635,7 +636,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(axiosError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -669,7 +670,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(axiosError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -688,7 +689,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(genericError)
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -716,7 +717,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -739,7 +740,7 @@ describe("PrescriptionListPage", () => {
       mockedHttp.get.mockRejectedValue(new Error("Network error"))
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -760,7 +761,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )
@@ -782,7 +783,7 @@ describe("PrescriptionListPage", () => {
       })
 
       render(
-        <TestWrapper searchState={{nhsNumber: "9735652587"}}>
+        <TestWrapper searchState={{nhsNumber: "9735652587", searchType: "nhs"}}>
           <PrescriptionListPage />
         </TestWrapper>
       )

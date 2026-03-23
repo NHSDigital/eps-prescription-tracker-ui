@@ -70,6 +70,7 @@ export default function PrescriptionListPage() {
         const searchParam = originalSearchParams?.[searchType] || searchContext[searchType]
         if (!searchParam) {
           // No search parameter available - redirect to search page
+          logger.info("No search parameter provided - redirecting to prescription ID search")
           navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
           return
         }
@@ -88,6 +89,7 @@ export default function PrescriptionListPage() {
           break
         default:
           // Unrecognized search type - redirect to search page
+          logger.info("No search parameter provided - redirecting to prescription ID search")
           navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
           return
       }
