@@ -51,62 +51,33 @@ export default function PrescriptionListPage() {
 
       // Use searchType from SearchProvider to determine which parameter to search with
       const searchParams = new URLSearchParams()
-      let hasValidSearchCriteria = false
-
       // Check original parameters first, then fall back to current search context
       const originalSearchParams = navigationContext.getOriginalSearchParameters()
 
-      const handleNhsNumber = (nhsNumber: string) => {
-        searchParams.append("nhsNumber", nhsNumber)
-        hasValidSearchCriteria = true
-        if (originalSearchParams?.nhsNumber) {
-          logger.info("Using original NHS number from navigation context", {
-            nhsNumber: originalSearchParams.nhsNumber
-          })
+      const handleSearchParams = (searchType: "nhsNumber" | "prescriptionId") => {
+        const searchParam = originalSearchParams?.[searchType] || searchContext[searchType]
+        if (!searchParam) {
+          // No search parameter available - redirect to search page
+          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+          return
         }
+        searchParams.append(searchType, searchParam)
       }
 
-      const handlePrescriptionId = (prescriptionId: string) => {
-        searchParams.append("prescriptionId", prescriptionId)
-        hasValidSearchCriteria = true
-        if (originalSearchParams?.prescriptionId) {
-          logger.info("Using original prescription ID from navigation context", {
-            prescriptionId: originalSearchParams.prescriptionId
-          })
-        }
-      }
-
-      // Handle basic details case - redirect to prescription ID search
-      if (originalSearchParams &&
-          (originalSearchParams.firstName || originalSearchParams.lastName) &&
-          !originalSearchParams.nhsNumber) {
-        logger.info("Basic details present but no NHS number - redirecting to prescription ID search")
-        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-        return
-      }
-
-      if (searchContext.searchType === "nhs" &&
-          (originalSearchParams?.nhsNumber || searchContext.nhsNumber)) {
-        const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
-        handleNhsNumber(nhsNumber!)
-      } else if (searchContext.searchType === "prescriptionId" &&
-                 (originalSearchParams?.prescriptionId || searchContext.prescriptionId)) {
-        const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
-        handlePrescriptionId(prescriptionId!)
-      } else if (originalSearchParams?.nhsNumber || searchContext.nhsNumber) {
-        // Fallback: if no searchType is set, try using available parameters
-        const nhsNumber = originalSearchParams?.nhsNumber || searchContext.nhsNumber
-        handleNhsNumber(nhsNumber!)
-      } else if (originalSearchParams?.prescriptionId || searchContext.prescriptionId) {
-        const prescriptionId = originalSearchParams?.prescriptionId || searchContext.prescriptionId
-        handlePrescriptionId(prescriptionId!)
-      }
-
-      // If no valid search criteria, redirect to prescription ID search
-      if (!hasValidSearchCriteria) {
-        logger.info("No search parameter provided - redirecting to prescription ID search")
-        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-        return
+      switch (searchContext.searchType) {
+        case "nhs":
+          handleSearchParams("nhsNumber")
+          break
+        case "prescriptionId":
+          handleSearchParams("prescriptionId")
+          break
+        case "basicDetails":
+          handleSearchParams("nhsNumber")
+          break
+        default:
+          // Unrecognized search type - redirect to search page
+          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+          return
       }
 
       try {
