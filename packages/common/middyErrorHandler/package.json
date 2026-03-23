@@ -14,10 +14,10 @@
     "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.31.0"
+    "@aws-lambda-powertools/logger": "^2.32.0"
   },
   "devDependencies": {
-    "@middy/core": "^7.1.7",
+    "@middy/core": "^7.2.1",
     "@cpt-ui-common/testing": "^1.0.0"
   }
 }
