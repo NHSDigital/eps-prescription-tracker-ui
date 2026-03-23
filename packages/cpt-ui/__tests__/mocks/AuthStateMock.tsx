@@ -29,6 +29,8 @@ export const mockAuthState = {
   rolesWithoutAccess: [],
   selectedRole: undefined,
   userDetails: undefined,
+  sessionTimeoutModalInfo: {showModal: false, timeLeft: 0, action: undefined, buttonDisabled: false},
+  logoutModalType: undefined,
 
   // Mock functions with sensible defaults
   cognitoSignIn: jest.fn(),
@@ -39,6 +41,9 @@ export const mockAuthState = {
   updateTrackerUserInfo: jest.fn(),
   updateInvalidSessionCause: jest.fn(),
   setIsSigningOut: jest.fn(),
+  setStateForSignOut: jest.fn().mockImplementation(() => Promise.resolve()),
+  setSessionTimeoutModalInfo: jest.fn(),
+  setLogoutModalType: jest.fn(),
   remainingSessionTime: undefined
 } as unknown as AuthContextType
 

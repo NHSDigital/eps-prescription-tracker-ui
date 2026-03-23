@@ -33,27 +33,17 @@ import SessionLoggedOutPage from "./pages/SessionLoggedOut"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
 import {useSessionTimeout} from "@/hooks/useSessionTimeout"
-import {useAccess} from "@/context/AccessProvider"
+import {useAuth} from "@/context/AuthProvider"
 
 function AppContent() {
   const location = useLocation()
-  const accessContext = useAccess()
-
-  const sessionTimeoutProps = {
-    showModal: accessContext.sessionTimeoutInfo.showModal,
-    timeLeft: accessContext.sessionTimeoutInfo.timeLeft,
-    onStayLoggedIn: accessContext.onStayLoggedIn,
-    onLogOut: accessContext.onLogOut,
-    onTimeout: accessContext.onTimeout
-  }
+  const auth = useAuth()
 
   const {
-    showModal,
-    timeLeft,
     onStayLoggedIn,
     onLogOut,
-    isExtending
-  } = useSessionTimeout(sessionTimeoutProps)
+    onTimeOut
+  } = useSessionTimeout()
 
   // Use the refactored focus management hook
   useFocusManagement()
@@ -122,11 +112,12 @@ function AppContent() {
           </SearchProvider>
         </PrescriptionInformationProvider>
         <SessionTimeoutModal
-          isOpen={showModal}
-          timeLeft={timeLeft}
+          isOpen={auth.logoutModalType === "timeout" && auth.sessionTimeoutModalInfo.showModal}
+          timeLeft={auth.sessionTimeoutModalInfo.timeLeft}
           onStayLoggedIn={onStayLoggedIn}
           onLogOut={onLogOut}
-          isExtending={isExtending}
+          onTimeOut={onTimeOut}
+          buttonDisabledState={auth.sessionTimeoutModalInfo.buttonDisabled}
         />
       </PatientDetailsProvider>
     </>
