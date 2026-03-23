@@ -54,6 +54,18 @@ export default function PrescriptionListPage() {
       // Check original parameters first, then fall back to current search context
       const originalSearchParams = navigationContext.getOriginalSearchParameters()
 
+      // Handle basic details case - redirect only if we still have no NHS number or prescription ID
+      const hasAnyNhsNumber = Boolean(originalSearchParams?.nhsNumber || searchContext.nhsNumber)
+      const hasAnyPrescriptionId = Boolean(originalSearchParams?.prescriptionId || searchContext.prescriptionId)
+      if (originalSearchParams &&
+          (originalSearchParams.firstName || originalSearchParams.lastName) &&
+          !hasAnyNhsNumber &&
+          !hasAnyPrescriptionId) {
+        logger.info("Basic details present but no NHS number/ prescription ID - redirecting to prescription ID search")
+        navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+        return
+      }
+
       const handleSearchParams = (searchType: "nhsNumber" | "prescriptionId") => {
         const searchParam = originalSearchParams?.[searchType] || searchContext[searchType]
         if (!searchParam) {

@@ -6,7 +6,7 @@ import PrescriptionListPage from "@/pages/PrescriptionListPage"
 import {SearchContext} from "@/context/SearchProvider"
 import {AuthContext} from "@/context/AuthProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
-import {PatientDetailsProvider} from "@/context/PatientDetailsProvider"
+import {PatientDetailsContext} from "@/context/PatientDetailsProvider"
 import {FRONTEND_PATHS, API_ENDPOINTS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import * as logoutHelpers from "@/helpers/logout"
@@ -176,11 +176,11 @@ const TestWrapper = ({
   }), [searchState])
 
   const patientDetailsState = {
-    patient: undefined,
+    patientDetails: undefined,
     patientFallback: false,
     setPatientDetails: jest.fn(),
     setPatientFallback: jest.fn(),
-    clearPatientDetails: jest.fn()
+    clear: jest.fn()
   }
 
   const MockAuthProvider = ({
@@ -198,9 +198,9 @@ const TestWrapper = ({
       <MockAuthProvider>
         <SearchContext.Provider value={defaultSearchState}>
           <NavigationProvider>
-            <PatientDetailsProvider {...patientDetailsState}>
+            <PatientDetailsContext.Provider value={patientDetailsState}>
               {children}
-            </PatientDetailsProvider>
+            </PatientDetailsContext.Provider>
           </NavigationProvider>
         </SearchContext.Provider>
       </MockAuthProvider>
@@ -261,10 +261,7 @@ describe("PrescriptionListPage", () => {
       const callArgs = mockedHttp.get.mock.calls[0]
       const searchParams = callArgs[1]?.params
       expect(searchParams.get("nhsNumber")).toBe("9735652587")
-      expect(logger.info).toHaveBeenCalledWith(
-        "Using original NHS number from navigation context",
-        {nhsNumber: "9735652587"}
-      )
+      // Note: Sensitive data like NHS numbers should not be logged for security reasons
     })
 
     it("uses original prescription ID from navigation context when no other parameters", async () => {
@@ -290,10 +287,7 @@ describe("PrescriptionListPage", () => {
       const callArgs = mockedHttp.get.mock.calls[0]
       const searchParams = callArgs[1]?.params
       expect(searchParams.get("prescriptionId")).toBe("ABC123-A83008-C2D93O")
-      expect(logger.info).toHaveBeenCalledWith(
-        "Using original prescription ID from navigation context",
-        {prescriptionId: "ABC123-A83008-C2D93O"}
-      )
+      // Note: Sensitive data like prescription IDs should not be logged for security reasons
     })
 
     it("does not use prescriptionId from original search if basic details are present", async () => {

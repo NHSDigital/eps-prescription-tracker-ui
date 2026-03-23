@@ -12,7 +12,11 @@ export default function SessionLoggedOutPage() {
     ? EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION
     : auth.invalidSessionCause === "Timeout"
       ? EpsLogoutStrings.PAGE_TITLE_WE_LOGGED_OUT
-      : EpsLogoutStrings.PAGE_TITLE)
+      : (auth.invalidSessionCause === "token_expired" ||
+         auth.invalidSessionCause === "InvalidSession" ||
+         auth.invalidSessionCause === "session_expired")
+        ? EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED
+        : EpsLogoutStrings.PAGE_TITLE)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (

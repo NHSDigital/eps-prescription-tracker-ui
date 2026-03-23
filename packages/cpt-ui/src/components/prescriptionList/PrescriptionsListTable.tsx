@@ -330,9 +330,7 @@ const PrescriptionsListTable = ({
             <span>
               <span
                 aria-hidden="true"
-                role="img"
                 className="warning-icon"
-                aria-label={PRESCRIPTION_LIST_TABLE_TEXT.WARNING}
               >
                 ⚠️
               </span>
