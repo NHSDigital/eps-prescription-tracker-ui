@@ -21,5 +21,11 @@ export const FOOTER_LINKS = [
     href: "/site/cookies",
     external: false,
     testId: "eps_footer-link-cookie-policy"
+  },
+  {
+    text: "Accessibility statement",
+    href: "/site/accessibility-statement",
+    external: false,
+    testId: "eps_footer-link-accessibility-statement"
   }
 ]
