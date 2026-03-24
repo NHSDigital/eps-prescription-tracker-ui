@@ -137,15 +137,17 @@ export default function RoleSelectionPage({
   }
 
   const onConfirmRole = () => {
-    logger.debug("Role confirmed", {
-      sessionId: auth.sessionId,
-      pageName: location.pathname,
-      userId: auth.userDetails?.sub,
-      roleName: auth.selectedRole?.role_name,
-      roleId: auth.selectedRole?.role_id,
-      orgName: auth.selectedRole?.org_name,
-      orgCode: auth.selectedRole?.org_code
-    }, true)
+    if(location.pathname === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+      logger.debug("Role confirmed", {
+        sessionId: auth.sessionId,
+        pageName: location.pathname,
+        userId: auth.userDetails?.sub,
+        roleName: auth.selectedRole?.role_name,
+        roleId: auth.selectedRole?.role_id,
+        orgName: auth.selectedRole?.org_name,
+        orgCode: auth.selectedRole?.org_code
+      }, true)
+    }
     navigate(confirmButton.link)
   }
 
