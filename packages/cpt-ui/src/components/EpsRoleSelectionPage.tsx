@@ -14,7 +14,7 @@ import {
 import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
@@ -137,7 +137,7 @@ export default function RoleSelectionPage({
   }
 
   const onConfirmRole = () => {
-    if(location.pathname === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+    if(location.pathname === `/${ENV_CONFIG.BASE_PATH}${FRONTEND_PATHS.SELECT_YOUR_ROLE}`) {
       logger.debug("Role confirmed", {
         sessionId: auth.sessionId,
         pageName: location.pathname,
