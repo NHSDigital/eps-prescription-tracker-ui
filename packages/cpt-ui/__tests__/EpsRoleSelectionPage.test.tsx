@@ -1073,7 +1073,7 @@ describe("RoleSelectionPage", () => {
       expect(screen.getByText(/No Org/)).toBeInTheDocument()
       expect(screen.getByText(/No ODS/)).toBeInTheDocument()
       expect(screen.getByText("No Role")).toBeInTheDocument()
-      expect(screen.getByText("No Address")).toBeInTheDocument()
+      expect(screen.getByText("No address available")).toBeInTheDocument()
     })
 
     it("filters out selected role from available roles", () => {

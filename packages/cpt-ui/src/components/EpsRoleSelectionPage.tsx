@@ -125,6 +125,8 @@ function RoleCard({
       aria-disabled={isOtherCardDisabled}
     >
       <Card.Content>
+        {/* anchor tags are used here for accessibility reasons,
+       as they more accurately depict if a card is active or disabled for screen readers */}
         <div className="eps-card__layout">
           <div>
             <Card.Heading className="nhsuk-heading-s eps-card__org-name">
