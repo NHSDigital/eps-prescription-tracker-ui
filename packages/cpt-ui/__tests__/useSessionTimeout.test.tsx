@@ -181,7 +181,7 @@ describe("useSessionTimeout", () => {
 
       expect(logger.error).toHaveBeenCalledWith("No selected role available to extend session")
       expect(updateRemoteSelectedRole).not.toHaveBeenCalled()
-      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout", "Timeout")
     })
 
     it("should handle error from updateRemoteSelectedRole", async () => {
@@ -204,7 +204,7 @@ describe("useSessionTimeout", () => {
       expect(updatedState.action).toBe("loggingOut")
       expect(updatedState.buttonDisabled).toBe(true)
       // Should call handleSignoutEvent after error
-      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout", "Timeout")
     })
 
     it("should prevent duplicate calls via actionLockRef", async () => {
@@ -244,7 +244,7 @@ describe("useSessionTimeout", () => {
         await result.current.onLogOut()
       })
 
-      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout", "Timeout")
       expect(mockSetLogoutModalType).toHaveBeenCalledWith(undefined)
       expect(logger.info).toHaveBeenCalledWith(
         "User chose to log out from session timeout modal"
@@ -318,8 +318,7 @@ describe("useSessionTimeout", () => {
       })
 
       expect(logger.warn).toHaveBeenCalledWith("Session automatically timed out")
-      expect(mockUpdateInvalidSessionCause).toHaveBeenCalledWith("Timeout")
-      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout", "Timeout")
       // clearCountdownTimer should have reset timeLeft to 0
       const updaterFn = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
       const updatedState = updaterFn({
