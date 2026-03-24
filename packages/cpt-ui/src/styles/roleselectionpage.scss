@@ -20,10 +20,7 @@
 .nhsuk-card--selected .selected-card-link:visited,
 .nhsuk-card--selected .selected-card-link:active {
   color: #7c2d12 !important;
-  text-decoration: underline !important;
-  text-decoration-color: #7c2d12 !important;
-  text-underline-offset: .1578947368em;
-  text-decoration-thickness: max(.08em, 1px);
+  text-decoration: none !important;
 }
 
 .nhsuk-card--selected .selected-card-link:hover,
@@ -47,12 +44,14 @@
   text-decoration: none !important;
 }
 
-// Ensure selected card org-name has red-purple styling in default state
+// Ensure selected cards have NO underlines at all
 .nhsuk-card--selected .eps-card__org-name,
-.nhsuk-card--selected .eps-card__org-name .nhsuk-heading-s {
+.nhsuk-card--selected .eps-card__org-name.nhsuk-heading-s,
+.nhsuk-card--selected .nhsuk-heading-s.eps-card__org-name,
+.nhsuk-card--selected .eps-card__org-name *,
+.nhsuk-card--selected .eps-card__org-name .nhsuk-heading-s,
+.nhsuk-card--selected .eps-card__org-name .selected-card-link,
+.nhsuk-card--selected .eps-card__org-name a {
   color: #7c2d12 !important;
-  text-decoration: underline !important;
-  text-decoration-color: #7c2d12 !important;
-  text-underline-offset: .1578947368em;
-  text-decoration-thickness: max(.08em, 1px);
+  text-decoration: none !important;
 }
