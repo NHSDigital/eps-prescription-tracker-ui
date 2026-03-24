@@ -8,11 +8,11 @@ env:
 
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     with:
       verify_published_from_main_image: true
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     needs: [get_config_values]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -31,7 +31,7 @@ jobs:
 
   tag_release:
     needs: [quality_checks, get_commit_id, get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@7a89b111ae752548e8e3f3fbaeb89bd6ecca0698
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     permissions:
       id-token: write
       contents: write
@@ -191,7 +191,7 @@ jobs:
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://int.api.service.nhs.uk/clinical-prescription-tracker/"
       APIGEE_PDS_ENDPOINT: "https://int.api.service.nhs.uk/personal-demographics/FHIR/R4/"
       APIGEE_DOHS_ENDPOINT: "https://int.api.service.nhs.uk/service-search-api/"
-      JWT_KID: "eps-cpt-ui-int"
+      JWT_KID: "eps-cptui-int-2026-03-23"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: false
@@ -225,7 +225,7 @@ jobs:
       APIGEE_PRESCRIPTIONS_ENDPOINT: "https://api.service.nhs.uk/clinical-prescription-tracker/"
       APIGEE_PDS_ENDPOINT: "https://api.service.nhs.uk/personal-demographics/FHIR/R4/"
       APIGEE_DOHS_ENDPOINT: "https://api.service.nhs.uk/service-search-api/"
-      JWT_KID: "eps-cpt-ui-prod"
+      JWT_KID: "eps-cptui-prod-2026-03-23"
       ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: false
