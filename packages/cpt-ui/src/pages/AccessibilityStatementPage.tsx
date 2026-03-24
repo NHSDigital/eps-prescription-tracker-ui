@@ -24,7 +24,7 @@ export default function AccessibilityStatementPage() {
       </Breadcrumb>
 
       <div className="nhsuk-grid-row">
-        <div className="nhsuk-grid-column-full" data-testid="privacy-notice-content">
+        <div className="nhsuk-grid-column-full" data-testid="accessibility-statement-content">
           <h1 className="nhsuk-heading-xl">{AccessibilityStatementStrings.header}</h1>
           <p><EpsRichText content={AccessibilityStatementStrings.openingSection.p1} /></p>
           <p>{AccessibilityStatementStrings.openingSection.p2}</p>
