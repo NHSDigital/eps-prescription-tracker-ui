@@ -65,14 +65,100 @@ interface LocationType {
 
 // Props for the extracted RoleCard component
 interface RoleCardProps {
-  roleCardProps: RolesWithAccessProps
-  isThisCardSelected: boolean
-  isOtherCardDisabled: boolean
-  onCardClick: (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => void
-  onCardKeyDown: (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => void
-  noOrgName: string
-  noODSCode: string
-  noRoleName: string
+  readonly roleCardProps: RolesWithAccessProps
+  readonly isThisCardSelected: boolean
+  readonly isOtherCardDisabled: boolean
+  readonly onCardClick: (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => void
+  readonly onCardKeyDown: (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => void
+  readonly noOrgName: string
+  readonly noODSCode: string
+  readonly noRoleName: string
+}
+
+// Helper functions to reduce cognitive complexity
+function createCardClassName(isOtherCardDisabled: boolean, isThisCardSelected: boolean): string {
+  let className = "nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
+  if (isOtherCardDisabled) className += " nhsuk-card--disabled"
+  if (isThisCardSelected) className += " nhsuk-card--selected"
+  return className
+}
+
+function createCardStyle(isOtherCardDisabled: boolean) {
+  return {
+    cursor: isOtherCardDisabled ? "not-allowed" : "pointer",
+    opacity: isOtherCardDisabled ? 0.5 : 1,
+    pointerEvents: isOtherCardDisabled ? "none" as const : "auto" as const
+  }
+}
+
+function createLinkStyle(isOtherCardDisabled: boolean) {
+  return {
+    textDecoration: "none",
+    color: "inherit",
+    pointerEvents: isOtherCardDisabled ? "none" as const : "auto" as const,
+    cursor: isOtherCardDisabled ? "not-allowed" : "pointer"
+  }
+}
+
+function createLinkClassName(isOtherCardDisabled: boolean, isThisCardSelected: boolean): string {
+  let className = ""
+  if (isOtherCardDisabled) className += "disabled-card-link "
+  if (isThisCardSelected) className += "selected-card-link"
+  return className.trim()
+}
+
+// Extracted organization link component
+interface RoleCardLinkProps {
+  readonly roleCardProps: RolesWithAccessProps
+  readonly isOtherCardDisabled: boolean
+  readonly onCardClick: (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => void
+  readonly onCardKeyDown: (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => void
+  readonly linkStyle: React.CSSProperties
+  readonly linkClassName: string
+  readonly noOrgName: string
+  readonly noODSCode: string
+}
+
+function RoleCardLink({
+  roleCardProps,
+  isOtherCardDisabled,
+  onCardClick,
+  onCardKeyDown,
+  linkStyle,
+  linkClassName,
+  noOrgName,
+  noODSCode
+}: RoleCardLinkProps) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (isOtherCardDisabled) {
+      e.preventDefault()
+    } else {
+      onCardClick(e, roleCardProps)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOtherCardDisabled) {
+      onCardKeyDown(e, roleCardProps)
+    }
+  }
+
+  return (
+    <a
+      href="#"
+      onClick={handleClick}
+      onKeyDown={isOtherCardDisabled ? undefined : handleKeyDown}
+      style={linkStyle}
+      tabIndex={isOtherCardDisabled ? -1 : 0}
+      aria-disabled={isOtherCardDisabled}
+      role="button"
+      className={linkClassName}
+    >
+      {roleCardProps.role.org_name || noOrgName}
+      <br />
+      (ODS: {roleCardProps.role.org_code || noODSCode})
+    </a>
+  )
 }
 
 function RoleCard({
@@ -85,32 +171,37 @@ function RoleCard({
   noODSCode,
   noRoleName
 }: RoleCardProps) {
-  const cardClassName = React.useMemo(() => {
-    let className = "nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
-    if (isOtherCardDisabled) className += " nhsuk-card--disabled"
-    if (isThisCardSelected) className += " nhsuk-card--selected"
-    return className
-  }, [isOtherCardDisabled, isThisCardSelected])
+  const cardClassName = React.useMemo(() =>
+    createCardClassName(isOtherCardDisabled, isThisCardSelected),
+  [isOtherCardDisabled, isThisCardSelected]
+  )
 
-  const cardStyle = React.useMemo(() => ({
-    cursor: isOtherCardDisabled ? "not-allowed" : "pointer",
-    opacity: isOtherCardDisabled ? 0.5 : 1,
-    pointerEvents: isOtherCardDisabled ? "none" as const : "auto" as const
-  }), [isOtherCardDisabled])
+  const cardStyle = React.useMemo(() =>
+    createCardStyle(isOtherCardDisabled),
+  [isOtherCardDisabled]
+  )
 
-  const linkStyle = React.useMemo(() => ({
-    textDecoration: "none",
-    color: "inherit",
-    pointerEvents: isOtherCardDisabled ? "none" as const : "auto" as const,
-    cursor: isOtherCardDisabled ? "not-allowed" : "pointer"
-  }), [isOtherCardDisabled])
+  const linkStyle = React.useMemo(() =>
+    createLinkStyle(isOtherCardDisabled),
+  [isOtherCardDisabled]
+  )
 
-  const linkClassName = React.useMemo(() => {
-    let className = ""
-    if (isOtherCardDisabled) className += "disabled-card-link "
-    if (isThisCardSelected) className += "selected-card-link"
-    return className.trim()
-  }, [isOtherCardDisabled, isThisCardSelected])
+  const linkClassName = React.useMemo(() =>
+    createLinkClassName(isOtherCardDisabled, isThisCardSelected),
+  [isOtherCardDisabled, isThisCardSelected]
+  )
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isOtherCardDisabled) {
+      onCardKeyDown(e, roleCardProps)
+    }
+  }
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!isOtherCardDisabled) {
+      onCardClick(e, roleCardProps)
+    }
+  }
 
   return (
     <Card
@@ -118,8 +209,8 @@ function RoleCard({
       data-testid="eps-card"
       className={cardClassName}
       tabIndex={isOtherCardDisabled ? -1 : 0}
-      onKeyDown={isOtherCardDisabled ? undefined : (e) => onCardKeyDown(e, roleCardProps)}
-      onClick={isOtherCardDisabled ? undefined : (e) => onCardClick(e, roleCardProps)}
+      onKeyDown={isOtherCardDisabled ? undefined : handleKeyDown}
+      onClick={isOtherCardDisabled ? undefined : handleClick}
       style={cardStyle}
       role="button"
       aria-disabled={isOtherCardDisabled}
@@ -130,26 +221,16 @@ function RoleCard({
         <div className="eps-card__layout">
           <div>
             <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-              <a
-                href="#"
-                onClick={isOtherCardDisabled ?
-                  (e) => e.preventDefault() :
-                  (e) => onCardClick(e, roleCardProps)
-                }
-                onKeyDown={isOtherCardDisabled ?
-                  undefined :
-                  (e) => onCardKeyDown(e, roleCardProps)
-                }
-                style={linkStyle}
-                tabIndex={isOtherCardDisabled ? -1 : 0}
-                aria-disabled={isOtherCardDisabled}
-                role="button"
-                className={linkClassName}
-              >
-                {roleCardProps.role.org_name || noOrgName}
-                <br />
-                (ODS: {roleCardProps.role.org_code || noODSCode})
-              </a>
+              <RoleCardLink
+                roleCardProps={roleCardProps}
+                isOtherCardDisabled={isOtherCardDisabled}
+                onCardClick={onCardClick}
+                onCardKeyDown={onCardKeyDown}
+                linkStyle={linkStyle}
+                linkClassName={linkClassName}
+                noOrgName={noOrgName}
+                noODSCode={noODSCode}
+              />
             </Card.Heading>
             <Card.Description className="nhsuk-u-margin-top-2">
               {roleCardProps.role.role_name || noRoleName}
@@ -185,14 +266,14 @@ function RoleCardAddress({address}: { address?: string }) {
 
 // Extracted role cards section component
 interface RoleCardsSectionProps {
-  rolesWithAccess: Array<RolesWithAccessProps>
-  selectedCardId: string | null
-  isSelectingRole: boolean
-  onCardClick: (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => void
-  onCardKeyDown: (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => void
-  noOrgName: string
-  noODSCode: string
-  noRoleName: string
+  readonly rolesWithAccess: Array<RolesWithAccessProps>
+  readonly selectedCardId: string | null
+  readonly isSelectingRole: boolean
+  readonly onCardClick: (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => void
+  readonly onCardKeyDown: (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => void
+  readonly noOrgName: string
+  readonly noODSCode: string
+  readonly noRoleName: string
 }
 
 function RoleCardsSection({
@@ -232,11 +313,11 @@ function RoleCardsSection({
 }
 
 interface RolesWithoutAccessSectionProps {
-  rolesWithoutAccess: Array<RolesWithoutAccessProps>
-  rolesWithoutAccessHeader: string
-  roles_without_access_table_title: string
-  organisation: string
-  role: string
+  readonly rolesWithoutAccess: Array<RolesWithoutAccessProps>
+  readonly rolesWithoutAccessHeader: string
+  readonly roles_without_access_table_title: string
+  readonly organisation: string
+  readonly role: string
 }
 
 function RolesWithoutAccessSection({
@@ -281,36 +362,36 @@ function RolesWithoutAccessSection({
 }
 
 interface RoleComponentProps {
-  rolesWithAccess: Array<RolesWithAccessProps>
-  rolesWithoutAccess: Array<RolesWithoutAccessProps>
+  readonly rolesWithAccess: Array<RolesWithAccessProps>
+  readonly rolesWithoutAccess: Array<RolesWithoutAccessProps>
 }
 
 interface RoleSelectionPageProps {
-  contentText: {
-    pageTitle: string
-    title: string
-    caption: string
-    titleNoAccess: string
-    captionNoAccess: string
-    insetText: {
-      visuallyHidden: string
-      message: string
-      loggedInTemplate: string
+  readonly contentText: {
+    readonly pageTitle: string
+    readonly title: string
+    readonly caption: string
+    readonly titleNoAccess: string
+    readonly captionNoAccess: string
+    readonly insetText: {
+      readonly visuallyHidden: string
+      readonly message: string
+      readonly loggedInTemplate: string
     }
-    confirmButton: {
-      link: string
-      text: string
+    readonly confirmButton: {
+      readonly link: string
+      readonly text: string
     }
-    alternativeMessage: string
-    organisation: string
-    role: string
-    roles_without_access_table_title: string
-    noOrgName: string
-    rolesWithoutAccessHeader: string
-    noODSCode: string
-    noRoleName: string
-    noAddress: string
-    errorDuringRoleSelection: string
+    readonly alternativeMessage: string
+    readonly organisation: string
+    readonly role: string
+    readonly roles_without_access_table_title: string
+    readonly noOrgName: string
+    readonly rolesWithoutAccessHeader: string
+    readonly noODSCode: string
+    readonly noRoleName: string
+    readonly noAddress: string
+    readonly errorDuringRoleSelection: string
   }
 }
 
@@ -438,7 +519,7 @@ export default function RoleSelectionPage({
 
   const auth = useAuth()
   const navigate = useNavigate()
-  const location = {pathname: window.location.pathname}
+  const location = {pathname: globalThis.location.pathname}
   const redirecting = useRef(false)
   const [isSelectingRole, setIsSelectingRole] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
@@ -589,8 +670,8 @@ export default function RoleSelectionPage({
 
 // Extracted error state component
 interface ErrorStateProps {
-  error: string
-  errorDuringRoleSelection: string
+  readonly error: string
+  readonly errorDuringRoleSelection: string
 }
 
 function ErrorState({error, errorDuringRoleSelection}: ErrorStateProps) {
@@ -620,7 +701,7 @@ function ErrorState({error, errorDuringRoleSelection}: ErrorStateProps) {
 
 // Extracted main layout wrapper
 interface MainLayoutProps {
-  children: React.ReactNode
+  readonly children: React.ReactNode
 }
 
 function MainLayout({children}: MainLayoutProps) {
@@ -637,23 +718,23 @@ function MainLayout({children}: MainLayoutProps) {
 
 // Extracted user info section component
 interface UserInfoSectionProps {
-  auth: AuthContextType
-  title: string
-  titleNoAccess: string
-  caption: string
-  captionNoAccess: string
-  insetText: {
-    loggedInTemplate: string
+  readonly auth: AuthContextType
+  readonly title: string
+  readonly titleNoAccess: string
+  readonly caption: string
+  readonly captionNoAccess: string
+  readonly insetText: {
+    readonly loggedInTemplate: string
   }
-  confirmButton: {
-    link: string
-    text: string
+  readonly confirmButton: {
+    readonly link: string
+    readonly text: string
   }
-  alternativeMessage: string
-  isSelectingRole: boolean
-  noOrgName: string
-  noODSCode: string
-  noRoleName: string
+  readonly alternativeMessage: string
+  readonly isSelectingRole: boolean
+  readonly noOrgName: string
+  readonly noODSCode: string
+  readonly noRoleName: string
 }
 
 function UserInfoSection({
