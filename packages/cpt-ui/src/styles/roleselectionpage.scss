@@ -14,7 +14,6 @@
   cursor: not-allowed !important;
 }
 
-// Maintain selected card styling
 .nhsuk-card--selected .selected-card-link,
 .nhsuk-card--selected .selected-card-link:link,
 .nhsuk-card--selected .selected-card-link:visited,
@@ -27,12 +26,8 @@
 .nhsuk-card--selected .selected-card-link:focus {
   color: #7c2d12 !important;
   text-decoration: none !important;
-  // background: #fd0 !important;
-  // box-shadow: 0 -2px #fd0, 0 4px #212b32 !important;
-  // outline: 4px solid transparent;
 }
 
-// Ensure no underline on hover for ANY cards - override card.scss rules
 .nhsuk-card:hover .eps-card__org-name,
 .nhsuk-card:hover .eps-card__org-name .nhsuk-heading-s,
 .nhsuk-card:focus .eps-card__org-name,
@@ -42,6 +37,17 @@
 .nhsuk-card .eps-card__org-name:focus,
 .nhsuk-card .eps-card__org-name .nhsuk-heading-s:focus {
   text-decoration: none !important;
+}
+
+// Apply consistent line-height to ALL cards to prevent jumping
+.nhsuk-card .eps-card__org-name,
+.nhsuk-card .eps-card__org-name.nhsuk-heading-s,
+.nhsuk-card .nhsuk-heading-s.eps-card__org-name,
+.nhsuk-card .eps-card__org-name *,
+.nhsuk-card .eps-card__org-name .nhsuk-heading-s,
+.nhsuk-card .eps-card__org-name .selected-card-link,
+.nhsuk-card .eps-card__org-name a {
+  line-height: 1.2 !important; /* Consistent line spacing for all cards */
 }
 
 // Ensure selected cards have NO underlines at all
@@ -54,4 +60,5 @@
 .nhsuk-card--selected .eps-card__org-name a {
   color: #7c2d12 !important;
   text-decoration: none !important;
+  line-height: 1.2 !important;
 }
