@@ -1,30 +1,30 @@
 .nhsuk-card--disabled:not(.nhsuk-card--selected),
 .nhsuk-card--disabled:not(.nhsuk-card--selected):hover,
 .nhsuk-card--disabled:not(.nhsuk-card--selected):focus {
-  pointer-events: none !important;
-  cursor: not-allowed !important;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .disabled-card-link:not(.selected-card-link),
 .disabled-card-link:not(.selected-card-link):hover,
 .disabled-card-link:not(.selected-card-link):focus {
-  color: inherit !important;
-  text-decoration: none !important;
-  pointer-events: none !important;
-  cursor: not-allowed !important;
+  color: inherit;
+  text-decoration: none;
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 .nhsuk-card--selected .selected-card-link,
 .nhsuk-card--selected .selected-card-link:link,
 .nhsuk-card--selected .selected-card-link:visited,
 .nhsuk-card--selected .selected-card-link:active {
-  color: #7c2d12 !important;
+  color: #7c2d12;
   text-decoration: none !important;
 }
 
 .nhsuk-card--selected .selected-card-link:hover,
 .nhsuk-card--selected .selected-card-link:focus {
-  color: #7c2d12 !important;
+  color: #7c2d12;
   text-decoration: none !important;
 }
 
@@ -39,7 +39,6 @@
   text-decoration: none !important;
 }
 
-// Apply consistent line-height to ALL cards to prevent jumping
 .nhsuk-card .eps-card__org-name,
 .nhsuk-card .eps-card__org-name.nhsuk-heading-s,
 .nhsuk-card .nhsuk-heading-s.eps-card__org-name,
@@ -47,10 +46,9 @@
 .nhsuk-card .eps-card__org-name .nhsuk-heading-s,
 .nhsuk-card .eps-card__org-name .selected-card-link,
 .nhsuk-card .eps-card__org-name a {
-  line-height: 1.2 !important; /* Consistent line spacing for all cards */
+  line-height: 1.2; 
 }
 
-// Ensure selected cards have NO underlines at all
 .nhsuk-card--selected .eps-card__org-name,
 .nhsuk-card--selected .eps-card__org-name.nhsuk-heading-s,
 .nhsuk-card--selected .nhsuk-heading-s.eps-card__org-name,
@@ -58,7 +56,6 @@
 .nhsuk-card--selected .eps-card__org-name .nhsuk-heading-s,
 .nhsuk-card--selected .eps-card__org-name .selected-card-link,
 .nhsuk-card--selected .eps-card__org-name a {
-  color: #7c2d12 !important;
+  color: #7c2d12;
   text-decoration: none !important;
-  line-height: 1.2 !important;
 }
