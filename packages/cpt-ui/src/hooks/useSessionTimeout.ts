@@ -67,15 +67,14 @@ export const useSessionTimeout = () => {
     actionLockRef.current = "loggingOut"
     logger.info("User chose to log out from session timeout modal")
     auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
-    await handleSignoutEvent(auth, navigate, "Timeout")
+    await handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
     auth.setLogoutModalType(undefined)
   }, [auth])
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
     clearCountdownTimer()
-    auth.updateInvalidSessionCause("Timeout")
-    await handleSignoutEvent(auth, navigate, "Timeout")
+    await handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
   }, [auth])
 
   return {
