@@ -15,6 +15,14 @@
       "alg": "RS512",
       "kid": "eps-cpt-ui-int",
       "use": "sig"
+    },
+    {
+      "kty": "RSA",
+      "n": "uMK5OqjCPb8oz3U3nFDCXHp5K8cm_NG2pzTHjE1Cf-nuKNLnkJgxVOvYamCL9s4IFqMBl6vnJBWe-CjuE0JJa736qmPhX6MvtuVYRxbm6N18s-mhjBvk5EkAXfi5jYTTY75BsqQpvnOFJFDfc5fxHGprYqo0O0xc5CbAXFVf-xrXXNCr5_RaTlreDq7vZhcWHEuI023bAYyH9MHDUx27r6U88VF67lWtvE7ERXxx5f6dBqvNzPDhBXLAFriUHto_41MZ8XD_oG7AktXlFZngBhTgppy6C7TkOvS-8az704fmdr49ZEzKz34FW6GcIslms4oxgvtm2adGrhjnHpZEcw-3TYPCA4-D4GTRJBcStpBgwwE9eRZ_8KPE9IjCzV2f93DVagjA7_Ndq8GFLoKX9Z12wHbJX4rv4XbOvlFmaFEIpqF9nGV3u3WYaNZe_3XTlyVQ_83kyrpB6X7gXDpSTZHN40PekN6MhojoJRrHthrxSktCi155P9yZTWrRZ5hZd1T-0OwSOXeMJ40my823B-Tts7LmbHeD6LX7wd4wc8yMz3eZ5U91hCM2P3Eir_t58kjX53Q9yoAhgxzaj45wBw9OGO8jFsebGsljLZY4TR6Pw_uVRJGovqm3NQamB0Vxetzyj7r5JiNcKOXVUn1ioKJgZyD5bXUaTJVHTk7Xrcs",
+      "e": "AQAB",
+      "alg": "RS512",
+      "kid": "eps-cptui-int-2026-03-23",
+      "use": "sig"
     }
   ]
 }
