@@ -136,6 +136,19 @@ export default function RoleSelectionPage({
     handleSetSelectedRole(e, roleCardProps)
   }
 
+  const onConfirmRole = () => {
+    logger.debug("Role confirmed", {
+      sessionId: auth.sessionId,
+      pageName: location.pathname,
+      userId: auth.userDetails?.sub,
+      roleName: auth.selectedRole?.role_name,
+      roleId: auth.selectedRole?.role_id,
+      orgName: auth.selectedRole?.org_name,
+      orgCode: auth.selectedRole?.org_code
+    }, true)
+    navigate(confirmButton.link)
+  }
+
   const chunkRolesForRumLogs = (
     roles: Array<unknown>, logMessage: string, logId: string, fieldToPopulate: string) => {
     const chunkSize = 4
@@ -328,8 +341,8 @@ export default function RoleSelectionPage({
                       </p>
                     </InsetText>
                     <Button
-                      to={confirmButton.link}
                       data-testid="confirm-and-continue"
+                      onClick={onConfirmRole}
                     >
                       {confirmButton.text}
                     </Button>
