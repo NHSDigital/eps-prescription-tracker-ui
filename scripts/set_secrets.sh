@@ -86,24 +86,11 @@ get_deploy_role() {
     echo "${CLOUD_FORMATION_DEPLOY_ROLE}"
 }
 
-get_cdk_image_pull_role() {
-    environment=$1
-    # shellcheck disable=SC2016
-    CDK_PULL_IMAGE_ROLE=$(aws cloudformation list-exports \
-    --profile prescription-"${environment}" \
-    --query 'Exports[?Name==`ci-resources:CDKPullImageRole`].Value' \
-    --output text)
-
-    echo "${CDK_PULL_IMAGE_ROLE}"
-}
-
 check_gh_logged_in
 
 # dev and dev-pr
 DEV_DEPLOY_ROLE=$(get_deploy_role dev)
-DEV_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role dev)
 
-set_environment_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" dev-pr
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" dev-pr
 set_environment_secret CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" dev-pr
 set_environment_secret MOCK_OIDC_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" dev-pr
@@ -114,7 +101,6 @@ set_environment_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" dev-pr
 set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" dev-pr
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" dev-pr
 
-set_repository_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" dependabot
 set_repository_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" dependabot
 set_repository_secret CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" dependabot
 set_repository_secret MOCK_OIDC_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" dependabot
@@ -125,7 +111,6 @@ set_repository_secret APIGEE_DOHS_API_KEY "${APIGEE_PTL_DOHS_API_KEY}" dependabo
 set_repository_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" dependabot
 set_repository_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" dependabot
 
-set_environment_secret CDK_PULL_IMAGE_ROLE "${DEV_CDK_PULL_IMAGE_ROLE}" dev
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${DEV_DEPLOY_ROLE}" dev
 set_environment_secret CIS2_OIDC_CLIENT_ID "${DEV_CIS2_OIDC_CLIENT_ID}" dev
 set_environment_secret MOCK_OIDC_CLIENT_ID "${DEV_MOCK_CLIENT_ID}" dev
@@ -137,8 +122,6 @@ set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" dev
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" dev
 
 QA_DEPLOY_ROLE=$(get_deploy_role qa)
-QA_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role qa)
-set_environment_secret CDK_PULL_IMAGE_ROLE "${QA_CDK_PULL_IMAGE_ROLE}" qa
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${QA_DEPLOY_ROLE}" qa
 set_environment_secret CIS2_OIDC_CLIENT_ID "${QA_CIS2_OIDC_CLIENT_ID}" qa
 set_environment_secret MOCK_OIDC_CLIENT_ID "${QA_MOCK_CLIENT_ID}" qa
@@ -150,8 +133,6 @@ set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" qa
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" qa
 
 REF_DEPLOY_ROLE=$(get_deploy_role ref)
-REF_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role ref)
-set_environment_secret CDK_PULL_IMAGE_ROLE "${REF_CDK_PULL_IMAGE_ROLE}" ref
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${REF_DEPLOY_ROLE}" ref
 set_environment_secret CIS2_OIDC_CLIENT_ID "${QA_CIS2_OIDC_CLIENT_ID}" ref
 set_environment_secret MOCK_OIDC_CLIENT_ID "${QA_MOCK_CLIENT_ID}" ref
@@ -163,8 +144,6 @@ set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" ref
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" ref
 
 INT_DEPLOY_ROLE=$(get_deploy_role int)
-INT_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role int)
-set_environment_secret CDK_PULL_IMAGE_ROLE "${INT_CDK_PULL_IMAGE_ROLE}" int
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${INT_DEPLOY_ROLE}" int
 set_environment_secret CIS2_OIDC_CLIENT_ID "${INT_CIS2_OIDC_CLIENT_ID}" int
 set_environment_secret MOCK_OIDC_CLIENT_ID "${INT_MOCK_CLIENT_ID}" int
@@ -176,8 +155,6 @@ set_environment_secret CLOUDFRONT_ORIGIN_CUSTOM_HEADER "$(uuidgen)" int
 set_environment_private_key_secret REGRESSION_TESTS_PEM ".secrets/eps-regression-testing.private-key.pem" int
 
 PROD_DEPLOY_ROLE=$(get_deploy_role prod)
-PROD_CDK_PULL_IMAGE_ROLE=$(get_cdk_image_pull_role prod)
-set_environment_secret CDK_PULL_IMAGE_ROLE "${PROD_CDK_PULL_IMAGE_ROLE}" prod
 set_environment_secret CLOUD_FORMATION_DEPLOY_ROLE "${PROD_DEPLOY_ROLE}" prod
 set_environment_secret CIS2_OIDC_CLIENT_ID "${PROD_CIS2_OIDC_CLIENT_ID}" prod
 set_environment_secret MOCK_OIDC_CLIENT_ID "${PROD_MOCK_CLIENT_ID}" prod
