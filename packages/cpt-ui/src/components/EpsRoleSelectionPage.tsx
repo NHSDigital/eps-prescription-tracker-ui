@@ -337,7 +337,6 @@ export default function RoleSelectionPage({
                   </section>
                 )}
               </Col>
-
               {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
                 <Col width="two-thirds">
                   <div className="section">
@@ -383,39 +382,39 @@ export default function RoleSelectionPage({
                   </div>
                 </Col>
               )}
-
-              <Col width="two-thirds">
-                <h3>{rolesWithoutAccessHeader}</h3>
-                <Details expander>
-                  <Details.Summary>
-                    {roles_without_access_table_title}
-                  </Details.Summary>
-                  <Details.Text>
-                    <Table>
-                      <Table.Head>
-                        <Table.Row>
-                          <Table.Cell>{organisation}</Table.Cell>
-                          <Table.Cell>{role}</Table.Cell>
-                        </Table.Row>
-                      </Table.Head>
-                      <Table.Body>
-                        {roleComponentProps.rolesWithoutAccess.map(
-                          (roleItem: RolesWithoutAccessProps) => (
-                            <Table.Row key={roleItem.uuid}>
-                              <Table.Cell data-testid="change-role-name-cell">
-                                {roleItem.orgName} (ODS: {roleItem.odsCode})
-                              </Table.Cell>
-                              <Table.Cell data-testid="change-role-role-cell">
-                                {roleItem.roleName}
-                              </Table.Cell>
-                            </Table.Row>
-                          )
-                        )}
-                      </Table.Body>
-                    </Table>
-                  </Details.Text>
-                </Details>
-              </Col>
+              {roleComponentProps.rolesWithoutAccess.length > 0 && (
+                <Col width="two-thirds">
+                  <h3>{rolesWithoutAccessHeader}</h3>
+                  <Details expander>
+                    <Details.Summary>
+                      {roles_without_access_table_title}
+                    </Details.Summary>
+                    <Details.Text>
+                      <Table>
+                        <Table.Head>
+                          <Table.Row>
+                            <Table.Cell>{organisation}</Table.Cell>
+                            <Table.Cell>{role}</Table.Cell>
+                          </Table.Row>
+                        </Table.Head>
+                        <Table.Body>
+                          {roleComponentProps.rolesWithoutAccess.map(
+                            (roleItem: RolesWithoutAccessProps) => (
+                              <Table.Row key={roleItem.uuid}>
+                                <Table.Cell data-testid="change-role-name-cell">
+                                  {roleItem.orgName} (ODS: {roleItem.odsCode})
+                                </Table.Cell>
+                                <Table.Cell data-testid="change-role-role-cell">
+                                  {roleItem.roleName}
+                                </Table.Cell>
+                              </Table.Row>
+                            ))}
+                        </Table.Body>
+                      </Table>
+                    </Details.Text>
+                  </Details>
+                </Col>
+              )}
             </Row>
           </Container>
       }
