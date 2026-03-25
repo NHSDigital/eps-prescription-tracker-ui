@@ -8,15 +8,17 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 export default function SessionLoggedOutPage() {
   const auth = useAuth()
 
-  usePageTitle(auth.invalidSessionCause === "ConcurrentSession"
-    ? EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION
-    : auth.invalidSessionCause === "Timeout"
-      ? EpsLogoutStrings.PAGE_TITLE_WE_LOGGED_OUT
-      : (auth.invalidSessionCause === "token_expired" ||
-         auth.invalidSessionCause === "InvalidSession" ||
-         auth.invalidSessionCause === "session_expired")
-        ? EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED
-        : EpsLogoutStrings.PAGE_TITLE)
+  // Map session causes to their corresponding page titles
+  const pageTitleMap: Record<string, string> = {
+    "ConcurrentSession": EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION,
+    "Timeout": EpsLogoutStrings.PAGE_TITLE_WE_LOGGED_OUT,
+    "token_expired": EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED,
+    "InvalidSession": EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED,
+    "session_expired": EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED
+  }
+
+  usePageTitle(auth.invalidSessionCause ?
+    pageTitleMap[auth.invalidSessionCause] || EpsLogoutStrings.PAGE_TITLE : EpsLogoutStrings.PAGE_TITLE)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
