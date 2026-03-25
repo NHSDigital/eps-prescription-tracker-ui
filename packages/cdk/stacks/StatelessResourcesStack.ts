@@ -20,14 +20,12 @@ import {Key} from "aws-cdk-lib/aws-kms"
 import {Stream} from "aws-cdk-lib/aws-kinesis"
 import {RestApiGatewayMethods} from "../resources/RestApiGateway/RestApiGatewayMethods"
 import {OAuth2ApiGatewayMethods} from "../resources/RestApiGateway/OAuth2ApiGatewayMethods"
-import {HostedZone} from "aws-cdk-lib/aws-route53"
 import {Certificate} from "aws-cdk-lib/aws-certificatemanager"
 import {AllowList, WebACL} from "../resources/WebApplicationFirewall"
 import {CfnWebACLAssociation} from "aws-cdk-lib/aws-wafv2"
 import {ukRegionLogGroups} from "../resources/ukRegionLogGroups"
 import {Dynamodb} from "../resources/Dynamodb"
 import {Cognito, OidcConfig} from "../resources/Cognito"
-import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
 import {Rum} from "../resources/Rum"
 import {StaticContentBucket} from "../resources/StaticContentBucket"
 import {StaticContentDeployment} from "../resources/StaticContentDeployment"
@@ -37,8 +35,6 @@ export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly stackName: string
   readonly cloudfrontCert: Certificate
   readonly dynamodb: Dynamodb
-  readonly route53ExportName: string
-  readonly useZoneApex: boolean
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string
   readonly logRetentionInDays: number
@@ -58,7 +54,6 @@ export interface StatelessResourcesStackProps extends StandardStackProps {
   readonly csocUKWafDestination?: string
   readonly staticContentBucket: StaticContentBucket
   readonly cognito: Cognito
-  readonly logDelivery: CloudfrontLogDelivery
   readonly allowLocalhostAccess: boolean
   readonly rum: Rum
   readonly sharedSecrets: SharedSecrets
@@ -70,6 +65,8 @@ export interface StatelessResourcesStackProps extends StandardStackProps {
  */
 
 export class StatelessResourcesStack extends Stack {
+  public readonly cloudfrontDistribution: CloudfrontDistribution
+
   public constructor(scope: App, id: string, props: StatelessResourcesStackProps) {
     super(scope, id, props)
 
@@ -80,13 +77,6 @@ export class StatelessResourcesStack extends Stack {
       this, "SplunkDeliveryStream", Fn.importValue("lambda-resources:SplunkDeliveryStream"))
     const splunkSubscriptionFilterRole = Role.fromRoleArn(
       this, "splunkSubscriptionFilterRole", Fn.importValue("lambda-resources:SplunkSubscriptionFilterRole"))
-
-    const epsHostedZoneId = Fn.importValue(`eps-route53-resources:${props.route53ExportName}-ZoneID`)
-    const epsDomainName = Fn.importValue(`eps-route53-resources:${props.route53ExportName}-domain`)
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, "hostedZone", {
-      hostedZoneId: epsHostedZoneId,
-      zoneName: epsDomainName
-    })
 
     // Resources
 
@@ -279,17 +269,13 @@ export class StatelessResourcesStack extends Stack {
     })
 
     // --- Distribution
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
+    this.cloudfrontDistribution = new CloudfrontDistribution(this, "CloudfrontDistribution", {
       serviceName: props.serviceName,
       stackName: props.stackName,
-      hostedZone: hostedZone,
       cloudfrontCert: props.cloudfrontCert,
-      useZoneApex: props.useZoneApex,
       fullCloudfrontDomain: props.fullCloudfrontDomain,
       webAcl: props.webAclUS,
       wafAllowGaRunnerConnectivity: !!props.githubAllowList,
-      logDelivery: props.logDelivery,
       apiGatewayOrigin: apiGatewayOrigin,
       oauth2GatewayOrigin: oauth2GatewayOrigin,
       staticContentBucketOrigin: staticContentBucketOrigin,

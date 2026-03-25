@@ -9,6 +9,8 @@ import {getCloudFormationExports, getCFConfigValue} from "@nhsdigital/eps-deploy
 import {UsCertsStack} from "../stacks/UsCertsStack"
 import {StatefulResourcesStack} from "../stacks/StatefulResourcesStack"
 import {StatelessResourcesStack} from "../stacks/StatelessResourcesStack"
+import {UsStatelessStack} from "../stacks/UsStatelessStack"
+import {FrontDoorStack} from "../stacks/FrontDoorStack"
 import {AllowList} from "../resources/WebApplicationFirewall"
 
 type GithubMetadata = {
@@ -146,7 +148,7 @@ async function main() {
     allowLocalhostAccess
   })
 
-  new StatelessResourcesStack(app, "StatelessStack", {
+  const statelessResourcesStack = new StatelessResourcesStack(app, "StatelessStack", {
     ...props,
     crossRegionReferences: true,
     serviceName,
@@ -165,20 +167,37 @@ async function main() {
     fullCloudfrontDomain,
     fullCognitoDomain: usCertsStack.fullCognitoDomain,
     jwtKid: getConfigFromEnvVar("jwtKid"),
-    logDelivery: usCertsStack.logDelivery,
     logLevel: getConfigFromEnvVar("logLevel"),
     reactLogLevel: getConfigFromEnvVar("reactLogLevel"),
     logRetentionInDays,
     primaryOidcConfig,
     mockOidcConfig,
-    route53ExportName,
     staticContentBucket: statefulResourcesStack.staticContentBucket,
-    useZoneApex,
     webAclUS: usCertsStack.webAcl,
     allowLocalhostAccess,
     csocUKWafDestination,
     rum: statefulResourcesStack.rum,
     sharedSecrets: statefulResourcesStack.sharedSecrets
+  })
+
+  new UsStatelessStack(app, "UsStatelessStack", {
+    ...props,
+    env: {
+      region: "us-east-1"
+    },
+    crossRegionReferences: true,
+    stackName: calculateVersionedStackName(`${serviceName}-us`, props),
+    cloudfrontDistribution: statelessResourcesStack.cloudfrontDistribution,
+    cloudfrontLogDelivery: usCertsStack.logDelivery
+  })
+
+  new FrontDoorStack(app, "FrontDoorStack", {
+    ...props,
+    serviceName,
+    stackName: `${serviceName}-front-door`,
+    route53ExportName,
+    useZoneApex,
+    cloudfrontDistribution: statelessResourcesStack.cloudfrontDistribution
   })
 }
 

@@ -56,19 +56,23 @@ jobs:
     env:
       AWS_MAX_ATTEMPTS: 20
     steps:
-      - name: copy .tool-versions
+      - &copy_tool_versions
+        name: copy .tool-versions
         run: |
           cp /home/vscode/.tool-versions "$HOME/.tool-versions"
 
-      - name: build_artifact download
+      - &download_build_artifact
+        name: build_artifact download
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: build_artifact
 
-      - name: extract build_artifact
+      - &extract_build_artifact
+        name: extract build_artifact
         run: tar -xf artifact.tar
 
-      - name: Configure AWS Credentials
+      - &configure_aws_credentials
+        name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
           aws-region: eu-west-2
@@ -93,8 +97,16 @@ jobs:
           echo "FRESH_STATEFUL_STACK=$FRESH_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
         shell: bash
 
-      - name: Deploy US Certs Stack
-        run: CDK_STACK_NAME=UsCertsStack npm run cdk-deploy --workspace packages/cdk
+      - name: Initial Deploy of Stateful Stacks
+        if: ${{ steps.check_fresh_stateful_stack.outputs.FRESH_STATEFUL_STACK == 'true' }}
+        run: |
+          CDK_STACK_NAME="StatefulStack UsCertsStack" \
+          CDK_CONFIG_rumCloudwatchLogEnabled=false \
+          npm run cdk-deploy --workspace packages/cdk -- \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
         shell: bash
         env: &deployment_env_vars
           CDK_APP_NAME: "MainDeploymentApp"
@@ -117,31 +129,44 @@ jobs:
           CDK_CONFIG_jwtKid: "${{ inputs.JWT_KID }}"
           CDK_CONFIG_cloudfrontOriginCustomHeader: "${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}"
           REQUIRE_APPROVAL: "never"
-          AWS_MAX_ATTEMPTS: 20
 
-      - name: Initial Deploy of Stateful Stack
-        if: ${{ steps.check_fresh_stateful_stack.outputs.FRESH_STATEFUL_STACK == 'true' }}
+      - name: Deploy Stateful Stacks
         run: |
-          CDK_STACK_NAME=StatefulStack CDK_CONFIG_rumCloudwatchLogEnabled=false npm run cdk-deploy --workspace packages/cdk -- \
-            --parameters "JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
-            --parameters "ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
-            --parameters "ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
-            --parameters "ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
-        shell: bash
-        env: *deployment_env_vars
-
-      - name: Deploy Stateful Stack
-        run: |
-          CDK_STACK_NAME=StatefulStack npm run cdk-deploy --workspace packages/cdk -- \
-            --parameters "JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
-            --parameters "ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
-            --parameters "ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
-            --parameters "ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
+          CDK_STACK_NAME="StatefulStack UsCertsStack" \
+          npm run cdk-deploy --workspace packages/cdk -- \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=${CDK_CONFIG_jwtPrivateKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=${CDK_CONFIG_apigeeApiKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=${CDK_CONFIG_apigeeSecretKey}" \
+            --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
         shell: bash
         env: *deployment_env_vars
 
       - name: Deploy Stateless Stack
-        run: CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk
+        run: CDK_STACK_NAME="StatelessStack UsStatelessStack" npm run cdk-deploy --workspace packages/cdk
+        shell: bash
+        env: *deployment_env_vars
+
+  update_front_door:
+    runs-on: ubuntu-22.04
+    environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    container:
+      image: ${{ inputs.pinned_image }}
+      options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
+    permissions:
+      id-token: write
+      contents: write
+    env:
+      AWS_MAX_ATTEMPTS: 20
+    steps:
+      - *copy_tool_versions
+      - *download_build_artifact
+      - *extract_build_artifact
+      - *configure_aws_credentials
+      - name: Deploy Front Door Stack
+        run: CDK_STACK_NAME=FrontDoorStack npm run cdk-deploy --workspace packages/cdk
         shell: bash
         env: *deployment_env_vars
 

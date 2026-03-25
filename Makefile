@@ -103,18 +103,23 @@ react-lint:
 
 cdk-deploy:
 	export REQUIRE_APPROVAL=any-change
-	CDK_STACK_NAME=UsCertsStack npm run cdk-deploy --workspace packages/cdk
- 	CDK_STACK_NAME=StatefulStack CDK_CONFIG_rumCloudwatchLogEnabled=false npm run cdk-deploy --workspace packages/cdk -- \
- 		--parameters "JwtPrivateKey=undefined" \
- 		--parameters "ApigeeApiKey=undefined" \
- 		--parameters "ApigeeSecretKey=undefined" \
- 		--parameters "ApigeeDoHSApiKey=undefined"
-	CDK_STACK_NAME=StatefulStack npm run cdk-deploy --workspace packages/cdk -- \
-		--parameters "JwtPrivateKey=undefined" \
-		--parameters "ApigeeApiKey=undefined" \
-		--parameters "ApigeeSecretKey=undefined" \
-		--parameters "ApigeeDoHSApiKey=undefined"
-	CDK_STACK_NAME=StatelessStack npm run cdk-deploy --workspace packages/cdk
+#	CDK_STACK_NAME="UsCertsStack StatefulStack" \
+#	CDK_CONFIG_rumCloudwatchLogEnabled=false \
+#	npm run cdk-deploy --workspace packages/cdk -- \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=undefined" \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=undefined" \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=undefined" \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=undefined"
+#	CDK_STACK_NAME="UsCertsStack StatefulStack" \
+#	npm run cdk-deploy --workspace packages/cdk -- \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=undefined" \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=undefined" \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=undefined" \
+#		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=undefined"
+	CDK_STACK_NAME="StatelessStack UsStatelessStack" \
+	npm run cdk-deploy --workspace packages/cdk
+	CDK_STACK_NAME="FrontDoorStack" \
+	npm run cdk-deploy --workspace packages/cdk
 
 cdk-watch:
 	./scripts/run_sync.sh

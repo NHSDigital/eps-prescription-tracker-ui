@@ -17,18 +17,9 @@ import {
   SSLMethod,
   ViewerProtocolPolicy
 } from "aws-cdk-lib/aws-cloudfront"
-import {
-  AaaaRecord,
-  ARecord,
-  IHostedZone,
-  RecordTarget
-} from "aws-cdk-lib/aws-route53"
-import {CloudFrontTarget} from "aws-cdk-lib/aws-route53-targets"
 import {Construct} from "constructs"
 import {WebACL} from "../resources/WebApplicationFirewall"
-import {CfnDelivery, CfnDeliverySource} from "aws-cdk-lib/aws-logs"
-import {Annotations, Duration, Names} from "aws-cdk-lib"
-import {CloudfrontLogDelivery} from "./CloudfrontLogDelivery"
+import {Annotations, Duration} from "aws-cdk-lib"
 import {CustomSecurityHeadersPolicy} from "./Cloudfront/CustomSecurityHeaders"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {resolve} from "path"
@@ -41,13 +32,10 @@ import {resolve} from "path"
 export interface CloudfrontDistributionProps {
   readonly serviceName: string
   readonly stackName: string
-  readonly hostedZone: IHostedZone
-  readonly useZoneApex: boolean
   readonly fullCloudfrontDomain: string
   readonly cloudfrontCert: ICertificate
   readonly webAcl: WebACL
   readonly wafAllowGaRunnerConnectivity: boolean
-  readonly logDelivery: CloudfrontLogDelivery
   readonly apiGatewayOrigin: RestApiOrigin
   readonly oauth2GatewayOrigin: RestApiOrigin
   readonly staticContentBucketOrigin: IOrigin
@@ -100,7 +88,7 @@ export class CloudfrontDistribution extends Construct {
       queryStringBehavior: OriginRequestQueryStringBehavior.all()
     })
 
-    const cloudfrontDistribution = new Distribution(this, "CloudfrontDistribution", {
+    this.distribution = new Distribution(this, "CloudfrontDistribution", {
       domainNames: [props.fullCloudfrontDomain],
       certificate: props.cloudfrontCert,
       httpVersion: HttpVersion.HTTP2_AND_3,
@@ -194,44 +182,9 @@ export class CloudfrontDistribution extends Construct {
       webAclId: props.webAcl.attrArn
     })
 
-    Annotations.of(cloudfrontDistribution).acknowledgeWarning(
+    Annotations.of(this.distribution).acknowledgeWarning(
       "@aws-cdk/aws-cloudfront-origins:updateImportedBucketPolicyOac",
       "Policy already allows all distributions in this account to access the bucket"
     )
-
-    const distDeliverySource = new CfnDeliverySource(this, "DistributionDeliverySource", {
-      name: `${Names.uniqueResourceName(this, {maxLength:55})}-src`,
-      logType: "ACCESS_LOGS",
-      resourceArn: cloudfrontDistribution.distributionArn
-    })
-
-    const delivery = new CfnDelivery(this, "DistributionDelivery", {
-      deliverySourceName: distDeliverySource.name,
-      deliveryDestinationArn: props.logDelivery.deliveryDestination.attrArn
-    })
-    delivery.node.addDependency(distDeliverySource)
-
-    if (props.useZoneApex) {
-      new ARecord(this, "CloudFrontAliasIpv4Record", {
-        zone: props.hostedZone,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
-
-      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
-        zone: props.hostedZone,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
-    } else {
-      new ARecord(this, "CloudFrontAliasIpv4Record", {
-        zone: props.hostedZone,
-        recordName: props.serviceName,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
-
-      new AaaaRecord(this, "CloudFrontAliasIpv6Record", {
-        zone: props.hostedZone,
-        recordName: props.serviceName,
-        target: RecordTarget.fromAlias(new CloudFrontTarget(cloudfrontDistribution))})
-    }
-
-    // Outputs
-    this.distribution = cloudfrontDistribution
   }
 }

@@ -1,4 +1,4 @@
-import {DockerImage, Fn, RemovalPolicy} from "aws-cdk-lib"
+import {Fn, RemovalPolicy} from "aws-cdk-lib"
 import {
   ManagedPolicy,
   PolicyStatement,
@@ -17,6 +17,7 @@ import {execSync} from "child_process"
 import {cpSync, globSync} from "fs"
 import {Cognito} from "./Cognito"
 import {Rum} from "./Rum"
+import {LocalBundle} from "./LocalBundle"
 
 export interface StaticContentDeploymentProps {
   readonly account: string
@@ -42,7 +43,7 @@ export class StaticContentDeployment extends Construct {
   public constructor(scope: Construct, id: string, props: StaticContentDeploymentProps) {
     super(scope, id)
 
-    const staticContentDeploymentLogGroup = new LogGroup(this, "StaticContentDeploymentLogGroup", {
+    const logGroup = new LogGroup(this, "LogGroup", {
       encryptionKey: props.cloudwatchKmsKey,
       logGroupName: `/aws/lambda/${props.stackName}-static-content-deployment`,
       retention: props.logRetentionInDays,
@@ -50,7 +51,7 @@ export class StaticContentDeployment extends Construct {
     })
     const assetBucket = Bucket.fromBucketName(this, "AssetBucket",
       `cdk-hnb659fds-assets-${props.account}-${props.region}`)
-    const staticContentDeploymentPolicy = new ManagedPolicy(this, "StaticContentDeploymentPolicy", {
+    const policy = new ManagedPolicy(this, "Policy", {
       statements: [
         new PolicyStatement({
           actions: [
@@ -91,53 +92,50 @@ export class StaticContentDeployment extends Construct {
             "logs:PutLogEvents"
           ],
           resources: [
-            staticContentDeploymentLogGroup.logGroupArn,
-            `${staticContentDeploymentLogGroup.logGroupArn}:log-stream:*`
+            logGroup.logGroupArn,
+            `${logGroup.logGroupArn}:log-stream:*`
           ]
         })
       ]
     })
-    NagSuppressions.addResourceSuppressions(staticContentDeploymentPolicy, [
+    NagSuppressions.addResourceSuppressions(policy, [
       {
         id: "AwsSolutions-IAM5",
         // eslint-disable-next-line max-len
         reason: "Suppress error for not having wildcards in permissions. This is a fine as we need to have permissions on all log streams under path"
       }
     ])
-    const staticContentDeploymentRole = new Role(this, "StaticContentDeploymentRole", {
+    const role = new Role(this, "Role", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
-      managedPolicies: [staticContentDeploymentPolicy]
+      managedPolicies: [policy]
     }).withoutPolicyUpdates()
-    const mainDeployment = new BucketDeployment(this, "StaticContentDeployment", {
+    const mainDeployment = new BucketDeployment(this, "MainDeployment", {
       sources: [
-        Source.asset("../cpt-ui/dist", {
+        new LocalBundle(this, "MainBuild", {
           bundling: {
-            local: {
-              tryBundle(outputDir, options) {
-                const root = resolve("../..")
-                execSync(
-                  `npm run compile --workspace packages/cpt-ui`,
-                  {cwd: root, env: {...process.env, ...options.environment}, stdio: "inherit"}
-                )
-                cpSync(join(root, "packages", "cpt-ui", "dist"), outputDir, {recursive: true})
-                return true
-              }
-            },
-            image: DockerImage.fromRegistry("alpine"), // unused but required
-            environment: {
-              VITE_userPoolId: props.cognito.userPool.userPoolId,
-              VITE_userPoolClientId: props.cognito.userPoolClient.userPoolClientId,
-              VITE_hostedLoginDomain: props.fullCognitoDomain,
-              VITE_fullCloudfrontDomain: props.fullCloudfrontDomain,
-              VITE_TARGET_ENVIRONMENT: props.environment,
-              VITE_SERVICE_NAME: props.serviceName,
-              VITE_COMMIT_ID: props.commitId,
-              VITE_VERSION_NUMBER: props.version,
-              VITE_RUM_GUEST_ROLE_ARN: props.rum.guestRole.roleArn,
-              VITE_RUM_IDENTITY_POOL_ID: props.rum.identityPool.ref,
-              VITE_RUM_APPLICATION_ID: props.rum.rumApp.attrId,
-              VITE_REACT_LOG_LEVEL: props.reactLogLevel
+            tryBundle(outputDir, options) {
+              const root = resolve("../..")
+              execSync(
+                `npm run compile --workspace packages/cpt-ui`,
+                {cwd: root, env: {...process.env, ...options.environment}, stdio: "inherit"}
+              )
+              cpSync(join(root, "packages", "cpt-ui", "dist"), outputDir, {recursive: true})
+              return true
             }
+          },
+          environment: {
+            VITE_userPoolId: props.cognito.userPool.userPoolId,
+            VITE_userPoolClientId: props.cognito.userPoolClient.userPoolClientId,
+            VITE_hostedLoginDomain: props.fullCognitoDomain,
+            VITE_fullCloudfrontDomain: props.fullCloudfrontDomain,
+            VITE_TARGET_ENVIRONMENT: props.environment,
+            VITE_SERVICE_NAME: props.serviceName,
+            VITE_COMMIT_ID: props.commitId,
+            VITE_VERSION_NUMBER: props.version,
+            VITE_RUM_GUEST_ROLE_ARN: props.rum.guestRole.roleArn,
+            VITE_RUM_IDENTITY_POOL_ID: props.rum.identityPool.ref,
+            VITE_RUM_APPLICATION_ID: props.rum.rumApp.attrId,
+            VITE_REACT_LOG_LEVEL: props.reactLogLevel
           }
         }),
         Source.asset("../staticContent", {exclude: ["jwks"]}),
@@ -146,28 +144,26 @@ export class StaticContentDeployment extends Construct {
       destinationKeyPrefix: props.version,
       destinationBucket: props.staticContentBucket.bucket,
       retainOnDelete: false,
-      role: staticContentDeploymentRole,
-      logGroup: staticContentDeploymentLogGroup
+      role: role,
+      logGroup: logGroup
     })
     const sourceMapsDeployment = new BucketDeployment(this, "SourceMapsDeployment", {
-      sources: [Source.asset("../cpt-ui/dist", {
+      sources: [new LocalBundle(this, "IsolatedSourceMaps", {
         bundling: {
-          local: {
-            tryBundle(outputDir) {
-              for (const file of globSync(resolve("../..") + "/packages/cpt-ui/dist/**/*.map")) {
-                cpSync(file, join(outputDir, basename(file)))
-              }
-              return true
+          tryBundle(outputDir) {
+            for (const file of globSync(join(resolve("../.."), "packages", "cpt-ui", "dist", "**", "*.map"))) {
+              cpSync(file, join(outputDir, basename(file)))
             }
-          },
-          image: DockerImage.fromRegistry("alpine") // unused but required
+            return true
+          }
         }
       })],
       destinationKeyPrefix: `source_maps/${props.commitId}/site/assets`,
+      // source map bundling must be done after main build as it needs access to the generated source map files
       destinationBucket: mainDeployment.deployedBucket,
       retainOnDelete: false,
-      role: staticContentDeploymentRole,
-      logGroup: staticContentDeploymentLogGroup
+      role: role,
+      logGroup: logGroup
     })
     this.deployedBucket = sourceMapsDeployment.deployedBucket
   }
