@@ -14,7 +14,7 @@ import {
 import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
@@ -134,6 +134,21 @@ export default function RoleSelectionPage({
   const handleCardClick = (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => {
     e.preventDefault()
     handleSetSelectedRole(e, roleCardProps)
+  }
+
+  const onConfirmRole = () => {
+    if(location.pathname === `/${ENV_CONFIG.BASE_PATH}${FRONTEND_PATHS.SELECT_YOUR_ROLE}`) {
+      logger.debug("Role confirmed", {
+        sessionId: auth.sessionId,
+        pageName: location.pathname,
+        userId: auth.userDetails?.sub,
+        roleName: auth.selectedRole?.role_name,
+        roleId: auth.selectedRole?.role_id,
+        orgName: auth.selectedRole?.org_name,
+        orgCode: auth.selectedRole?.org_code
+      }, true)
+    }
+    navigate(confirmButton.link)
   }
 
   const chunkRolesForRumLogs = (
@@ -328,8 +343,8 @@ export default function RoleSelectionPage({
                       </p>
                     </InsetText>
                     <Button
-                      to={confirmButton.link}
                       data-testid="confirm-and-continue"
+                      onClick={onConfirmRole}
                     >
                       {confirmButton.text}
                     </Button>
