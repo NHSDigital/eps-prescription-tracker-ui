@@ -33,7 +33,8 @@ export const AccessibilityStatementStrings = {
     header: "How accessible this website is",
     p1: "We know some parts of this website are not fully accessible:",
     listItems: [
-      "screenreaders do not continue to read content when you select a new tab on the ‘Search for a prescription’ page",
+      "screen readers do not continue to read content when you select a new tab on the "
+      + "‘Search for a prescription’ page",
       "using the tab key does not focus the ‘Skip to main content’ link after a page is loaded",
       "if you click into a page after it is loaded, using the tab key does not focus the next element of the page",
       "the hint text is not associated with the search field on the prescription ID tab on the "
@@ -93,7 +94,8 @@ export const AccessibilityStatementStrings = {
     + " criteria that the Prescription Tracker is not compliant with and why.",
     subheader: "Non-compliance with the accessibility regulations",
     subListItems: [
-      "Screenreaders do not continue to read content when you select a new tab on the ‘Search for a prescription’ "
+      "screen readers do not continue to read content when you select a new tab on the "
+      + "‘Search for a prescription’ "
       + "page. This fails WCAG 2.2 success criterion 2.4.3 (focus order).",
       "Using the tab key does not focus the ‘Skip to main content’ link after a page is loaded. This fails "
       + "WCAG 2.2 success criterion 2.4.3 (focus order).",
