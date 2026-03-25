@@ -83,6 +83,18 @@ function createCardClassName(isOtherCardDisabled: boolean, isThisCardSelected: b
   return className
 }
 
+function createHandleKeyDown(
+  isOtherCardDisabled: boolean,
+  onCardKeyDown: (e: React.KeyboardEvent, roleCardProps: RolesWithAccessProps) => void,
+  roleCardProps: RolesWithAccessProps
+) {
+  return (e: React.KeyboardEvent) => {
+    if (!isOtherCardDisabled) {
+      onCardKeyDown(e, roleCardProps)
+    }
+  }
+}
+
 function createCardStyle(isOtherCardDisabled: boolean) {
   return {
     cursor: isOtherCardDisabled ? "not-allowed" : "pointer",
@@ -137,11 +149,7 @@ function RoleCardLink({
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOtherCardDisabled) {
-      onCardKeyDown(e, roleCardProps)
-    }
-  }
+  const handleKeyDown = createHandleKeyDown(isOtherCardDisabled, onCardKeyDown, roleCardProps)
 
   return (
     <a
@@ -191,17 +199,13 @@ function RoleCard({
   [isOtherCardDisabled, isThisCardSelected]
   )
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOtherCardDisabled) {
-      onCardKeyDown(e, roleCardProps)
-    }
-  }
-
   const handleClick = (e: React.MouseEvent) => {
     if (!isOtherCardDisabled) {
       onCardClick(e, roleCardProps)
     }
   }
+
+  const handleKeyDown = createHandleKeyDown(isOtherCardDisabled, onCardKeyDown, roleCardProps)
 
   return (
     <Card
@@ -244,7 +248,11 @@ function RoleCard({
 }
 
 // Extracted address rendering component
-function RoleCardAddress({address}: { address?: string }) {
+interface RoleCardAddressProps {
+  readonly address?: string
+}
+
+function RoleCardAddress({address}: RoleCardAddressProps) {
   const addressLines = React.useMemo(() => {
     const addressText = address || "No address available"
     return addressText.split("\n")
