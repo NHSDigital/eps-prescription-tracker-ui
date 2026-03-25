@@ -270,6 +270,43 @@ describe("RoleSelectionPage", () => {
     expect(screen.getByText("Admin")).toBeInTheDocument()
   })
 
+  it("doesnt render the roles without access title or table when no rolesWithoutAccess are present", () => {
+    mockUseAuth.mockReturnValue({
+      isSigningIn: false,
+      selectedRole: {
+        role_id: "1"
+      },
+      rolesWithAccess: [
+        {
+          role_id: "2",
+          role_name: "Pharmacist",
+          org_code: "ABC",
+          org_name: "Pharmacy Org"
+        },
+        {
+          role_id: "3",
+          role_name: "Technician",
+          org_code: "XYZ",
+          org_name: "Tech Org"
+        },
+        {
+          role_id: "1", // this one should be filtered out
+          role_name: "Admin",
+          org_code: "ZZZ",
+          org_name: "Same Org"
+        }
+      ],
+      rolesWithoutAccess: [],
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
+    })
+    render(<MemoryRouter>
+      <RoleSelectionPage contentText={defaultContentText} />
+    </MemoryRouter>)
+    expect(screen.queryByText("View your roles without access to the Prescription Tracker.")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("roles-without-access-table")).not.toBeInTheDocument()
+  })
+
   it("renders EpsCard components for roles with access", () => {
     mockUseAuth.mockReturnValue({
       isSigningIn: false,
