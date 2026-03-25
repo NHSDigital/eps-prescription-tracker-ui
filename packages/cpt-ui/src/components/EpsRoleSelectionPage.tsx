@@ -382,7 +382,7 @@ export default function RoleSelectionPage({
                   </div>
                 </Col>
               )}
-              {roleComponentProps.rolesWithoutAccess.length > 0 && (
+              {roleComponentProps.rolesWithoutAccess?.length > 0 && (
                 <Col width="two-thirds">
                   <h3>{rolesWithoutAccessHeader}</h3>
                   <Details expander>
