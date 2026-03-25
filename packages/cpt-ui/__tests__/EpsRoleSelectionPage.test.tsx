@@ -290,7 +290,7 @@ describe("RoleSelectionPage", () => {
           org_name: "Tech Org"
         },
         {
-          role_id: "1", // this one should be filtered out
+          role_id: "1",
           role_name: "Admin",
           org_code: "ZZZ",
           org_name: "Same Org"
