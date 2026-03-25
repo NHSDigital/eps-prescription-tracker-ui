@@ -16,7 +16,7 @@ import "../styles/roleselectionpage.scss"
 import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
@@ -570,6 +570,21 @@ export default function RoleSelectionPage({
     handleSetSelectedRole(e, roleCardProps)
   }
 
+  const onConfirmRole = () => {
+    if(location.pathname === `/${ENV_CONFIG.BASE_PATH}${FRONTEND_PATHS.SELECT_YOUR_ROLE}`) {
+      logger.debug("Role confirmed", {
+        sessionId: auth.sessionId,
+        pageName: location.pathname,
+        userId: auth.userDetails?.sub,
+        roleName: auth.selectedRole?.role_name,
+        roleId: auth.selectedRole?.role_id,
+        orgName: auth.selectedRole?.org_name,
+        orgCode: auth.selectedRole?.org_code
+      }, true)
+    }
+    navigate(confirmButton.link)
+  }
+
   // Transform roles data when auth roles change
   useEffect(() => {
     const transformedData = transformRolesData(
@@ -639,6 +654,7 @@ export default function RoleSelectionPage({
             confirmButton={confirmButton}
             alternativeMessage={alternativeMessage}
             isSelectingRole={isSelectingRole}
+            onConfirmRole={onConfirmRole}
             noOrgName={noOrgName}
             noODSCode={noODSCode}
             noRoleName={noRoleName}
@@ -732,6 +748,7 @@ interface UserInfoSectionProps {
   }
   readonly alternativeMessage: string
   readonly isSelectingRole: boolean
+  readonly onConfirmRole: () => void
   readonly noOrgName: string
   readonly noODSCode: string
   readonly noRoleName: string
@@ -747,6 +764,7 @@ function UserInfoSection({
   confirmButton,
   alternativeMessage,
   isSelectingRole,
+  onConfirmRole,
   noOrgName,
   noODSCode,
   noRoleName
@@ -778,8 +796,8 @@ function UserInfoSection({
             </p>
           </InsetText>
           <Button
-            to={confirmButton.link}
             data-testid="confirm-and-continue"
+            onClick={onConfirmRole}
             disabled={isSelectingRole}
           >
             {confirmButton.text}
