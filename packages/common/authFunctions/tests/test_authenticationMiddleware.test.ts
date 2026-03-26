@@ -182,7 +182,7 @@ describe("authenticationMiddleware", () => {
       expect(result).toEqual(mockRequest.earlyResponse)
     })
 
-    it("should return 401 when token mapping is undefined", async () => {
+    it("should return 401 when getTokenMapping throws an error", async () => {
       // Arrange
       const username = "test-user"
       const sessionId = "test-session-id"
