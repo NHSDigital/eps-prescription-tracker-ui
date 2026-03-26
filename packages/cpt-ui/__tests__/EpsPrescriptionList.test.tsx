@@ -374,7 +374,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "ABC123-A83008-C2D93O"
+        prescriptionId: "ABC123-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
 
@@ -392,7 +392,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -428,7 +428,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
 
@@ -448,7 +448,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
 
@@ -480,7 +480,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -537,7 +537,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "ABC123-A83008-C2D93O"
+        prescriptionId: "ABC123-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -563,7 +563,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "1234567890"
+        nhsNumber: "1234567890", searchType: "nhs"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -588,7 +588,7 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(url, signedInAuthState, {
       ...defaultSearchState,
       prescriptionId: "ABC123-A83008-C2D93O",
-      nhsNumber: "1234567890"
+      nhsNumber: "1234567890", searchType: "nhs"
     })
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
 
@@ -611,7 +611,7 @@ describe("PrescriptionListPage", () => {
     renderWithRouter(url, signedInAuthState, {
       ...defaultSearchState,
       prescriptionId: "ABC123-A83008-C2D93O",
-      nhsNumber: "1234567890"
+      nhsNumber: "1234567890", searchType: "nhs"
     })
 
     await waitFor(() => {
@@ -633,7 +633,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "ABC123-A83008-C2D93O"
+        prescriptionId: "ABC123-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -656,7 +656,7 @@ describe("PrescriptionListPage", () => {
 
     renderWithRouter(FRONTEND_PATHS.PRESCRIPTION_LIST_PAST, signedInAuthState, {
       ...defaultSearchState,
-      nhsNumber: "1234567890"
+      nhsNumber: "1234567890", searchType: "nhs"
     })
 
     await waitFor(() => {
@@ -687,7 +687,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "ABC123-ABC123-ABC123"
+        prescriptionId: "ABC123-ABC123-ABC123", searchType: "prescriptionId"
       }
     )
 
@@ -707,7 +707,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "002F5E-A83008-497F1Z"
+        prescriptionId: "002F5E-A83008-497F1Z", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -733,7 +733,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "32165649870"
+        nhsNumber: "32165649870", searchType: "nhs"
       }
     )
 
@@ -760,7 +760,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "32165649870"
+        nhsNumber: "32165649870", searchType: "nhs"
       }
     )
 
@@ -787,7 +787,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "32165649870"
+        nhsNumber: "32165649870", searchType: "nhs"
       }
 
     )
@@ -807,7 +807,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "32165649870"
+        nhsNumber: "32165649870", searchType: "nhs"
       }
     )
 
@@ -825,7 +825,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        nhsNumber: "32165649870"
+        nhsNumber: "32165649870", searchType: "nhs"
       }
 
     )
@@ -847,7 +847,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -866,7 +866,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)
@@ -885,7 +885,7 @@ describe("PrescriptionListPage", () => {
       signedInAuthState,
       {
         ...defaultSearchState,
-        prescriptionId: "C0C757-A83008-C2D93O"
+        prescriptionId: "C0C757-A83008-C2D93O", searchType: "prescriptionId"
       }
     )
     expect(mockedAxios.get).toHaveBeenCalledTimes(1)

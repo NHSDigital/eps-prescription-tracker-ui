@@ -5,11 +5,11 @@ on:
 
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     with:
       verify_published_from_main_image: true
   quality_checks:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@383f3f9eaf3cb553ebcd74897bfed4d5e387629e
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     needs: [get_config_values]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -18,7 +18,7 @@ jobs:
 
   tag_release:
     needs: [quality_checks, get_config_values]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@7a89b111ae752548e8e3f3fbaeb89bd6ecca0698
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     permissions:
       id-token: write
       contents: write
@@ -103,7 +103,7 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{github.sha}}
       useMockOidc: false
-      JWT_KID: "eps-cpt-ui-int"
+      JWT_KID: "eps-cptui-int-2026-03-23"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: false
       REACT_LOG_LEVEL: "debug" # change this before pilot
@@ -121,7 +121,7 @@ jobs:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{github.sha}}
       useMockOidc: false
-      JWT_KID: "eps-cpt-ui-prod"
+      JWT_KID: "eps-cptui-prod-2026-03-23"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: false
       REACT_LOG_LEVEL: "debug" # change this before pilot
