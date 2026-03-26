@@ -727,8 +727,7 @@ describe("PrescriptionListPage", () => {
       })
 
       expect(logger.info).toHaveBeenCalledWith(
-        "A patient was returned, but they do not have any prescriptions.",
-        emptyResponse
+        "A patient was returned, but they do not have any prescriptions."
       )
     })
   })

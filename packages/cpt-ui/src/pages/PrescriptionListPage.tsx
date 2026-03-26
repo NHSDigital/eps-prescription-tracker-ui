@@ -116,12 +116,7 @@ export default function PrescriptionListPage() {
           searchResults.futurePrescriptions.length === 0
         ) {
           logger.info(
-            "A patient was returned, but they do not have any prescriptions.",
-            {
-              currentPrescriptionsCount: searchResults.currentPrescriptions.length,
-              futurePrescriptionsCount: searchResults.futurePrescriptions.length,
-              pastPrescriptionsCount: searchResults.pastPrescriptions.length
-            }
+            "A patient was returned, but they do not have any prescriptions."
           )
           setPatientDetails(searchResults.patient)
           setPatientFallback(searchResults.patientFallback)
