@@ -29,6 +29,7 @@ test/
 amplify_outputs.json
 .asdf
 cdk.out/
+.cfn_guard_out
 .secrets
 packages/cpt-ui/dist
 packages/auth_demo/build/

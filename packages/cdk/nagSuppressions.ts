@@ -1,7 +1,11 @@
 /* eslint-disable max-len */
 
-import {Stack} from "aws-cdk-lib"
-import {safeAddNagSuppression, safeAddNagSuppressionGroup} from "@nhsdigital/eps-cdk-constructs"
+import {CfnResource, Stack} from "aws-cdk-lib"
+import {
+  safeAddNagSuppression,
+  safeAddNagSuppressionGroup,
+  addLambdaCfnGuardSuppressions
+} from "@nhsdigital/eps-cdk-constructs"
 
 export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
   if (stack.artifactId === "StatefulStack") {
@@ -196,4 +200,26 @@ export const nagSuppressions = (stack: Stack, useMockOidc: boolean = false) => {
       }]
     )
   }
+}
+
+const addRoleCfnGuardMetadata = (stack: Stack, providerId: string) => {
+  const provider = stack.node.tryFindChild(providerId)
+  const role = provider?.node.tryFindChild("Role") as CfnResource
+  if (!role) {
+    return
+  }
+  role.cfnOptions.metadata = ({
+    ...role.cfnOptions.metadata,
+    guard: {
+      SuppressedRules: [
+        "IAM_NO_INLINE_POLICY_CHECK"
+      ]
+    }
+  })
+}
+
+export const addCfnGuardMetadata = (stack: Stack) => {
+  addLambdaCfnGuardSuppressions(stack)
+  addRoleCfnGuardMetadata(stack, "Custom::CrossRegionExportWriterCustomResourceProvider")
+  addRoleCfnGuardMetadata(stack, "Custom::CrossRegionExportReaderCustomResourceProvider")
 }

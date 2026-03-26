@@ -12,6 +12,7 @@ import {StatelessResourcesStack} from "../stacks/StatelessResourcesStack"
 import {UsStatelessStack} from "../stacks/UsStatelessStack"
 import {FrontDoorStack} from "../stacks/FrontDoorStack"
 import {AllowList} from "../resources/WebApplicationFirewall"
+import {addCfnGuardMetadata} from "../nagSuppressions"
 
 type GithubMetadata = {
   actions: Array<string>
@@ -177,10 +178,11 @@ async function main() {
     allowLocalhostAccess,
     csocUKWafDestination,
     rum: statefulResourcesStack.rum,
-    sharedSecrets: statefulResourcesStack.sharedSecrets
+    sharedSecrets: statefulResourcesStack.sharedSecrets,
+    githubAllowList
   })
 
-  new UsStatelessStack(app, "UsStatelessStack", {
+  const usStatelessStack = new UsStatelessStack(app, "UsStatelessStack", {
     ...props,
     env: {
       region: "us-east-1"
@@ -198,6 +200,20 @@ async function main() {
     route53ExportName,
     useZoneApex,
     cloudfrontDistribution: statelessResourcesStack.cloudfrontDistribution
+  })
+
+  // run a synth to add cross region lambdas and roles
+  app.synth()
+
+  // add metadata so they don't get flagged as failing cfn-guard
+  addCfnGuardMetadata(usCertsStack)
+  addCfnGuardMetadata(statefulResourcesStack)
+  addCfnGuardMetadata(statelessResourcesStack)
+  addCfnGuardMetadata(usStatelessStack)
+
+  // finally run synth again with force to include the added metadata
+  app.synth({
+    force: true
   })
 }
 

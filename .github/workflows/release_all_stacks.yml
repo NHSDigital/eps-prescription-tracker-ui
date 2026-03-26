@@ -173,21 +173,19 @@ jobs:
 
   update_github_pages:
     runs-on: ubuntu-22.04
-    if: ${{ always() && !failure() && !cancelled() }}
+    if: ${{ inputs.IS_PULL_REQUEST == false }}
     needs: [update_front_door]
     permissions:
       id-token: write
       contents: write
     steps:
       - name: Checkout gh-pages
-        if: ${{ inputs.IS_PULL_REQUEST == false }}
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: gh-pages
           path: gh-pages
 
       - name: update release tag in github pages
-        if: ${{ inputs.IS_PULL_REQUEST == false }}
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')
@@ -204,7 +202,7 @@ jobs:
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
-    if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
+    if: ${{ inputs.RUN_REGRESSION_TESTS == true }}
     needs: [update_front_door]
     with:
       BRANCH_NAME: ${{ inputs.BRANCH_NAME }}
