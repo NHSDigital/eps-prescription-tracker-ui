@@ -189,7 +189,7 @@ describe("authenticationMiddleware", () => {
 
       mockGetUsernameFromEvent.mockReturnValue(username)
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
-      mockGetTokenMapping.mockResolvedValue(undefined)
+      mockGetTokenMapping.mockRejectedValue(new Error("No matching session found"))
 
       const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
