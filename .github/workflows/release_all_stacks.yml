@@ -149,6 +149,7 @@ jobs:
   update_front_door:
     runs-on: ubuntu-22.04
     environment: ${{ inputs.TARGET_ENVIRONMENT }}
+    needs: [release_all_code]
     container:
       image: ${{ inputs.pinned_image }}
       options: --user 1001:1001 --group-add 128
@@ -173,7 +174,7 @@ jobs:
   update_github_pages:
     runs-on: ubuntu-22.04
     if: ${{ always() && !failure() && !cancelled() }}
-    needs: [release_all_code]
+    needs: [update_front_door]
     permissions:
       id-token: write
       contents: write
@@ -204,7 +205,7 @@ jobs:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
     if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
-    needs: [release_all_code]
+    needs: [update_front_door]
     with:
       BRANCH_NAME: ${{ inputs.BRANCH_NAME }}
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
