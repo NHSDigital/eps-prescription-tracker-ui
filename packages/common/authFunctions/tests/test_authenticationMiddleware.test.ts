@@ -182,14 +182,14 @@ describe("authenticationMiddleware", () => {
       expect(result).toEqual(mockRequest.earlyResponse)
     })
 
-    it("should return 401 when token mapping is undefined", async () => {
+    it("should return 401 when getTokenMapping throws an error", async () => {
       // Arrange
       const username = "test-user"
       const sessionId = "test-session-id"
 
       mockGetUsernameFromEvent.mockReturnValue(username)
       mockGetSessionIdFromEvent.mockReturnValue(sessionId)
-      mockGetTokenMapping.mockResolvedValue(undefined)
+      mockGetTokenMapping.mockRejectedValue(new Error("No matching session found"))
 
       const middleware = authenticationMiddleware({axiosInstance, ddbClient, authOptions, logger})
 
@@ -230,7 +230,8 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -301,7 +302,8 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -331,7 +333,8 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -364,7 +367,8 @@ describe("authenticationMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
