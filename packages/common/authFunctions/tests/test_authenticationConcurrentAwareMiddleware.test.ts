@@ -453,7 +453,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -483,7 +484,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -516,7 +518,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -553,7 +556,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
@@ -585,7 +589,8 @@ describe("authenticationConcurrentAwareMiddleware", () => {
         statusCode: 401,
         body: JSON.stringify({
           message: "Session expired or invalid. Please log in again.",
-          restartLogin: true
+          restartLogin: true,
+          invalidSessionCause: "InvalidSession"
         })
       })
       expect(result).toEqual(mockRequest.earlyResponse)
