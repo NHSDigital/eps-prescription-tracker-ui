@@ -51,17 +51,13 @@ export const authenticationMiddleware = ({
           invalidSessionCause = "Timeout"
           authenticatedResult = null
         }
-      } else if (tokenMappingItem !== undefined) {
+      } else {
         logger.info("A session is active but does not match the requestors sessionId", {username, sessionId})
         invalidSessionCause = "ConcurrentSession"
-      } else {
-        logger.error("Request token invalid. No matching session found.", {
-          tokenMappingSessionId
-        })
-        invalidSessionCause = "InvalidSession"
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
+      invalidSessionCause = "InvalidSession"
     }
     if (!authenticatedResult || "isTimeout" in authenticatedResult) {
       request.earlyResponse = {

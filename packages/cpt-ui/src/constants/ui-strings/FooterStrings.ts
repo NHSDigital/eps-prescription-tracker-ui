@@ -4,6 +4,18 @@ export const VERSION_NUMBER = import.meta.env.VITE_VERSION_NUMBER
 
 export const FOOTER_LINKS = [
   {
+    text: "Accessibility statement",
+    href: "/site/accessibility-statement",
+    external: false,
+    testId: "eps_footer-link-accessibility-statement"
+  },
+  {
+    text: "Cookie policy",
+    href: "/site/cookies",
+    external: false,
+    testId: "eps_footer-link-cookie-policy"
+  },
+  {
     text: "Privacy notice",
     href: "/site/privacy-notice",
     external: false,
@@ -15,11 +27,5 @@ export const FOOTER_LINKS = [
     href: "https://digital.nhs.uk/services/care-identity-service/registration-authority-users/registration-authority-help/privacy-notice",
     external: true,
     testId: "eps_footer-link-terms-and-conditions"
-  },
-  {
-    text: "Cookie policy",
-    href: "/site/cookies",
-    external: false,
-    testId: "eps_footer-link-cookie-policy"
   }
 ]

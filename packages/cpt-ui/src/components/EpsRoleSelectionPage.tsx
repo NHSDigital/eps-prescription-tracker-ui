@@ -14,7 +14,7 @@ import {
 import {useAuth} from "@/context/AuthProvider"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
@@ -134,6 +134,21 @@ export default function RoleSelectionPage({
   const handleCardClick = (e: React.MouseEvent, roleCardProps: RolesWithAccessProps) => {
     e.preventDefault()
     handleSetSelectedRole(e, roleCardProps)
+  }
+
+  const onConfirmRole = () => {
+    if(location.pathname === `/${ENV_CONFIG.BASE_PATH}${FRONTEND_PATHS.SELECT_YOUR_ROLE}`) {
+      logger.debug("Role confirmed", {
+        sessionId: auth.sessionId,
+        pageName: location.pathname,
+        userId: auth.userDetails?.sub,
+        roleName: auth.selectedRole?.role_name,
+        roleId: auth.selectedRole?.role_id,
+        orgName: auth.selectedRole?.org_name,
+        orgCode: auth.selectedRole?.org_code
+      }, true)
+    }
+    navigate(confirmButton.link)
   }
 
   const chunkRolesForRumLogs = (
@@ -328,8 +343,8 @@ export default function RoleSelectionPage({
                       </p>
                     </InsetText>
                     <Button
-                      to={confirmButton.link}
                       data-testid="confirm-and-continue"
+                      onClick={onConfirmRole}
                     >
                       {confirmButton.text}
                     </Button>
@@ -337,7 +352,6 @@ export default function RoleSelectionPage({
                   </section>
                 )}
               </Col>
-
               {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
                 <Col width="two-thirds">
                   <div className="section">
@@ -383,39 +397,39 @@ export default function RoleSelectionPage({
                   </div>
                 </Col>
               )}
-
-              <Col width="two-thirds">
-                <h3>{rolesWithoutAccessHeader}</h3>
-                <Details expander>
-                  <Details.Summary>
-                    {roles_without_access_table_title}
-                  </Details.Summary>
-                  <Details.Text>
-                    <Table>
-                      <Table.Head>
-                        <Table.Row>
-                          <Table.Cell>{organisation}</Table.Cell>
-                          <Table.Cell>{role}</Table.Cell>
-                        </Table.Row>
-                      </Table.Head>
-                      <Table.Body>
-                        {roleComponentProps.rolesWithoutAccess.map(
-                          (roleItem: RolesWithoutAccessProps) => (
-                            <Table.Row key={roleItem.uuid}>
-                              <Table.Cell data-testid="change-role-name-cell">
-                                {roleItem.orgName} (ODS: {roleItem.odsCode})
-                              </Table.Cell>
-                              <Table.Cell data-testid="change-role-role-cell">
-                                {roleItem.roleName}
-                              </Table.Cell>
-                            </Table.Row>
-                          )
-                        )}
-                      </Table.Body>
-                    </Table>
-                  </Details.Text>
-                </Details>
-              </Col>
+              {roleComponentProps.rolesWithoutAccess?.length > 0 && (
+                <Col width="two-thirds">
+                  <h3>{rolesWithoutAccessHeader}</h3>
+                  <Details expander>
+                    <Details.Summary>
+                      {roles_without_access_table_title}
+                    </Details.Summary>
+                    <Details.Text>
+                      <Table>
+                        <Table.Head>
+                          <Table.Row>
+                            <Table.Cell>{organisation}</Table.Cell>
+                            <Table.Cell>{role}</Table.Cell>
+                          </Table.Row>
+                        </Table.Head>
+                        <Table.Body>
+                          {roleComponentProps.rolesWithoutAccess.map(
+                            (roleItem: RolesWithoutAccessProps) => (
+                              <Table.Row key={roleItem.uuid}>
+                                <Table.Cell data-testid="change-role-name-cell">
+                                  {roleItem.orgName} (ODS: {roleItem.odsCode})
+                                </Table.Cell>
+                                <Table.Cell data-testid="change-role-role-cell">
+                                  {roleItem.roleName}
+                                </Table.Cell>
+                              </Table.Row>
+                            ))}
+                        </Table.Body>
+                      </Table>
+                    </Details.Text>
+                  </Details>
+                </Col>
+              )}
             </Row>
           </Container>
       }
