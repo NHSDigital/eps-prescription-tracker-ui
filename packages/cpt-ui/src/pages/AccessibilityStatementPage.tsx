@@ -10,7 +10,7 @@ import EpsRichText from "@/components/EpsRichText"
 export default function AccessibilityStatementPage() {
   const auth = useAuth()
 
-  usePageTitle(AccessibilityStatementStrings.pageTitle)
+  usePageTitle(AccessibilityStatementStrings.PAGE_TITLE)
 
   return (
     <main className="nhsuk-width-container nhsuk-u-margin-top-4">
@@ -18,112 +18,112 @@ export default function AccessibilityStatementPage() {
       <Breadcrumb>
         <Breadcrumb.Item>
           <Link to={getHomeLink(auth.isSignedIn)}>
-            {AccessibilityStatementStrings.home}
+            {AccessibilityStatementStrings.HOME}
           </Link>
         </Breadcrumb.Item>
       </Breadcrumb>
 
-      <div className="nhsuk-grid-row">
+      <div className="nhsuk-grid-row nhsuk-u-margin-bottom-7">
         <div className="nhsuk-grid-column-full" data-testid="accessibility-statement-content">
-          <h1 className="nhsuk-heading-xl">{AccessibilityStatementStrings.header}</h1>
-          <p><EpsRichText content={AccessibilityStatementStrings.openingSection.p1} /></p>
-          <p>{AccessibilityStatementStrings.openingSection.p2}</p>
+          <h1 className="nhsuk-heading-xl">{AccessibilityStatementStrings.HEADER}</h1>
+          <p><EpsRichText content={AccessibilityStatementStrings.OPENING_SECTION.P1} /></p>
+          <p>{AccessibilityStatementStrings.OPENING_SECTION.P2}</p>
           <ul>
-            {AccessibilityStatementStrings.openingSection.listItems.map((listItem, index) => (
+            {AccessibilityStatementStrings.OPENING_SECTION.LIST_ITEMS.map((listItem, index) => (
               <li key={index}>{listItem}</li>
             ))}
           </ul>
 
-          <p>{AccessibilityStatementStrings.openingSection.p3}</p>
-          <p><EpsRichText content={AccessibilityStatementStrings.openingSection.p4} /></p>
+          <p>{AccessibilityStatementStrings.OPENING_SECTION.P3}</p>
+          <p><EpsRichText content={AccessibilityStatementStrings.OPENING_SECTION.P4} /></p>
 
           <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.knownIssues.header}
+            {AccessibilityStatementStrings.KNOWN_ISSUES.HEADER}
           </h2>
           <p>
-            {AccessibilityStatementStrings.knownIssues.p1}
+            {AccessibilityStatementStrings.KNOWN_ISSUES.P1}
           </p>
           <ul>
-            {AccessibilityStatementStrings.knownIssues.listItems.map((listItem, index) => (
+            {AccessibilityStatementStrings.KNOWN_ISSUES.LIST_ITEMS.map((listItem, index) => (
               <li key={index}>{listItem}</li>
             ))}
           </ul>
 
           <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.feedbackContactInformation.header}
+            {AccessibilityStatementStrings.FEEDBACK_CONTACT_INFORMATION.HEADER}
           </h2>
           <p>
-            <EpsRichText content={AccessibilityStatementStrings.feedbackContactInformation.p1} />
+            <EpsRichText content={AccessibilityStatementStrings.FEEDBACK_CONTACT_INFORMATION.P1} />
           </p>
           <p>
-            <EpsRichText content={AccessibilityStatementStrings.feedbackContactInformation.p2} />
+            <EpsRichText content={AccessibilityStatementStrings.FEEDBACK_CONTACT_INFORMATION.P2} />
           </p>
           <p>
-            {AccessibilityStatementStrings.feedbackContactInformation.p3}
+            {AccessibilityStatementStrings.FEEDBACK_CONTACT_INFORMATION.P3}
           </p>
 
           <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.enforcementProcedure.header}
+            {AccessibilityStatementStrings.ENFORCEMENT_PROCEDURE.HEADER}
           </h2>
           <p>
-            <EpsRichText content={AccessibilityStatementStrings.enforcementProcedure.p1} />
+            <EpsRichText content={AccessibilityStatementStrings.ENFORCEMENT_PROCEDURE.P1} />
           </p>
 
           <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.technicalInformation.header}
+            {AccessibilityStatementStrings.TECHNICAL_INFORMATION.HEADER}
           </h2>
           <p>
-            {AccessibilityStatementStrings.technicalInformation.p1}
+            {AccessibilityStatementStrings.TECHNICAL_INFORMATION.P1}
+          </p>
+
+          <h3 className="nhsuk-heading-l">
+            {AccessibilityStatementStrings.COMPLIANCE_STATUS.HEADER}
+          </h3>
+          <p>
+            {AccessibilityStatementStrings.COMPLIANCE_STATUS.P1}
+          </p>
+          <p>
+            {AccessibilityStatementStrings.COMPLIANCE_STATUS.P2}
           </p>
 
           <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.complianceStatus.header}
+            {AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.HEADER}
           </h2>
           <p>
-            {AccessibilityStatementStrings.complianceStatus.p1}
-          </p>
-          <p>
-            {AccessibilityStatementStrings.complianceStatus.p2}
-          </p>
-
-          <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.nonaccessibleContent.header}
-          </h2>
-          <p>
-            {AccessibilityStatementStrings.nonaccessibleContent.p1}
+            {AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.P1}
           </p>
           <h2 className="nhsuk-heading-m">
-            {AccessibilityStatementStrings.nonaccessibleContent.subheader}
+            {AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.SUBHEADER}
           </h2>
           <ul>
-            {AccessibilityStatementStrings.nonaccessibleContent.subListItems.map((listItem, index) => (
+            {AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.SUB_LIST_ITEMS.map((listItem, index) => (
               <li key={index}>{listItem}</li>
             ))}
           </ul>
           <p>
-            {AccessibilityStatementStrings.nonaccessibleContent.p2}
+            {AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.P2}
           </p>
 
           <h2 className="nhsuk-heading-l">
-            {AccessibilityStatementStrings.improvingAccessibility.header}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.HEADER}
           </h2>
           <p>
-            {AccessibilityStatementStrings.improvingAccessibility.p1}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.P1}
           </p>
           <h2 className="nhsuk-heading-m">
-            {AccessibilityStatementStrings.improvingAccessibility.subheader}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.SUBHEADER}
           </h2>
           <p>
-            {AccessibilityStatementStrings.improvingAccessibility.subheaderP1}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.SUBHEADER_P1}
           </p>
           <p>
-            {AccessibilityStatementStrings.improvingAccessibility.subheaderP2}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.SUBHEADER_P2}
           </p>
           <p>
-            {AccessibilityStatementStrings.improvingAccessibility.subheaderP3}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.SUBHEADER_P3}
           </p>
           <p>
-            {AccessibilityStatementStrings.improvingAccessibility.subheaderP4}
+            {AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.SUBHEADER_P4}
           </p>
         </div>
       </div>

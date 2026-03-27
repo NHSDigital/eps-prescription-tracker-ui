@@ -71,13 +71,13 @@ describe("AccessibilityStatementPage", () => {
     it("renders the page heading", () => {
       renderPage()
       expect(
-        screen.getByRole("heading", {level: 1, name: AccessibilityStatementStrings.header})
+        screen.getByRole("heading", {level: 1, name: AccessibilityStatementStrings.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the breadcrumb Home link", () => {
       renderPage()
-      expect(screen.getByRole("link", {name: AccessibilityStatementStrings.home})).toBeInTheDocument()
+      expect(screen.getByRole("link", {name: AccessibilityStatementStrings.HOME})).toBeInTheDocument()
     })
   })
 
@@ -88,55 +88,55 @@ describe("AccessibilityStatementPage", () => {
 
     it("renders the known issues heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.knownIssues.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.KNOWN_ISSUES.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the feedback and contact information heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.feedbackContactInformation.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.FEEDBACK_CONTACT_INFORMATION.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the enforcement procedure heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.enforcementProcedure.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.ENFORCEMENT_PROCEDURE.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the technical information heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.technicalInformation.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.TECHNICAL_INFORMATION.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the compliance status heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.complianceStatus.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.COMPLIANCE_STATUS.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the non-accessible content heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.nonaccessibleContent.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the non-compliance subheading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.nonaccessibleContent.subheader})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.SUBHEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the improving accessibility heading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.improvingAccessibility.header})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.HEADER})
       ).toBeInTheDocument()
     })
 
     it("renders the preparation subheading", () => {
       expect(
-        screen.getByRole("heading", {name: AccessibilityStatementStrings.improvingAccessibility.subheader})
+        screen.getByRole("heading", {name: AccessibilityStatementStrings.IMPROVING_ACCESSIBILITY.SUBHEADER})
       ).toBeInTheDocument()
     })
   })
@@ -180,21 +180,21 @@ describe("AccessibilityStatementPage", () => {
   describe("list content", () => {
     it("renders the opening section accessibility features list", () => {
       renderPage()
-      AccessibilityStatementStrings.openingSection.listItems.forEach((item) => {
+      AccessibilityStatementStrings.OPENING_SECTION.LIST_ITEMS.forEach((item) => {
         expect(screen.getByText(item)).toBeInTheDocument()
       })
     })
 
     it("renders the known issues list", () => {
       renderPage()
-      AccessibilityStatementStrings.knownIssues.listItems.forEach((item) => {
+      AccessibilityStatementStrings.KNOWN_ISSUES.LIST_ITEMS.forEach((item) => {
         expect(screen.getByText(item)).toBeInTheDocument()
       })
     })
 
     it("renders the non-compliance sub-list", () => {
       renderPage()
-      AccessibilityStatementStrings.nonaccessibleContent.subListItems.forEach((item) => {
+      AccessibilityStatementStrings.NONACCESSIBLE_CONTENT.SUB_LIST_ITEMS.forEach((item) => {
         expect(screen.getByText(item.trim())).toBeInTheDocument()
       })
     })
@@ -203,13 +203,13 @@ describe("AccessibilityStatementPage", () => {
   describe("breadcrumb home link destination", () => {
     it("links to the login page when signed out", () => {
       renderPage(signedOutAuthState)
-      const homeLink = screen.getByRole("link", {name: AccessibilityStatementStrings.home})
+      const homeLink = screen.getByRole("link", {name: AccessibilityStatementStrings.HOME})
       expect(homeLink).toHaveAttribute("href", "/login")
     })
 
     it("links to the search page when signed in", () => {
       renderPage(signedInAuthState)
-      const homeLink = screen.getByRole("link", {name: AccessibilityStatementStrings.home})
+      const homeLink = screen.getByRole("link", {name: AccessibilityStatementStrings.HOME})
       expect(homeLink).toHaveAttribute("href", "/search-by-prescription-id")
     })
   })
