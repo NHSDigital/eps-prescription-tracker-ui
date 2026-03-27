@@ -2,6 +2,7 @@ export const EpsLogoutStrings = {
   PAGE_TITLE: "You have logged out - Prescription Tracker",
   PAGE_TITLE_ANOTHER_SESSION: "Logged out because of another session - Prescription Tracker",
   PAGE_TITLE_WE_LOGGED_OUT: "We have logged you out – Prescription Tracker",
+  PAGE_TITLE_SESSION_EXPIRED: "Your session has expired - Prescription Tracker",
   LOADING: "Logging out",
   TITLE: "Logout successful",
   BODY: "You are now logged out of the service. To continue using the service, you must log in again.",
@@ -12,6 +13,9 @@ export const EpsLogoutStrings = {
   LOGOUT_CONCURRENT_CONTACT: "Contact the NHS national service desk at",
   LOGOUT_CONCURRENT_EMAIL: "ssd.nationalservicedesk@nhs.net",
   LOGOUT_CONCURRENT_FURTHER: "if you did not start another session in another window or browser.",
+  LOGOUT_SESSION_EXPIRED_TITLE: "Your session has expired",
+  LOGOUT_SESSION_EXPIRED_DESCRIPTION: "We have logged you out because your session has expired.",
+  LOGOUT_SESSION_EXPIRED_FURTHER: "This is to protect patient information.",
   LOGOUT_TIMEOUT_TITLE: "For your security, we have logged you out",
   LOGOUT_TIMEOUT_DESCRIPTION: "We have logged you out because you did not do anything for 15 minutes.",
   LOGOUT_TIMEOUT_FURTHER: "This is to protect patient information."

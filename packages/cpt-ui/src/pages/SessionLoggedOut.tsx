@@ -8,11 +8,17 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 export default function SessionLoggedOutPage() {
   const auth = useAuth()
 
-  usePageTitle(auth.invalidSessionCause === "ConcurrentSession"
-    ? EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION
-    : auth.invalidSessionCause === "Timeout"
-      ? EpsLogoutStrings.PAGE_TITLE_WE_LOGGED_OUT
-      : EpsLogoutStrings.PAGE_TITLE)
+  // Map session causes to their corresponding page titles
+  const pageTitleMap: Record<string, string> = {
+    "ConcurrentSession": EpsLogoutStrings.PAGE_TITLE_ANOTHER_SESSION,
+    "Timeout": EpsLogoutStrings.PAGE_TITLE_WE_LOGGED_OUT,
+    "token_expired": EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED,
+    "InvalidSession": EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED,
+    "session_expired": EpsLogoutStrings.PAGE_TITLE_SESSION_EXPIRED
+  }
+
+  usePageTitle(auth.invalidSessionCause ?
+    pageTitleMap[auth.invalidSessionCause] || EpsLogoutStrings.PAGE_TITLE : EpsLogoutStrings.PAGE_TITLE)
 
   if (auth.invalidSessionCause === "ConcurrentSession") {
     return (
@@ -48,6 +54,27 @@ export default function SessionLoggedOutPage() {
               <p data-testid="timeout-description">
                 {EpsLogoutStrings.LOGOUT_TIMEOUT_DESCRIPTION}</p>
               <p data-testid="timeout-description2">{EpsLogoutStrings.LOGOUT_TIMEOUT_FURTHER}</p>
+              <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
+            </Col>
+          </Row>
+        </Container>
+      </main>
+    )
+  }
+
+  // Handle token expiration scenarios (server-side session validation failures)
+  if (auth.invalidSessionCause === "token_expired" ||
+      auth.invalidSessionCause === "InvalidSession" ||
+      auth.invalidSessionCause === "session_expired") {
+    return (
+      <main id="main-content" className="nhsuk-main-wrapper" data-testid="session-logged-out-expired">
+        <Container>
+          <Row>
+            <Col width="full">
+              <h1 data-testid="expired-title">{EpsLogoutStrings.LOGOUT_SESSION_EXPIRED_TITLE}</h1>
+              <p data-testid="expired-description">
+                {EpsLogoutStrings.LOGOUT_SESSION_EXPIRED_DESCRIPTION}</p>
+              <p data-testid="expired-description2">{EpsLogoutStrings.LOGOUT_SESSION_EXPIRED_FURTHER}</p>
               <Link to="/login" data-testid="login-link">{EpsLogoutStrings.LOGIN_LINK}</Link>
             </Col>
           </Row>
