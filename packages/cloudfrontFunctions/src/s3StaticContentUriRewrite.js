@@ -5,11 +5,11 @@ export async function handler(event) {
   const uri = parts[1]
 
   if (!uri) {
-    request.uri = `/index.html`
+    request.uri = "/index.html"
   } else if (uri.includes(".")) {
     request.uri = uri
   } else {
-    request.uri = `/index.html`
+    request.uri = "/index.html"
   }
 
   return request

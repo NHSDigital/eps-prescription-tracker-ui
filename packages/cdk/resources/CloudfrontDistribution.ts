@@ -23,6 +23,7 @@ import {Annotations, Duration} from "aws-cdk-lib"
 import {CustomSecurityHeadersPolicy} from "./Cloudfront/CustomSecurityHeaders"
 import {RestApiOrigin} from "aws-cdk-lib/aws-cloudfront-origins"
 import {resolve} from "path"
+import {readFileSync} from "fs"
 
 /**
  * Cloudfront distribution and supporting resources
@@ -54,20 +55,20 @@ export class CloudfrontDistribution extends Construct {
     super(scope, id)
 
     // Resources
+    const s3StaticContentUriRewriteCode = readFileSync(
+      resolve(__dirname, `../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js`), "utf8")
     const s3StaticContentUriRewriteFunction = new Function(this, "S3StaticContentUriRewriteFunction", {
       functionName: `${props.serviceName}-S3StaticContentUriRewriteFunction`,
-      code: FunctionCode.fromFile({
-        filePath: resolve(__dirname, `../../cloudfrontFunctions/src/s3StaticContentUriRewrite.js`)
-      }),
+      code: FunctionCode.fromInline(s3StaticContentUriRewriteCode.replace("export ", "")),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
     })
 
+    const s3StaticContentRootSlashRedirectCode = readFileSync(
+      resolve(__dirname, `../../cloudfrontFunctions/src/s3StaticContentRootSlashRedirect.js`), "utf8")
     const s3StaticContentRootSlashRedirect = new Function(this, "S3StaticContentRootSlashRedirect", {
       functionName: `${props.serviceName}-S3StaticContentRootSlashRedirect`,
-      code: FunctionCode.fromFile({
-        filePath: resolve(__dirname, `../../cloudfrontFunctions/src/s3StaticContentRootSlashRedirect.js`)
-      }),
+      code: FunctionCode.fromInline(s3StaticContentRootSlashRedirectCode.replace("export ", "")),
       runtime: FunctionRuntime.JS_2_0,
       autoPublish: true
     })
