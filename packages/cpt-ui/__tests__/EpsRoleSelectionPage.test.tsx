@@ -571,6 +571,39 @@ describe("RoleSelectionPage", () => {
     render(<RoleSelectionPage contentText={defaultContentText} />)
 
     expect(logger.debug).toHaveBeenCalledTimes(10)
+
+    expect(logger.debug).toHaveBeenCalledWith("Counts of roles returned vs rendered", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      currentlySelectedRole: true,
+      returnedRolesWithAccessCount: 6,
+      returnedRolesWithoutAccessCount: 5,
+      renderedRolesWithAccessCount: 5,
+      renderedRolesWithoutAccessCount: 5
+    }, true)
+
+    expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      authContext: {
+        cognitoUsername: "cognito-user",
+        name: "Test User",
+        currentlySelectedRole: {
+          role_id: "1"
+        },
+        isSignedIn: true,
+        isSigningIn: false,
+        isSigningOut: false,
+        isConcurrentSession: false,
+        error: null,
+        invalidSessionCause: undefined
+      }
+    }, true)
+
     expect(logger.debug).toHaveBeenCalledWith("Returned roles with access", {
       logId: "some-log-id-uuid-value",
       sessionId: "session-1234",
@@ -684,7 +717,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 1,
-      renderedRolesWithAccessProps: [
+      renderedRolesWithAccess: [
         {
           link: "/your-selected-role",
           role: {
@@ -734,7 +767,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 2,
-      renderedRolesWithAccessProps: [
+      renderedRolesWithAccess: [
         {
           link: "/your-selected-role",
           role: {
@@ -754,7 +787,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 1,
-      renderedRolesWithoutAccessProps: [
+      renderedRolesWithoutAccess: [
         {
           roleName: "Technician",
           odsCode: "XYZ",
@@ -788,7 +821,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 2,
-      renderedRolesWithoutAccessProps: [
+      renderedRolesWithoutAccess: [
         {
           roleName: "Technician",
           odsCode: "XYZ",
@@ -1110,7 +1143,7 @@ describe("RoleSelectionPage", () => {
       expect(screen.getByText(/No Org/)).toBeInTheDocument()
       expect(screen.getByText(/No ODS/)).toBeInTheDocument()
       expect(screen.getByText("No Role")).toBeInTheDocument()
-      expect(screen.getByText("No Address")).toBeInTheDocument()
+      expect(screen.getByText("No address available")).toBeInTheDocument()
     })
 
     it("filters out selected role from available roles", () => {
