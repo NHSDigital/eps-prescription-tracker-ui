@@ -404,7 +404,7 @@ describe("BasicDetailsSearchResultsPage", () => {
         dobYear: "1990",
         postcode: "SW1A 1AA",
         nhsNumber: "9726919207",
-        searchType: "nhs"
+        searchType: "basicDetails"
       })
     })
   })
