@@ -154,7 +154,8 @@ export default function SearchResultsPage() {
           navigationContext.getRelevantSearchParameters("basicDetails")
         searchContext.setAllSearchParameters({
           ...relevantParams,
-          nhsNumber: payload[0].nhsNumber
+          nhsNumber: payload[0].nhsNumber,
+          searchType: "nhs"
         })
         navigate(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
         return

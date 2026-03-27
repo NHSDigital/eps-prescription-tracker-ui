@@ -59,8 +59,7 @@ export default function PrescriptionListPage() {
       const hasAnyPrescriptionId = Boolean(originalSearchParams?.prescriptionId || searchContext.prescriptionId)
       if (originalSearchParams &&
           (originalSearchParams.firstName || originalSearchParams.lastName) &&
-          !hasAnyNhsNumber &&
-          !hasAnyPrescriptionId) {
+          (!hasAnyNhsNumber && !hasAnyPrescriptionId)) {
         logger.info("Basic details present but no NHS number/ prescription ID - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
