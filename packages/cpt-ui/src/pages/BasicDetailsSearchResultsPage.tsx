@@ -152,6 +152,8 @@ export default function SearchResultsPage() {
       if (payload.length === 1) {
         const relevantParams =
           navigationContext.getRelevantSearchParameters("basicDetails")
+        // Set the search type before attempting search again
+        // As we'll now be using the nhs number search
         searchContext.setAllSearchParameters({
           ...relevantParams,
           nhsNumber: payload[0].nhsNumber,
