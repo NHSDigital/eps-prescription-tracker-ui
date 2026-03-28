@@ -59,15 +59,15 @@ const PrescriptionsListTable = ({
   ): string => {
     switch (prescriptionType) {
       case "0001":
-        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.acute
+        return PRESCRIPTION_LIST_TABLE_TEXT.TYPE_DISPLAY_TEXT.ACUTE
       case "0002":
-        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.repeat
+        return PRESCRIPTION_LIST_TABLE_TEXT.TYPE_DISPLAY_TEXT.REPEAT
       case "0003":
-        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.erd
+        return PRESCRIPTION_LIST_TABLE_TEXT.TYPE_DISPLAY_TEXT.ERD
           .replace("Y", repeatIssue?.toString())
           .replace("X", repeatMax!.toString())
       default:
-        return PRESCRIPTION_LIST_TABLE_TEXT.typeDisplayText.unknown
+        return PRESCRIPTION_LIST_TABLE_TEXT.TYPE_DISPLAY_TEXT.UNKNOWN
     }
   }
 
@@ -88,7 +88,7 @@ const PrescriptionsListTable = ({
         <span
           className="eps-prescription-table-sort-icon-wrapper"
           role="img"
-          aria-label={PRESCRIPTION_LIST_TABLE_TEXT.sortLabel}
+          aria-label={PRESCRIPTION_LIST_TABLE_TEXT.SORT_LABEL}
         >
           <span
             className={`arrow up-arrow ${
@@ -145,9 +145,8 @@ const PrescriptionsListTable = ({
     // Only set the prescription-specific parameters needed for the details page
     // Don't modify or mix with the original search parameters to avoid cross-contamination
     searchContext.setPrescriptionId(prescriptionId)
-    if (issueNumber) {
-      searchContext.setIssueNumber(issueNumber)
-    }
+    // Always set issueNumber (even if undefined) to clear any previous value from other prescriptions
+    searchContext.setIssueNumber(issueNumber)
   }
 
   const getSortedItems = () => {
@@ -210,11 +209,17 @@ const PrescriptionsListTable = ({
   const renderTableCaption = () => {
     const {testid} = textContent
 
-    const intro =
-      PRESCRIPTION_LIST_TABLE_TEXT.caption[
-        testid as keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.caption
-      ]
-    const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.caption.sharedText
+    // Map testid to the correct caption key
+    const captionKeyMap: Record<string, keyof typeof PRESCRIPTION_LIST_TABLE_TEXT.CAPTION> = {
+      current: "CURRENT",
+      future: "FUTURE",
+      past: "CLAIMED_EXPIRED",
+      claimedExpired: "CLAIMED_EXPIRED"
+    }
+
+    const captionKey = captionKeyMap[testid] || "CURRENT"
+    const intro = PRESCRIPTION_LIST_TABLE_TEXT.CAPTION[captionKey]
+    const sharedText = PRESCRIPTION_LIST_TABLE_TEXT.CAPTION.SHARED_TEXT
 
     return (
       <caption className="nhsuk-u-visually-hidden">
@@ -325,16 +330,14 @@ const PrescriptionsListTable = ({
             <span>
               <span
                 aria-hidden="true"
-                role="img"
                 className="warning-icon"
-                aria-label={PRESCRIPTION_LIST_TABLE_TEXT.warning}
               >
                 ⚠️
               </span>
-              {PRESCRIPTION_LIST_TABLE_TEXT.pendingCancellationItems}
+              {PRESCRIPTION_LIST_TABLE_TEXT.PENDING_CANCELLATION_ITEMS}
             </span>
           ) : (
-            PRESCRIPTION_LIST_TABLE_TEXT.none
+            PRESCRIPTION_LIST_TABLE_TEXT.NONE
           )}
         </Table.Cell>
       )
@@ -353,7 +356,7 @@ const PrescriptionsListTable = ({
               <span
                 data-testid={`unavailable-text-${row.prescriptionId}`}
               >
-                {PRESCRIPTION_LIST_TABLE_TEXT.unavailableText}
+                {PRESCRIPTION_LIST_TABLE_TEXT.UNAVAILABLE_TEXT}
               </span>
             ) : (
               <Link
@@ -362,9 +365,9 @@ const PrescriptionsListTable = ({
                 data-testid={`view-prescription-link-${row.prescriptionId}`}
                 onClick={() => setSearchPrescriptionState(row.prescriptionId, row.issueNumber?.toString())}
               >
-                {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescription}
+                {PRESCRIPTION_LIST_TABLE_TEXT.VIEW_PRESCRIPTION}
                 <span className="nhsuk-u-visually-hidden">
-                  {PRESCRIPTION_LIST_TABLE_TEXT.viewPrescriptionScreenReader} {row.prescriptionId}</span>
+                  {PRESCRIPTION_LIST_TABLE_TEXT.VIEW_PRESCRIPTION_SCREEN_READER} {row.prescriptionId}</span>
               </Link>
             )}
           </div>
@@ -412,8 +415,8 @@ const PrescriptionsListTable = ({
               className="eps-prescription-table-summary-row"
               data-testid="table-summary-row"
             >
-              {PRESCRIPTION_LIST_TABLE_TEXT.showing} {initialPrescriptions.length}{" "}
-              {PRESCRIPTION_LIST_TABLE_TEXT.of} {initialPrescriptions.length}
+              {PRESCRIPTION_LIST_TABLE_TEXT.SHOWING} {initialPrescriptions.length}{" "}
+              {PRESCRIPTION_LIST_TABLE_TEXT.OF} {initialPrescriptions.length}
             </td>
           </tr>
         </tfoot>

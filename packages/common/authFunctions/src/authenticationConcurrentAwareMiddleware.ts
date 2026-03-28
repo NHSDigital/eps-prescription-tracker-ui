@@ -77,7 +77,7 @@ export const authenticationConcurrentAwareMiddleware = (
         logger.info("A session is active but does not match the requestors sessionId", {username, sessionId})
         invalidSessionCause = "ConcurrentSession"
       } else {
-        logger.error("Request token invalid. No matching session found.", {
+        logger.warn("Request token invalid. No matching session found.", {
           tokenMappingSessionId,
           sessionManagementSessionId
         })
@@ -88,6 +88,7 @@ export const authenticationConcurrentAwareMiddleware = (
       }
     } catch (error) {
       logger.error("Authentication failed returning restart login prompt", {error})
+      invalidSessionCause = "InvalidSession"
     }
 
     // Handle timeout responses
