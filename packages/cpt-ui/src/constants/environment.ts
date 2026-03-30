@@ -75,6 +75,7 @@ export const FRONTEND_PATHS = {
   NO_PATIENT_FOUND: "/no-patient-found",
   NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
   PRIVACY_NOTICE: "/privacy-notice",
+  ACCESSIBILITY_STATEMENT: "/accessibility-statement",
   COOKIES_SELECTED: "/cookies-selected",
   SESSION_SELECTION: "/select-active-session",
   NOT_FOUND: "/notfound"
@@ -89,6 +90,7 @@ export const PUBLIC_PATHS = [
   FRONTEND_PATHS.PRIVACY_NOTICE,
   FRONTEND_PATHS.COOKIES_SELECTED,
   FRONTEND_PATHS.NOT_FOUND,
+  FRONTEND_PATHS.ACCESSIBILITY_STATEMENT,
   "/"
 ] as const
 

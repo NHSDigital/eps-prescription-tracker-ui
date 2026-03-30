@@ -22,6 +22,7 @@ import {SearchResponse, PrescriptionSummary} from "@cpt-ui-common/common-types/s
 import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
+import {useNavigationContext} from "@/context/NavigationProvider"
 import {handleSignoutEvent} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
 import {usePageTitle} from "@/hooks/usePageTitle"
@@ -29,6 +30,7 @@ import {usePageTitle} from "@/hooks/usePageTitle"
 export default function PrescriptionListPage() {
   const {setPatientDetails, setPatientFallback} = usePatientDetails()
   const searchContext = useSearchContext()
+  const navigationContext = useNavigationContext()
 
   const [futurePrescriptions, setFuturePrescriptions] = useState<Array<PrescriptionSummary>>([])
   const [pastPrescriptions, setPastPrescriptions] = useState<Array<PrescriptionSummary>>([])
@@ -46,17 +48,49 @@ export default function PrescriptionListPage() {
     const runSearch = async () => {
       setLoading(true)
 
+      // Use searchType from SearchProvider to determine which parameter to search with
       const searchParams = new URLSearchParams()
+      // Check original parameters first, then fall back to current search context
+      const originalSearchParams = navigationContext.getOriginalSearchParameters()
 
-      // determine which search page to go back to based on query parameters
-      if (searchContext.nhsNumber) {
-        searchParams.append("nhsNumber", searchContext.nhsNumber)
-      } else if (searchContext.prescriptionId) {
-        searchParams.append("prescriptionId", searchContext.prescriptionId)
-      } else {
-        logger.info("No search parameter provided - redirecting to prescription ID search")
+      // Handle basic details case - redirect only if we still have no NHS number or prescription ID
+      const hasAnyNhsNumber = Boolean(originalSearchParams?.nhsNumber || searchContext.nhsNumber)
+      const hasAnyPrescriptionId = Boolean(originalSearchParams?.prescriptionId || searchContext.prescriptionId)
+      if (originalSearchParams &&
+          (originalSearchParams.firstName || originalSearchParams.lastName) &&
+          !hasAnyNhsNumber &&
+          !hasAnyPrescriptionId) {
+        logger.info("Basic details present but no NHS number/ prescription ID - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
+      }
+
+      const handleSearchParams = (searchType: "nhsNumber" | "prescriptionId") => {
+        const searchParam = originalSearchParams?.[searchType] || searchContext[searchType]
+        if (!searchParam) {
+          // No search parameter available - redirect to search page
+          logger.info("No search parameter provided - redirecting to prescription ID search")
+          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+          return
+        }
+        searchParams.append(searchType, searchParam)
+      }
+
+      switch (searchContext.searchType) {
+        case "nhs":
+          handleSearchParams("nhsNumber")
+          break
+        case "prescriptionId":
+          handleSearchParams("prescriptionId")
+          break
+        case "basicDetails":
+          handleSearchParams("nhsNumber")
+          break
+        default:
+          // Unrecognized search type - redirect to search page
+          logger.info("No search parameter provided - redirecting to prescription ID search")
+          navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
+          return
       }
 
       try {
@@ -80,9 +114,8 @@ export default function PrescriptionListPage() {
           searchResults.pastPrescriptions.length === 0 &&
           searchResults.futurePrescriptions.length === 0
         ) {
-          logger.error(
-            "A patient was returned, but they do not have any prescriptions.",
-            searchResults
+          logger.info(
+            "A patient was returned, but they do not have any prescriptions."
           )
           setPatientDetails(searchResults.patient)
           setPatientFallback(searchResults.patientFallback)

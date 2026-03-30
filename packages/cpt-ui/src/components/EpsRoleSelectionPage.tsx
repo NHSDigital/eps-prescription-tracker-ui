@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from "react"
+import React, {useState, useEffect, useRef} from "react"
 import {useNavigate} from "react-router-dom"
 import {
   Container,
@@ -7,66 +7,109 @@ import {
   Details,
   Table,
   ErrorSummary,
-  InsetText,
-  Card
+  InsetText
 } from "nhsuk-react-components"
 
+import "../styles/roleselectionpage.scss"
+
 import {useAuth} from "@/context/AuthProvider"
-import {RoleDetails} from "@cpt-ui-common/common-types"
 import {Button} from "./ReactRouterButton"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {handleSignoutEvent} from "@/helpers/logout"
 import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
+import LoadingPage from "@/pages/LoadingPage"
+import {
+  RolesWithAccessProps,
+  RolesWithoutAccessProps,
+  RoleCardsSectionProps,
+  RolesWithoutAccessSectionProps,
+  RoleComponentProps,
+  RoleSelectionPageProps,
+  ErrorStateProps,
+  UserInfoSectionProps,
+  MainLayoutProps
+} from "./EpsRoleSelectionPage.types"
+import {transformRolesData, logRoleChunks} from "./EpsRoleSelectionPage.utils"
+import {RoleCard} from "./RoleCard"
 
-// This is passed to the EPS card component.
-export type RolesWithAccessProps = {
-  role: RoleDetails
-  link: string
-  uuid: string
+function RoleCardsSection({
+  rolesWithAccess,
+  selectedCardId,
+  isSelectingRole,
+  onCardClick,
+  onCardKeyDown,
+  noOrgName,
+  noODSCode,
+  noRoleName
+}: RoleCardsSectionProps) {
+  return (
+    <Col width="two-thirds">
+      <div className="section">
+        {rolesWithAccess.map((roleCardProps: RolesWithAccessProps) => {
+          const isThisCardSelected = selectedCardId === roleCardProps.uuid
+          const isOtherCardDisabled = isSelectingRole && !isThisCardSelected
+
+          return (
+            <RoleCard
+              key={roleCardProps.uuid}
+              roleCardProps={roleCardProps}
+              isThisCardSelected={isThisCardSelected}
+              isOtherCardDisabled={isOtherCardDisabled}
+              onCardClick={onCardClick}
+              onCardKeyDown={onCardKeyDown}
+              noOrgName={noOrgName}
+              noODSCode={noODSCode}
+              noRoleName={noRoleName}
+            />
+          )
+        })}
+      </div>
+    </Col>
+  )
 }
 
-export type RolesWithoutAccessProps = {
-  uuid: string
-  orgName: string
-  odsCode: string
-  roleName: string
-}
-
-interface RoleComponentProps {
-  rolesWithAccess: Array<RolesWithAccessProps>
-  rolesWithoutAccess: Array<RolesWithoutAccessProps>
-}
-
-interface RoleSelectionPageProps {
-  contentText: {
-    pageTitle: string
-    title: string
-    caption: string
-    titleNoAccess: string
-    captionNoAccess: string
-    insetText: {
-      visuallyHidden: string
-      message: string
-      loggedInTemplate: string
-    }
-    confirmButton: {
-      link: string
-      text: string
-    }
-    alternativeMessage: string
-    organisation: string
-    role: string
-    roles_without_access_table_title: string
-    noOrgName: string
-    rolesWithoutAccessHeader: string
-    noODSCode: string
-    noRoleName: string
-    noAddress: string
-    errorDuringRoleSelection: string
-  }
+function RolesWithoutAccessSection({
+  rolesWithoutAccess,
+  rolesWithoutAccessHeader,
+  roles_without_access_table_title,
+  organisation,
+  role
+}: RolesWithoutAccessSectionProps) {
+  return (
+    <Col width="two-thirds">
+      <h3>{rolesWithoutAccessHeader}</h3>
+      <Details expander>
+        <Details.Summary>
+          {roles_without_access_table_title}
+        </Details.Summary>
+        <Details.Text>
+          <Table>
+            <Table.Head>
+              <Table.Row>
+                <Table.Cell>{organisation}</Table.Cell>
+                <Table.Cell>{role}</Table.Cell>
+              </Table.Row>
+            </Table.Head>
+            <Table.Body>
+              {rolesWithoutAccess.map((roleItem: RolesWithoutAccessProps) => (
+                <Table.Row key={roleItem.uuid}>
+                  <Table.Cell data-testid="change-role-name-cell">
+                    {roleItem.orgName} (ODS: {roleItem.odsCode})
+                  </Table.Cell>
+                  <Table.Cell data-testid="change-role-role-cell">
+                    {roleItem.roleName}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        </Details.Text>
+      </Details>
+    </Col>
+  )
 }
 
 export default function RoleSelectionPage({
@@ -91,9 +134,11 @@ export default function RoleSelectionPage({
   } = contentText
 
   const auth = useAuth()
-
   const navigate = useNavigate()
-
+  const location = {pathname: globalThis.location.pathname}
+  const redirecting = useRef(false)
+  const [isSelectingRole, setIsSelectingRole] = useState(false)
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [roleComponentProps, setRoleComponentProps] = useState<RoleComponentProps>({
     rolesWithAccess: [],
     rolesWithoutAccess: []
@@ -108,6 +153,12 @@ export default function RoleSelectionPage({
     roleCardProps: RolesWithAccessProps
   ) => {
     e.preventDefault()
+
+    if (isSelectingRole) return
+
+    setIsSelectingRole(true)
+    setSelectedCardId(roleCardProps.uuid)
+
     try {
       await auth.updateSelectedRole(roleCardProps.role)
       navigate(roleCardProps.link)
@@ -118,6 +169,8 @@ export default function RoleSelectionPage({
         return
       }
       logger.error("Error selecting role:", err)
+      setIsSelectingRole(false)
+      setSelectedCardId(null)
     }
   }
 
@@ -133,103 +186,34 @@ export default function RoleSelectionPage({
     handleSetSelectedRole(e, roleCardProps)
   }
 
-  const chunkRolesForRumLogs = (
-    roles: Array<unknown>, logMessage: string, logId: string, fieldToPopulate: string) => {
-    const chunkSize = 4
-
-    const chunks = []
-    for (let index = 0; index < roles.length; index += chunkSize) {
-      const chunk = roles.slice(index, index + chunkSize)
-      chunks.push(chunk)
-    }
-
-    for (const [index, chunk] of chunks.entries()){
-      logger.debug(logMessage, {
-        logId,
+  const onConfirmRole = () => {
+    if(location.pathname === `/${ENV_CONFIG.BASE_PATH}${FRONTEND_PATHS.SELECT_YOUR_ROLE}`) {
+      logger.debug("Role confirmed", {
         sessionId: auth.sessionId,
-        userId: auth.userDetails?.sub,
         pageName: location.pathname,
-        totalChunks: chunks.length,
-        chunkNo: index+1,
-        [fieldToPopulate]: chunk
+        userId: auth.userDetails?.sub,
+        roleName: auth.selectedRole?.role_name,
+        roleId: auth.selectedRole?.role_id,
+        orgName: auth.selectedRole?.org_name,
+        orgCode: auth.selectedRole?.org_code
       }, true)
     }
+    navigate(confirmButton.link)
   }
 
+  // Transform roles data when auth roles change
   useEffect(() => {
-    // Transform roles data for display
-    const rolesWithAccessComponentProps = auth.rolesWithAccess.length === 0
-      ? []
-      : auth.rolesWithAccess.map((role: RoleDetails, index) => ({
-        uuid: `role_with_access_${index}`,
-        role,
-        link: FRONTEND_PATHS.YOUR_SELECTED_ROLE
-      })).filter((duplicateRole) => duplicateRole.role.role_id !== auth.selectedRole?.role_id)
+    const transformedData = transformRolesData(
+      auth.rolesWithAccess,
+      auth.rolesWithoutAccess,
+      auth.selectedRole,
+      noRoleName,
+      noOrgName,
+      noODSCode
+    )
 
-    const rolesWithoutAccessComponentProps = auth.rolesWithoutAccess.map((role, index) => ({
-      uuid: `role_without_access_${index}`,
-      roleName: role.role_name || noRoleName,
-      orgName: role.org_name || noOrgName,
-      odsCode: role.org_code || noODSCode
-    }))
-
-    if(auth.userDetails?.sub && !auth.sentRumRoleLogs ) {
-      auth.setSentRumRoleLogs(true)
-      /* RUM has a 6kb event payload size limit so we need to split up the information we want to log.
-      All logs generated at this point will include the same logId so that we can tie them all back to the
-      same occurrence when trying to debug issues*/
-
-      /* First log just include counts of roles and other information required for the report*/
-      const logId = crypto.randomUUID()
-      logger.debug("Counts of roles returned vs rendered", {
-        logId,
-        sessionId: auth.sessionId,
-        userId: auth.userDetails.sub,
-        pageName: location.pathname,
-        /* Note: If there is a selected role, the list of roles with access in the auth context
-        and the list to be rendered will be out by 1 */
-        currentlySelectedRole: !!auth.selectedRole,
-        returnedRolesWithAccessCount: auth.rolesWithAccess.length,
-        returnedRolesWithoutAccessCount: auth.rolesWithoutAccess.length,
-        renderedRolesWithAccessCount: rolesWithAccessComponentProps.length,
-        renderedRolesWithoutAccessCount: rolesWithoutAccessComponentProps.length
-      }, true)
-
-      /* Second log includes the auth context at this moment, minus the roles with/without access lists*/
-      logger.debug("Auth context for rendered roles", {
-        logId,
-        sessionId: auth.sessionId,
-        userId: auth.userDetails.sub,
-        pageName: location.pathname,
-        /* only pick out the specific additional values we care about to reduce unnecessary noise
-        in logs from function props of the auth context object */
-        authContext: {
-          cognitoUsername: auth.user,
-          name: auth.userDetails.name,
-          currentlySelectedRole: auth.selectedRole,
-          isSignedIn: auth.isSignedIn,
-          isSigningIn: auth.isSigningIn,
-          isSigningOut: auth.isSigningOut,
-          isConcurrentSession: auth.isConcurrentSession,
-          error: auth.error,
-          invalidSessionCause: auth.invalidSessionCause
-        }
-      }, true)
-
-      chunkRolesForRumLogs(auth.rolesWithAccess, "Returned roles with access", logId, "returnedRolesWithAccess")
-      chunkRolesForRumLogs(
-        auth.rolesWithoutAccess, "Returned roles without access", logId, "returnedRolesWithoutAccess")
-      chunkRolesForRumLogs(
-        rolesWithAccessComponentProps, "Rendered roles with access", logId, "renderedRolesWithAccessProps")
-      chunkRolesForRumLogs(
-        rolesWithoutAccessComponentProps, "Rendered roles without access", logId, "renderedRolesWithoutAccessProps")
-    }
-
-    setRoleComponentProps({
-      rolesWithAccess: rolesWithAccessComponentProps,
-      rolesWithoutAccess: rolesWithoutAccessComponentProps
-    })
-
+    logRoleChunks(auth, transformedData.rolesWithAccess, transformedData.rolesWithoutAccess, location)
+    setRoleComponentProps(transformedData)
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
 
   useEffect(() => {
@@ -247,155 +231,150 @@ export default function RoleSelectionPage({
     }
   }, [auth.hasSingleRoleAccess, auth.isSignedIn])
 
-  // Show error if present
+  // Early returns for error and loading states
   if (auth.error) {
-    return (
-      <main
-        id="main-content"
-        className="nhsuk-main-wrapper"
-        data-testid="eps_roleSelectionComponent"
-      >
-        <Container>
-          <Row>
-            <ErrorSummary>
-              <ErrorSummary.Title>
-                {errorDuringRoleSelection}
-              </ErrorSummary.Title>
-              <ErrorSummary.List>
-                <ErrorSummary.Item href="PLACEHOLDER/contact/us">
-                  {auth.error}
-                </ErrorSummary.Item>
-              </ErrorSummary.List>
-            </ErrorSummary>
-          </Row>
-        </Container>
-      </main>
-    )
+    return <ErrorState error={auth.error} errorDuringRoleSelection={errorDuringRoleSelection} />
   }
 
+  // TODO: Remove this loading logic in favor of AccessProvider.shouldBlockChildren()
+  // when auth changes are complete - avoid duplicate auth state handling
+  const shouldShowLoading = redirecting.current || auth.isSigningOut
+  if (shouldShowLoading) {
+    return <MainLayout><LoadingPage /></MainLayout>
+  }
+
+  return (
+    <MainLayout>
+      <Container role="contentinfo">
+        <Row>
+          <UserInfoSection
+            auth={auth}
+            title={title}
+            titleNoAccess={titleNoAccess}
+            caption={caption}
+            captionNoAccess={captionNoAccess}
+            insetText={insetText}
+            confirmButton={confirmButton}
+            alternativeMessage={alternativeMessage}
+            isSelectingRole={isSelectingRole}
+            onConfirmRole={onConfirmRole}
+            noOrgName={noOrgName}
+            noODSCode={noODSCode}
+            noRoleName={noRoleName}
+          />
+          {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
+            <RoleCardsSection
+              rolesWithAccess={roleComponentProps.rolesWithAccess}
+              selectedCardId={selectedCardId}
+              isSelectingRole={isSelectingRole}
+              onCardClick={handleCardClick}
+              onCardKeyDown={handleCardKeyDown}
+              noOrgName={noOrgName}
+              noODSCode={noODSCode}
+              noRoleName={noRoleName}
+            />
+          )}
+          <RolesWithoutAccessSection
+            rolesWithoutAccess={roleComponentProps.rolesWithoutAccess}
+            rolesWithoutAccessHeader={rolesWithoutAccessHeader}
+            roles_without_access_table_title={roles_without_access_table_title}
+            organisation={organisation}
+            role={role}
+          />
+        </Row>
+      </Container>
+    </MainLayout>
+  )
+}
+
+function ErrorState({error, errorDuringRoleSelection}: ErrorStateProps) {
   return (
     <main
       id="main-content"
       className="nhsuk-main-wrapper"
       data-testid="eps_roleSelectionComponent"
     >
-      <Container role="contentinfo">
+      <Container>
         <Row>
-          <Col width="two-thirds">
-            <h1 className="nhsuk-heading-xl">
-              <span role="text" data-testid="eps_header_selectYourRole">
-                <span className="nhsuk-title">
-                  {auth.rolesWithAccess.length === 0 ? titleNoAccess : title}
-                </span>
-                <span className="nhsuk-caption-l nhsuk-caption--bottom">
-                  <span className="nhsuk-u-visually-hidden"> - </span>
-                  {(auth.rolesWithAccess.length > 0) && caption}
-                </span>
-              </span>
-            </h1>
-
-            {auth.rolesWithAccess.length === 0 && <p>{captionNoAccess}</p>}
-            {auth.selectedRole && (
-              <section aria-label="Login Information">
-                <InsetText data-testid="eps_select_your_role_pre_role_selected">
-                  <p>
-                    {insetText.loggedInTemplate
-                      .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
-                      .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
-                      .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
-                  </p>
-                </InsetText>
-                <Button
-                  to={confirmButton.link}
-                  data-testid="confirm-and-continue"
-                >
-                  {confirmButton.text}
-                </Button>
-                <p>{alternativeMessage}</p>
-              </section>
-            )}
-          </Col>
-
-          {(auth.rolesWithAccess.length > 0) && (roleComponentProps.rolesWithAccess.length > 0) && (
-            <Col width="two-thirds">
-              <div className="section">
-                {roleComponentProps.rolesWithAccess
-                  .map((roleCardProps: RolesWithAccessProps) => (
-                    <Card
-                      key={roleCardProps.uuid}
-                      data-testid="eps-card"
-                      className="nhsuk-card nhsuk-card--primary nhsuk-u-margin-bottom-4"
-                      tabIndex={0}
-                      onKeyDown={(e) => handleCardKeyDown(e, roleCardProps)}
-                      onClick={(e) => handleCardClick(e, roleCardProps)}
-                      style={{cursor: "pointer"}}
-                    >
-                      <Card.Content>
-                        <div className="eps-card__layout">
-                          <div>
-                            <Card.Heading className="nhsuk-heading-s eps-card__org-name">
-                              {roleCardProps.role.org_name || noOrgName}
-                              <br />
-                              (ODS: {roleCardProps.role.org_code || noODSCode})
-                            </Card.Heading>
-                            <Card.Description className="nhsuk-u-margin-top-2">
-                              {roleCardProps.role.role_name || noRoleName}
-                            </Card.Description>
-                          </div>
-                          <div className="eps-card__address">
-                            <Card.Description>
-                              {(roleCardProps.role.site_address || contentText.noAddress)
-                                .split("\n")
-                                .map((line: string, index: number) => (
-                                  <span key={index}>
-                                    {line}
-                                    <br />
-                                  </span>
-                                ))}
-                            </Card.Description>
-                          </div>
-                        </div>
-                      </Card.Content>
-                    </Card>
-                  ))}
-              </div>
-            </Col>
-          )}
-
-          <Col width="two-thirds">
-            <h3>{rolesWithoutAccessHeader}</h3>
-            <Details expander>
-              <Details.Summary>
-                {roles_without_access_table_title}
-              </Details.Summary>
-              <Details.Text>
-                <Table>
-                  <Table.Head>
-                    <Table.Row>
-                      <Table.Cell>{organisation}</Table.Cell>
-                      <Table.Cell>{role}</Table.Cell>
-                    </Table.Row>
-                  </Table.Head>
-                  <Table.Body>
-                    {roleComponentProps.rolesWithoutAccess.map(
-                      (roleItem: RolesWithoutAccessProps) => (
-                        <Table.Row key={roleItem.uuid}>
-                          <Table.Cell data-testid="change-role-name-cell">
-                            {roleItem.orgName} (ODS: {roleItem.odsCode})
-                          </Table.Cell>
-                          <Table.Cell data-testid="change-role-role-cell">
-                            {roleItem.roleName}
-                          </Table.Cell>
-                        </Table.Row>
-                      )
-                    )}
-                  </Table.Body>
-                </Table>
-              </Details.Text>
-            </Details>
-          </Col>
+          <ErrorSummary>
+            <ErrorSummary.Title>
+              {errorDuringRoleSelection}
+            </ErrorSummary.Title>
+            <ErrorSummary.List>
+              <ErrorSummary.Item href="PLACEHOLDER/contact/us">
+                {error}
+              </ErrorSummary.Item>
+            </ErrorSummary.List>
+          </ErrorSummary>
         </Row>
       </Container>
     </main>
+  )
+}
+
+function MainLayout({children}: MainLayoutProps) {
+  return (
+    <main
+      id="main-content"
+      className="nhsuk-main-wrapper"
+      data-testid="eps_roleSelectionComponent"
+    >
+      {children}
+    </main>
+  )
+}
+
+function UserInfoSection({
+  auth,
+  title,
+  titleNoAccess,
+  caption,
+  captionNoAccess,
+  insetText,
+  confirmButton,
+  alternativeMessage,
+  isSelectingRole,
+  onConfirmRole,
+  noOrgName,
+  noODSCode,
+  noRoleName
+}: UserInfoSectionProps) {
+  const pageTitle = auth.rolesWithAccess.length === 0 ? titleNoAccess : title
+  const showCaption = auth.rolesWithAccess.length > 0
+
+  return (
+    <Col width="two-thirds">
+      <h1 className="nhsuk-heading-xl">
+        <span role="text" data-testid="eps_header_selectYourRole">
+          <span className="nhsuk-title">{pageTitle}</span>
+          <span className="nhsuk-caption-l nhsuk-caption--bottom">
+            <span className="nhsuk-u-visually-hidden"> - </span>
+            {showCaption && caption}
+          </span>
+        </span>
+      </h1>
+
+      {auth.rolesWithAccess.length === 0 && <p>{captionNoAccess}</p>}
+      {auth.selectedRole && (
+        <section aria-label="Login Information">
+          <InsetText data-testid="eps_select_your_role_pre_role_selected">
+            <p>
+              {insetText.loggedInTemplate
+                .replace("{orgName}", auth.selectedRole.org_name || noOrgName)
+                .replace("{odsCode}", auth.selectedRole.org_code || noODSCode)
+                .replace("{roleName}", auth.selectedRole.role_name || noRoleName)}
+            </p>
+          </InsetText>
+          <Button
+            data-testid="confirm-and-continue"
+            onClick={onConfirmRole}
+            disabled={isSelectingRole}
+          >
+            {confirmButton.text}
+          </Button>
+          <p>{alternativeMessage}</p>
+        </section>
+      )}
+    </Col>
   )
 }

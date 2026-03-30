@@ -1,5 +1,6 @@
 import {jest} from "@jest/globals"
 import {AuthContextType} from "@/context/AuthProvider"
+import {SearchProviderContextType} from "@/context/SearchProvider"
 
 /**
  * Default mock AuthContextType for testing.
@@ -47,3 +48,43 @@ export const mockAuthState = {
   setSentRumRoleLogs: jest.fn(),
   remainingSessionTime: undefined
 } as unknown as AuthContextType
+
+/**
+ * Default mock SearchProviderContextType for testing.
+ * Use spread syntax to override specific values in your tests:
+ *
+ * @example
+ * const searchState = {
+ *   ...mockSearchState,
+ *   nhsNumber: "9735652587",
+ *   searchType: "nhs"
+ * }
+ */
+export const mockSearchState = {
+  // State values
+  prescriptionId: undefined,
+  issueNumber: undefined,
+  nhsNumber: undefined,
+  firstName: undefined,
+  lastName: undefined,
+  dobDay: undefined,
+  dobMonth: undefined,
+  dobYear: undefined,
+  postcode: undefined,
+  searchType: undefined,
+
+  // Mock functions with sensible defaults
+  clearSearchParameters: jest.fn(),
+  setPrescriptionId: jest.fn(),
+  setIssueNumber: jest.fn(),
+  setFirstName: jest.fn(),
+  setLastName: jest.fn(),
+  setDobDay: jest.fn(),
+  setDobMonth: jest.fn(),
+  setDobYear: jest.fn(),
+  setPostcode: jest.fn(),
+  setNhsNumber: jest.fn(),
+  setSearchType: jest.fn(),
+  getAllSearchParameters: jest.fn(),
+  setAllSearchParameters: jest.fn()
+} as unknown as SearchProviderContextType
