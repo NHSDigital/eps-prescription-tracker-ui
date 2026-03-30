@@ -53,7 +53,7 @@ import http from "@/helpers/axios"
 
 // Mock logout helpers
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
+  handleSignoutEvent: jest.fn(),
   signOut: jest.fn()
 }))
 
@@ -494,7 +494,7 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
           "InvalidSession"
         )
@@ -531,7 +531,7 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
           "ConcurrentSession"
         )
@@ -568,7 +568,7 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
           "Timeout"
         )
@@ -605,7 +605,7 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
           undefined
         )

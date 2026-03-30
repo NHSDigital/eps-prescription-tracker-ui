@@ -99,7 +99,7 @@ export function logRoleChunks(
   logger.debug("Counts of roles returned vs rendered", {
     logId,
     sessionId: auth.sessionId,
-    userId: auth.userDetails.sub,
+    userId: auth.userDetails?.sub,
     pageName: location.pathname,
     currentlySelectedRole: !!auth.selectedRole,
     returnedRolesWithAccessCount: auth.rolesWithAccess.length,
@@ -111,11 +111,11 @@ export function logRoleChunks(
   logger.debug("Auth context for rendered roles", {
     logId,
     sessionId: auth.sessionId,
-    userId: auth.userDetails.sub,
+    userId: auth.userDetails?.sub,
     pageName: location.pathname,
     authContext: {
       cognitoUsername: auth.user,
-      name: auth.userDetails.name,
+      name: auth.userDetails?.name,
       currentlySelectedRole: auth.selectedRole,
       isSignedIn: auth.isSignedIn,
       isSigningIn: auth.isSigningIn,
