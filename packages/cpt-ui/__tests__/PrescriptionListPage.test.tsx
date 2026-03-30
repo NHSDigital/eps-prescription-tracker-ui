@@ -726,9 +726,8 @@ describe("PrescriptionListPage", () => {
         expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.NO_PRESCRIPTIONS_FOUND)
       })
 
-      expect(logger.error).toHaveBeenCalledWith(
-        "A patient was returned, but they do not have any prescriptions.",
-        emptyResponse
+      expect(logger.info).toHaveBeenCalledWith(
+        "A patient was returned, but they do not have any prescriptions."
       )
     })
   })

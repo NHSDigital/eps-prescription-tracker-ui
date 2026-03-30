@@ -18,7 +18,6 @@ interface ReactRouterButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 export const Button: React.FC<ReactRouterButtonProps> = ({
   children,
   to,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   disabled = false,
   onClick,
   className = "",
@@ -28,6 +27,11 @@ export const Button: React.FC<ReactRouterButtonProps> = ({
   const navigate = useNavigate()
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLButtonElement>) => {
+    if (disabled) {
+      event.preventDefault()
+      return
+    }
+
     if (to) {
       event.preventDefault()
       const absolutePath = to.startsWith("/") ? to : `/${to}`
@@ -40,6 +44,7 @@ export const Button: React.FC<ReactRouterButtonProps> = ({
 
   return (
     <NHSButton
+      disabled={disabled}
       onClick={handleClick}
       className={`${className}`}
       data-testid={testId}
