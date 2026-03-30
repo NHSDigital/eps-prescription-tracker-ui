@@ -496,6 +496,8 @@ describe("PrescriptionListPage", () => {
       await waitFor(() => {
         expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           "InvalidSession"
         )
       })
@@ -533,6 +535,8 @@ describe("PrescriptionListPage", () => {
       await waitFor(() => {
         expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           "ConcurrentSession"
         )
       })
@@ -570,6 +574,8 @@ describe("PrescriptionListPage", () => {
       await waitFor(() => {
         expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           "Timeout"
         )
       })
@@ -607,6 +613,8 @@ describe("PrescriptionListPage", () => {
       await waitFor(() => {
         expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           undefined
         )
       })

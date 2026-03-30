@@ -669,7 +669,7 @@ describe("AccessProvider", () => {
       expect(logger.warn).toHaveBeenCalledWith("Session expired - automatically logging out user")
       expect(authContext.updateInvalidSessionCause).toHaveBeenCalledWith("Timeout")
       expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
-        navigate, expect.anything(), "Timeout")
+        navigate, "Timeout")
     })
 
     it("should hide modal when session is still valid", async () => {
@@ -722,7 +722,7 @@ describe("AccessProvider", () => {
         "No remainingSessionTime in response - session may be corrupted, logging out user"
       )
       expect(authContext.updateInvalidSessionCause).toHaveBeenCalledWith("InvalidSession")
-      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext, navigate, expect.anything(), "InvalidSession")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext, navigate, "InvalidSession")
     })
   })
 })

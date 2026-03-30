@@ -220,6 +220,19 @@ describe("shouldBlockChildren", () => {
         isConcurrentSession: false,
         selectedRole: undefined
       }
+    },
+    {
+      name: "signed in, not signing out, has recent logout marker", // has a redirection test
+      initialPath: FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: false,
+        logoutMarker: {
+          timestamp: Date.now(),
+          reason: "signOut",
+          initiatedByTabId: "tab-a"
+        }
+      }
     }
   ]
 

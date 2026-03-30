@@ -137,20 +137,21 @@ export const checkForRecentLogoutMarker = (caller?: string) => {
       logger.info(`Existing marker is recent. ${caller ? `Called by ${caller}` : ""}`, existingMarker)
       return existingMarker
     }
-    clearLogoutMarkerFromStorage()
+    clearLogoutMarkerFromStorage("CheckForRecentLogoutMarker")
     return undefined
   }
-  logger.info(`No recent logout marker found. ${caller ? `Called by ${caller}` : ""}`)
+  logger.debug(`No recent logout marker found. ${caller ? `Called by ${caller}` : ""}`)
   return undefined
 }
 
-export const clearLogoutMarkerFromStorage = () => {
+export const clearLogoutMarkerFromStorage = (caller?: string) => {
   if (typeof window === "undefined") {
     logger.info("No window defined, unable to clear logout marker from storage")
     return
   }
 
   try {
+    logger.debug(`Clearing logout marker from storage. ${caller ? `Called by ${caller}` : ""}`)
     let markerGroup =
       readItemGroupFromLocalStorage(LOGOUT_MARKER_STORAGE_GROUP) as Record<string, LogoutMarker | undefined>
     markerGroup[LOGOUT_MARKER_STORAGE_KEY] = undefined

@@ -90,6 +90,11 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           // Block render if a user is temporarily in a transition state
           return !ALLOWED_NO_ROLE_PATHS.includes(normalizePath(path))
         }
+
+        if (checkForRecentLogoutMarker("shouldBlockChildren")) {
+          logger.info(`Recent logout marker found while accessing ${path} - blocking render until resolved`)
+          return true
+        }
       }
     }
 
@@ -105,14 +110,14 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
     }
 
     // Public paths (except root) don't need protection
-    if (PUBLIC_PATHS.includes(path) && path !== "/" && path !== FRONTEND_PATHS.LOGIN) {
+    if (PUBLIC_PATHS.includes(path) && path !== "/" &&
+    (path !== FRONTEND_PATHS.LOGIN && path !== FRONTEND_PATHS.LOGOUT)) {
       return
     }
 
     // Not signed in
     if (!auth.isSignedIn) {
       if (path === "/") {
-        logger.info("User at root path - redirecting to login page")
         return redirect(FRONTEND_PATHS.LOGIN, "User at root path - redirecting to login page")
       }
 
@@ -130,7 +135,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
       if (auth.isSigningOut && !checkForRecentLogoutMarker("NotSignedIn-SigningOut")
         && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
-        return handleSignoutEvent(auth, navigate, "Rule 1", auth.invalidSessionCause)
+        return handleSignoutEvent(auth, navigate, "NotSignedIn-SigningOut", auth.invalidSessionCause)
       }
 
       // Capture this case to prevent new login session being redirected
@@ -150,14 +155,26 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
         return
       }
 
+      // Allow the logout page to exist without redirections
+      if (path === FRONTEND_PATHS.LOGOUT) {
+        return
+      }
+
       return redirect(FRONTEND_PATHS.LOGIN, `Not signed in - redirecting to login page`)
     }
 
     // Signed in - check states in priority order
     if (auth.isSignedIn) {
       if (auth.isSigningOut &&
-        (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
+        (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT
+          && !checkForRecentLogoutMarker("SignedIn-LogoutPath")
+        )) {
         return handleSignoutEvent(auth, navigate, "SignedIn-SigningOut", auth.invalidSessionCause)
+      }
+
+      if (!auth.isSigningOut && path === FRONTEND_PATHS.LOGOUT) {
+        // If a user navigates directly to the logout page, forcefully log them out.
+        return handleSignoutEvent(auth, navigate, "SignedIn-AtLogoutPath", auth.invalidSessionCause)
       }
 
       if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
@@ -182,7 +199,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       return
     }
 
-    if (auth.isSignedIn && !auth.isSigningOut && !checkForRecentLogoutMarker()) {
+    if (auth.isSignedIn && !auth.isSigningOut && !checkForRecentLogoutMarker("checkUserInfo")) {
       logger.debug("Refreshing user info")
 
       auth.updateTrackerUserInfo().then((response) => {

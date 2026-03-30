@@ -67,7 +67,7 @@ describe("ensureRoleSelected", () => {
   ) => {
     const authContextValue: AuthContextType = {
       ...mockAuthState,
-      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
+      updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null, remainingSessionTime: 30000}),
       clearAuthState: jest.fn(),
       ...authStateOverrides
     }
@@ -291,6 +291,15 @@ describe("ensureRoleSelected", () => {
       authStateOverrides: {
         isSignedIn: true,
         isSigningOut: true
+      },
+      expectedPath: FRONTEND_PATHS.LOGOUT
+    },
+    {
+      name: "signed in, not signing out, on logout path, redirects to logout",
+      initialPath: FRONTEND_PATHS.LOGOUT,
+      authStateOverrides: {
+        isSignedIn: true,
+        isSigningOut: false
       },
       expectedPath: FRONTEND_PATHS.LOGOUT
     }

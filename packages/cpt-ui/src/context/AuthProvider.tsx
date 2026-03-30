@@ -48,8 +48,6 @@ export interface AuthContextType {
   logoutMarker: LogoutMarker | undefined
   sessionTimeoutModalInfo: SessionTimeoutModal
   logoutModalType: "userInitiated" | "timeout" | undefined
-  sentRumRoleLogs: boolean,
-  setSentRumRoleLogs: (value: boolean) => void,
   setSessionTimeoutModalInfo: (value: SetStateAction<SessionTimeoutModal>) => void
   setLogoutMarker: (LogoutMarker: LogoutMarker | undefined) => void
   setLogoutModalType: (value: "userInitiated" | "timeout" | undefined) => Promise<void>
@@ -119,11 +117,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "logoutModalType",
     undefined
   )
-  const [sentRumRoleLogs, setSentRumRoleLogs] = useLocalStorageState<boolean>(
-    "sentRumRoleLogs",
-    "sentRumRoleLogs",
-    false
-  )
 
   /**
    * Fetch and update the auth tokens
@@ -142,7 +135,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setRemainingSessionTime(undefined)
     setSessionTimeoutModalInfo({showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined})
     setSessionId(undefined)
-    setSentRumRoleLogs(false)
   }
 
   const updateTrackerUserInfo = async () => {
@@ -242,7 +234,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSigningOut(false)
     setInvalidSessionCause(undefined)
     logger.info("Setting log out marker to undefined")
-    clearLogoutMarkerFromStorage()
+    clearLogoutMarkerFromStorage("SetStateForSignIn")
   }
 
   /**
@@ -332,8 +324,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logoutMarker,
       sessionTimeoutModalInfo,
       logoutModalType,
-      sentRumRoleLogs,
-      setSentRumRoleLogs,
       setSessionTimeoutModalInfo,
       setLogoutMarker,
       setLogoutModalType: setLogoutModalTypeAsync,

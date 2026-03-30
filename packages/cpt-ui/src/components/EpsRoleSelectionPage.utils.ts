@@ -89,11 +89,11 @@ export function logRoleChunks(
   auth: AuthContextType,
   rolesWithAccessComponentProps: Array<RolesWithAccessProps>,
   rolesWithoutAccessComponentProps: Array<RolesWithoutAccessProps>,
-  location: LocationType
+  location: LocationType,
+  sentRumRoleLogs: boolean
 ) {
-  if (!auth.userDetails?.sub && auth.sentRumRoleLogs) return
+  if (!auth.userDetails?.sub || sentRumRoleLogs) return
 
-  auth.setSentRumRoleLogs(true)
   const logId = crypto.randomUUID()
 
   logger.debug("Counts of roles returned vs rendered", {

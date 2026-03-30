@@ -20,6 +20,7 @@ import {mockAuthState} from "./mocks/AuthStateMock"
 jest.mock("@/helpers/logger", () => ({
   logger: {
     info: jest.fn(),
+    debug: jest.fn(),
     error: jest.fn()
   }
 }))
@@ -118,7 +119,7 @@ describe("logout helpers", () => {
       )
       expect(mockAuth.updateInvalidSessionCause).toHaveBeenCalledWith(invalidSessionCause)
       expect(logger.info).toHaveBeenCalledWith(
-        "Handling sign out event with cause: Reason and invalid session reason: ConcurrentSession"
+        "Handling sign out event with caller: Reason and invalid session reason: ConcurrentSession"
       )
       expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
     })
