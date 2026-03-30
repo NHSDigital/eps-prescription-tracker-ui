@@ -18,12 +18,12 @@ export type LogoutMarker = {
 export const handleSignoutEvent = async (
   auth: AuthContextType,
   navigate: (path: string) => void,
-  cause?: string,
+  caller?: string,
   invalidSessionCause?: string
 ) => {
   const invalidSessionReason = auth.invalidSessionCause ? auth.invalidSessionCause : invalidSessionCause
 
-  logger.info(`Handling sign out event with cause: ${cause}`
+  logger.info(`Handling sign out event with caller: ${caller}`
     + (invalidSessionReason ? ` and invalid session reason: ${invalidSessionReason}` : ""))
 
   if (invalidSessionReason) {

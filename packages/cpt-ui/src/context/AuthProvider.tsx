@@ -143,7 +143,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setSessionTimeoutModalInfo({showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined})
     setSessionId(undefined)
     setSentRumRoleLogs(false)
-    // clearLogoutMarkerFromStorage()
   }
 
   const updateTrackerUserInfo = async () => {
@@ -212,13 +211,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         case "signedOut":
           logger.info("Processing signedOut event")
           clearAuthState()
-          // clearLogoutMarkerFromStorage()
           setError(null)
           break
 
         default:
           logger.info("Received unknown event", payload)
-          // Other auth events? The type-defined cases are already handled above.
           break
       }
     })
@@ -280,7 +277,6 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
-      // clearAuthState()
       setError(String(err))
       throw new Error("Failed to sign out", {cause: err})
     }

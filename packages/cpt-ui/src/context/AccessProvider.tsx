@@ -128,7 +128,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       }
 
       // Transitional states - don't redirect. Login / Logout sequence will take care of it.
-      if (auth.isSigningOut && !checkForRecentLogoutMarker("Rule 1")
+      if (auth.isSigningOut && !checkForRecentLogoutMarker("NotSignedIn-SigningOut")
         && !PUBLIC_PATHS.includes(path) && !auth.invalidSessionCause) {
         return handleSignoutEvent(auth, navigate, "Rule 1", auth.invalidSessionCause)
       }
@@ -142,10 +142,10 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           logger.info("User signing in with OAuth - allowing access to path with search params")
           return
         }
-        return handleSignoutEvent(auth, navigate, "Rule 2", auth.invalidSessionCause)
+        return handleSignoutEvent(auth, navigate, "NotSignedIn-SigningIn", auth.invalidSessionCause)
       }
 
-      if (checkForRecentLogoutMarker("Rule 4")) {
+      if (checkForRecentLogoutMarker("NotSignedIn-LogoutMarkerPresent")) {
         logger.info("Recent logout marker found, not redirecting, awaiting completion")
         return
       }
@@ -157,7 +157,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
     if (auth.isSignedIn) {
       if (auth.isSigningOut &&
         (path !== FRONTEND_PATHS.LOGOUT && path !== FRONTEND_PATHS.SESSION_LOGGED_OUT)) {
-        return handleSignoutEvent(auth, navigate, "Rule 3", auth.invalidSessionCause)
+        return handleSignoutEvent(auth, navigate, "SignedIn-SigningOut", auth.invalidSessionCause)
       }
 
       if (auth.isConcurrentSession && path !== FRONTEND_PATHS.SESSION_SELECTION) {
@@ -212,7 +212,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
             } else if (remainingSeconds <= 0) {
               logger.warn("Session expired - automatically logging out user")
               auth.updateInvalidSessionCause("Timeout")
-              handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
+              handleSignoutEvent(auth, navigate, "Timeout")
             } else {
               // Session still valid, ensure modal is hidden and update time info
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
@@ -227,7 +227,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           // No remaining session time info available - this indicates a session integrity issue
             logger.warn("No remainingSessionTime in response - session may be corrupted, logging out user")
             auth.updateInvalidSessionCause("InvalidSession")
-            handleSignoutEvent(auth, navigate, "InvalidSession", "InvalidSession")
+            handleSignoutEvent(auth, navigate, "InvalidSession")
           }
         }
       })
