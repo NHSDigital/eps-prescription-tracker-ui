@@ -23,9 +23,8 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
-import {AUTH_CONFIG} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionListPage() {
@@ -152,7 +151,7 @@ export default function PrescriptionListPage() {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {
             const invalidSessionCause = err.response?.data?.invalidSessionCause
             logger.warn("prescriptionList triggered restart login due to:", invalidSessionCause)
-            handleRestartLogin(auth, invalidSessionCause)
+            handleSignoutEvent(auth, navigate, "PrescriptionListPage", invalidSessionCause)
             return
           } else if (err.response?.status === 404) {
             logger.warn("No search results were returned", err)
@@ -164,7 +163,7 @@ export default function PrescriptionListPage() {
           }
         } else if (err instanceof Error && err.message === "canceled") {
           logger.warn("Signing out due to request cancellation")
-          signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+          handleSignoutEvent(auth, navigate, "PrescriptionListPage", "RequestCanceled")
           return
         } else {
           setError(true)

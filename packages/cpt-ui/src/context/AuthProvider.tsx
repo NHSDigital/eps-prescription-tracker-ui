@@ -12,6 +12,7 @@ import {authConfig} from "./configureAmplify"
 
 import {useLocalStorageState} from "@/helpers/useLocalStorageState"
 import {API_ENDPOINTS} from "@/constants/environment"
+import {getOrCreateTabId} from "@/helpers/tabHelpers"
 
 import http from "@/helpers/axios"
 import {
@@ -22,8 +23,12 @@ import {
 } from "@cpt-ui-common/common-types"
 import {getTrackerUserInfo, updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {logger} from "@/helpers/logger"
+import {LOGOUT_MARKER_STORAGE_KEY, LOGOUT_MARKER_STORAGE_GROUP} from "@/constants/environment"
+import {LogoutMarker, clearLogoutMarkerFromStorage} from "@/helpers/logout"
 
 const CIS2SignOutEndpoint = API_ENDPOINTS.CIS2_SIGNOUT_ENDPOINT
+
+export const TAB_ID_SESSION_KEY = getOrCreateTabId()
 
 export interface AuthContextType {
   error: string | null
@@ -40,9 +45,11 @@ export interface AuthContextType {
   selectedRole: RoleDetails | undefined
   userDetails: UserDetails | undefined
   remainingSessionTime: number | undefined
+  logoutMarker: LogoutMarker | undefined
   sessionTimeoutModalInfo: SessionTimeoutModal
   logoutModalType: "userInitiated" | "timeout" | undefined
   setSessionTimeoutModalInfo: (value: SetStateAction<SessionTimeoutModal>) => void
+  setLogoutMarker: (LogoutMarker: LogoutMarker | undefined) => void
   setLogoutModalType: (value: "userInitiated" | "timeout" | undefined) => Promise<void>
   cognitoSignIn: (input?: SignInWithRedirectInput) => Promise<void>
   cognitoSignOut: (redirectUri?: string) => Promise<boolean>
@@ -52,7 +59,8 @@ export interface AuthContextType {
   updateTrackerUserInfo: () => Promise<TrackerUserInfoResult>
   updateInvalidSessionCause: (cause: string) => void
   setIsSigningOut: (value: boolean) => void
-  setStateForSignOut: () => Promise<void>
+  setStateForSignOut: () => void
+  setStateForSignIn: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
@@ -93,6 +101,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     "remainingSessionTime",
     undefined
   )
+  const [logoutMarker, setLogoutMarker] = useLocalStorageState<LogoutMarker | undefined>(
+    LOGOUT_MARKER_STORAGE_KEY,
+    LOGOUT_MARKER_STORAGE_GROUP,
+    undefined
+  )
+
   const [sessionTimeoutModalInfo, setSessionTimeoutModalInfo] = useLocalStorageState<SessionTimeoutModal>(
     "sessionTimeoutModalInfo",
     "sessionTimeoutModalInfo",
@@ -120,27 +134,28 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsConcurrentSession(false)
     setRemainingSessionTime(undefined)
     setSessionTimeoutModalInfo({showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined})
-    // updateTrackerUserInfo will set InvalidSessionCause to undefined
-  }
-
-  /** Sign out state helper */
-  const setStateForSignOut = async () => {
-    setIsSigningOut(true)
+    setSessionId(undefined)
   }
 
   const updateTrackerUserInfo = async () => {
     const trackerUserInfo = await getTrackerUserInfo()
     if (!trackerUserInfo.error) {
-      setRolesWithAccess(trackerUserInfo.rolesWithAccess)
-      setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
-      setSelectedRole(trackerUserInfo.selectedRole)
-      setUserDetails(trackerUserInfo.userDetails)
+      if (!(rolesWithAccess === trackerUserInfo.rolesWithAccess))
+        setRolesWithAccess(trackerUserInfo.rolesWithAccess)
+      if (!(rolesWithoutAccess === trackerUserInfo.rolesWithoutAccess))
+        setRolesWithoutAccess(trackerUserInfo.rolesWithoutAccess)
+      if (!(selectedRole === trackerUserInfo.selectedRole))
+        setSelectedRole(trackerUserInfo.selectedRole)
+      if (!(userDetails === trackerUserInfo.userDetails))
+        setUserDetails(trackerUserInfo.userDetails)
     }
+    setInvalidSessionCause(trackerUserInfo.invalidSessionCause) // Set first
     setIsConcurrentSession(trackerUserInfo.isConcurrentSession)
     setSessionId(trackerUserInfo.sessionId)
     setRemainingSessionTime(trackerUserInfo.remainingSessionTime)
     setError(trackerUserInfo.error)
-    setInvalidSessionCause(trackerUserInfo.invalidSessionCause)
+
+    getOrCreateTabId() // Ensure tab ID is set in session/local storage for logout marker logic
     return trackerUserInfo
   }
 
@@ -154,13 +169,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
         // On successful signIn or token refresh, get the latest user state
         case "signedIn": {
           logger.info("Processing signedIn event")
-          logger.info("User %s logged in", payload.data.username)
+          logger.info(`User ${payload.data.username} logged in at ${new Date().toISOString()}`)
           await updateTrackerUserInfo()
 
           setIsSignedIn(true)
           setIsSigningIn(false)
           setUser(payload.data.username)
-          logger.info("Finished the signedIn event ")
+          logger.info("Finished the signedIn event")
           break
         }
         case "tokenRefresh":
@@ -169,6 +184,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
           break
         case "signInWithRedirect":
           logger.info("Processing signInWithRedirect event")
+          setIsSigningIn(true)
           setError(null)
           break
 
@@ -186,14 +202,12 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
 
         case "signedOut":
           logger.info("Processing signedOut event")
-          setIsSigningOut(true)
           clearAuthState()
           setError(null)
           break
 
         default:
           logger.info("Received unknown event", payload)
-          // Other auth events? The type-defined cases are already handled above.
           break
       }
     })
@@ -203,39 +217,60 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     }
   }, [])
 
+  /** signOut state helper
+   * Don't use outside of logout helper
+  */
+  const setStateForSignOut = () => {
+    setIsSignedIn(false)
+    setIsSigningIn(false)
+    setIsSigningOut(true)
+  }
+
+  /** signOut state helper
+   * Don't use outside of logout helper
+  */
+  const setStateForSignIn = () => {
+    setIsSigningIn(true)
+    setIsSigningOut(false)
+    setInvalidSessionCause(undefined)
+    logger.info("Setting log out marker to undefined")
+    clearLogoutMarkerFromStorage("SetStateForSignIn")
+  }
+
   /**
-   * Sign out process.
+   * Cognito signout process with redirect URL.
+   * Don't use directly, use the helper functions signOut or handleLogoutEvent
    */
-  const cognitoSignOut = async (signoutRedirectUrl?: string): Promise<boolean> => {
-    logger.info("Signing out in authProvider...")
+  const cognitoSignOut = async (
+    signoutRedirectUrl?: string | undefined
+  ): Promise<boolean> => {
     try {
+      logger.info("Signing out in authProvider...")
       // Call CIS2 signout first, this ensures a session remains on Amplify side.
       logger.info(`Calling CIS2 Signout ${CIS2SignOutEndpoint}`)
       try {
         await http.get(CIS2SignOutEndpoint)
         logger.info("Successfully signed out of CIS2")
       } catch (err) {
-        logger.error("Failed to sign out of CIS2:", err)
+        throw new Error("Failed to sign out of CIS2:", {cause: err})
       }
 
+      // handleSignoutEvent helper always sets a redirection URL
       if (signoutRedirectUrl) {
         logger.info("Calling Amplify Signout, with redirect URL", signoutRedirectUrl)
         await signOut({
           global: true,
           oauth: {redirectUrl: signoutRedirectUrl}
         })
-
       } else {
-        logger.info("Calling Amplify Signout, no redirect URL")
         await signOut({global: true})
       }
 
       logger.info("Frontend amplify signout OK!")
       return true
     } catch (err) {
-      logger.error("Failed to sign out:", err)
       setError(String(err))
-      return false
+      throw new Error("Failed to sign out", {cause: err})
     }
   }
 
@@ -244,8 +279,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
    */
   const cognitoSignIn = async (input?: SignInWithRedirectInput) => {
     logger.info("Initiating sign-in process...")
+
     await signInWithRedirect(input)
-    setIsSigningIn(true)
   }
 
   const updateSelectedRole = async (newRole: RoleDetails) => {
@@ -286,9 +321,11 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       sessionId,
       remainingSessionTime,
       deviceId,
+      logoutMarker,
       sessionTimeoutModalInfo,
       logoutModalType,
       setSessionTimeoutModalInfo,
+      setLogoutMarker,
       setLogoutModalType: setLogoutModalTypeAsync,
       cognitoSignIn,
       cognitoSignOut,
@@ -298,7 +335,8 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateTrackerUserInfo,
       updateInvalidSessionCause,
       setIsSigningOut,
-      setStateForSignOut
+      setStateForSignOut,
+      setStateForSignIn
     }}>
       {children}
     </AuthContext.Provider>

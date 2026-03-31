@@ -89,16 +89,17 @@ export function logRoleChunks(
   auth: AuthContextType,
   rolesWithAccessComponentProps: Array<RolesWithAccessProps>,
   rolesWithoutAccessComponentProps: Array<RolesWithoutAccessProps>,
-  location: LocationType
+  location: LocationType,
+  sentRumRoleLogs: boolean
 ) {
-  if (!auth.userDetails?.sub) return
+  if (!auth.userDetails?.sub || sentRumRoleLogs) return
 
   const logId = crypto.randomUUID()
 
   logger.debug("Counts of roles returned vs rendered", {
     logId,
     sessionId: auth.sessionId,
-    userId: auth.userDetails.sub,
+    userId: auth.userDetails?.sub,
     pageName: location.pathname,
     currentlySelectedRole: !!auth.selectedRole,
     returnedRolesWithAccessCount: auth.rolesWithAccess.length,
@@ -110,11 +111,11 @@ export function logRoleChunks(
   logger.debug("Auth context for rendered roles", {
     logId,
     sessionId: auth.sessionId,
-    userId: auth.userDetails.sub,
+    userId: auth.userDetails?.sub,
     pageName: location.pathname,
     authContext: {
       cognitoUsername: auth.user,
-      name: auth.userDetails.name,
+      name: auth.userDetails?.name,
       currentlySelectedRole: auth.selectedRole,
       isSignedIn: auth.isSignedIn,
       isSigningIn: auth.isSigningIn,

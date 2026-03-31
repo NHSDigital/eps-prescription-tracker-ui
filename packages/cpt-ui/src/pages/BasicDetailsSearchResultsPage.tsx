@@ -25,7 +25,7 @@ import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {format} from "date-fns"
 import {DOB_FORMAT, NHS_NUMBER_FORMAT_REGEX} from "@/constants/misc"
@@ -169,7 +169,7 @@ export default function SearchResultsPage() {
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
-        handleRestartLogin(auth, invalidSessionCause)
+        handleSignoutEvent(auth, navigate, "BasicDetailsError", invalidSessionCause)
         return
       }
       logger.error("Error loading search results:", err)
