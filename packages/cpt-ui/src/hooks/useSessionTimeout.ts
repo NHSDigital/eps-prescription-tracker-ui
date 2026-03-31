@@ -33,7 +33,7 @@ export const useSessionTimeout = () => {
 
     if (path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
       auth.setLogoutModalType(undefined)
-      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "extending", buttonDisabled: true}))
+      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: undefined, buttonDisabled: false, showModal: false}))
       return
     }
 
@@ -67,7 +67,7 @@ export const useSessionTimeout = () => {
       actionLockRef.current = undefined
       await handleLogOut()
     }
-  }, [auth])
+  }, [auth, path])
 
   const handleLogOut = useCallback(async () => {
     // Prevent multiple simultaneous logout attempts or cross-calls

@@ -69,7 +69,8 @@ const useModalFocus = (isOpen: boolean) => {
 const useAriaLiveAnnouncements = (
   isOpen: boolean,
   timeLeft: number,
-  liveRegionRef: React.RefObject<HTMLSpanElement>
+  liveRegionRef: React.RefObject<HTMLSpanElement>,
+  isSelectYourRolePath: boolean
 ) => {
   // Initialize aria-live region when modal first opens
   useEffect(() => {
@@ -77,8 +78,14 @@ const useAriaLiveAnnouncements = (
     if (shouldInitialize) {
       const minutes = Math.floor(timeLeft / 60)
       const seconds = timeLeft % 60
-      const announcement = formatTimeAnnouncement(minutes, seconds)
-      updateLiveRegion(liveRegionRef, announcement)
+      if (isSelectYourRolePath) {
+        const selectRoleAnnouncement =
+          formatTimeAnnouncement(minutes, seconds) + ". " + SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION
+        updateLiveRegion(liveRegionRef, selectRoleAnnouncement)
+      } else {
+        const announcement = formatTimeAnnouncement(minutes, seconds)
+        updateLiveRegion(liveRegionRef, announcement)
+      }
     }
   }, [isOpen]) // Only run when modal opens
 
@@ -110,7 +117,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   const auth = useAuth()
   const location = useLocation()
   const path = normalizePath(location.pathname)
-
+  const isSelectYourRolePath = (path === FRONTEND_PATHS.SELECT_YOUR_ROLE)
   const countdownTimerRef = useRef<number | null>(null)
 
   const clearCountdownTimer = useCallback(() => {
@@ -121,7 +128,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   }, [])
 
   useModalFocus(isOpen)
-  useAriaLiveAnnouncements(isOpen, timeLeft, liveRegionRef)
+  useAriaLiveAnnouncements(isOpen, timeLeft, liveRegionRef, isSelectYourRolePath)
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Escape") {
@@ -186,16 +193,15 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
           <span aria-hidden="true">
             {SESSION_TIMEOUT_MODAL_STRINGS.MESSAGE} <strong>
               {timeLeft}</strong> {SESSION_TIMEOUT_MODAL_STRINGS.COUNTDOWN_SECONDS}.
+
+            {isSelectYourRolePath && (
+              <span aria-hidden="true">
+                <br /><br />
+                {SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION}
+              </span>
+            )}
           </span>
         </p>
-
-        {path === FRONTEND_PATHS.SELECT_YOUR_ROLE && (
-          <p id="timeout-description">
-            <span aria-hidden="true">
-              {SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION}
-            </span>
-          </p>
-        )}
 
         <div className="eps-modal-button-group" onKeyDown={handleKeyDown}>
           <Button
@@ -204,7 +210,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
             onClick={onStayLoggedIn}
             disabled={buttonDisabledState}
           >
-            {path === FRONTEND_PATHS.SELECT_YOUR_ROLE ?
+            {isSelectYourRolePath ?
               SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE : SESSION_TIMEOUT_MODAL_STRINGS.STAY_LOGGED_IN}
           </Button>
 
