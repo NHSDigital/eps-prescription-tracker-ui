@@ -1,10 +1,13 @@
 import React, {useEffect, useRef, useCallback} from "react"
+import {useLocation} from "react-router-dom"
+import {normalizePath} from "@/helpers/utils"
 import {Container} from "nhsuk-react-components"
 
 import {EpsModal} from "@/components/EpsModal"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 import {Button} from "./ReactRouterButton"
 import {useAuth} from "@/context/AuthProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 interface SessionTimeoutModalProps {
   isOpen: boolean
@@ -105,6 +108,8 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
 }) => {
   const liveRegionRef = useRef<HTMLSpanElement>(null)
   const auth = useAuth()
+  const location = useLocation()
+  const path = normalizePath(location.pathname)
 
   const countdownTimerRef = useRef<number | null>(null)
 
@@ -184,6 +189,14 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
           </span>
         </p>
 
+        {path === FRONTEND_PATHS.SELECT_YOUR_ROLE && (
+          <p id="timeout-description">
+            <span aria-hidden="true">
+              {SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION}
+            </span>
+          </p>
+        )}
+
         <div className="eps-modal-button-group" onKeyDown={handleKeyDown}>
           <Button
             className="nhsuk-button eps-modal-button"
@@ -191,7 +204,8 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
             onClick={onStayLoggedIn}
             disabled={buttonDisabledState}
           >
-            {SESSION_TIMEOUT_MODAL_STRINGS.STAY_LOGGED_IN}
+            {path === FRONTEND_PATHS.SELECT_YOUR_ROLE ?
+              SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE : SESSION_TIMEOUT_MODAL_STRINGS.STAY_LOGGED_IN}
           </Button>
 
           <Button
