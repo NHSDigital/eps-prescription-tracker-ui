@@ -148,7 +148,7 @@ describe("useSessionTimeout", () => {
       })
 
       expect(updatedState.action).toBe(undefined)
-      expect(updatedState.buttonDisabled).toBe(true)
+      expect(updatedState.buttonDisabled).toBe(false)
     })
 
     it("should extend the session when a role is selected", async () => {
