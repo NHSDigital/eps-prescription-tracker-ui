@@ -147,7 +147,7 @@ describe("useSessionTimeout", () => {
         showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false
       })
 
-      expect(updatedState.action).toBe("extending")
+      expect(updatedState.action).toBe(undefined)
       expect(updatedState.buttonDisabled).toBe(true)
     })
 

@@ -32,6 +32,7 @@ export const useSessionTimeout = () => {
     }
 
     if (path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+      // Maintain session time but don't show the modal right now
       auth.setLogoutModalType(undefined)
       auth.setSessionTimeoutModalInfo(prev => ({...prev, action: undefined, buttonDisabled: false, showModal: false}))
       return
