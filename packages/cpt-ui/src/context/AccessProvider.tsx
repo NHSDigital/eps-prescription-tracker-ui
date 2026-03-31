@@ -194,7 +194,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : undefined
 
           if (remainingSeconds !== undefined) {
-            const twoMinutes = 14 * 60 // Minutes into seconds
+            const twoMinutes = 2 * 60 // Minutes into seconds
 
             if (remainingSeconds <= twoMinutes && remainingSeconds > 0) {
               const currentPath = normalizePath(location.pathname)
