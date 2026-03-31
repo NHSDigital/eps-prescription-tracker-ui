@@ -420,7 +420,7 @@ export const mockPrescriptionBundle: Bundle = {
         },
         extension: [
           {
-            url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
             extension: [{
               url: "status",
               valueCoding: {

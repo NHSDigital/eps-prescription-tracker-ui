@@ -98,7 +98,7 @@ export const mapResponseToPrescriptionSummary = (
 
     // Extract status code - fixed to match the structure
     const statusExtension = resource.extension?.find(ext =>
-      ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory"
+      ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
     )
     const statusCode = statusExtension?.extension?.find(ext =>
       ext.url === "status"
