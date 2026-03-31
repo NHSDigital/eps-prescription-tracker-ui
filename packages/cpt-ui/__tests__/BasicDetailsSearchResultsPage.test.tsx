@@ -431,7 +431,8 @@ describe("BasicDetailsSearchResultsPage", () => {
         dobMonth: "01",
         dobYear: "1990",
         postcode: "SW1A 1AA",
-        nhsNumber: "9726919207"
+        nhsNumber: "9726919207",
+        searchType: "basicDetails"
       })
     })
   })
@@ -457,7 +458,8 @@ describe("BasicDetailsSearchResultsPage", () => {
         dobMonth: "01",
         dobYear: "1990",
         postcode: "SW1A 1AA",
-        nhsNumber: "9726919207"
+        nhsNumber: "9726919207",
+        searchType: "basicDetails"
       })
     })
   })
@@ -499,7 +501,8 @@ describe("BasicDetailsSearchResultsPage", () => {
         dobMonth: "01",
         dobYear: "1990",
         postcode: "SW1A 1AA",
-        nhsNumber: "9726919207"
+        nhsNumber: "9726919207",
+        searchType: "basicDetails"
       })
     })
   })
@@ -525,7 +528,8 @@ describe("BasicDetailsSearchResultsPage", () => {
         dobMonth: "01",
         dobYear: "1990",
         postcode: "SW1A 1AA",
-        nhsNumber: "9726919207"
+        nhsNumber: "9726919207",
+        searchType: "basicDetails"
       })
     })
   })
