@@ -156,7 +156,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
       }
 
       // Allow the logout page to exist without redirections
-      if (path === FRONTEND_PATHS.LOGOUT) {
+      if (path === FRONTEND_PATHS.LOGOUT || path === FRONTEND_PATHS.SESSION_LOGGED_OUT) {
         return
       }
 
