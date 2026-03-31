@@ -9,6 +9,7 @@ import userEvent from "@testing-library/user-event"
 import React from "react"
 import {MemoryRouter} from "react-router-dom"
 import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
+import {FRONTEND_PATHS} from "@/constants/environment"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 
 // Mock useAuth
@@ -147,6 +148,20 @@ describe("SessionTimeoutModal", () => {
       renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       expect(screen.getByTestId("stay-logged-in-button")).toBeInTheDocument()
       expect(screen.getByTestId("logout-button")).toBeInTheDocument()
+    })
+
+    it("shows the select role instruction and close button text on the select your role path", () => {
+      renderWithRouter(
+        <SessionTimeoutModal {...defaultProps} />,
+        [FRONTEND_PATHS.SELECT_YOUR_ROLE]
+      )
+
+      expect(
+        screen.getByText(SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole("button", {name: SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE})
+      ).toBeInTheDocument()
     })
   })
 

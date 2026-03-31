@@ -131,6 +131,26 @@ describe("useSessionTimeout", () => {
   })
 
   describe("onStayLoggedIn", () => {
+    it("should close the modal instead of extending the session on the select your role path", async () => {
+      const {result} = renderHookWithRouter(["/select-your-role"])
+
+      await act(async () => {
+        await result.current.onStayLoggedIn()
+      })
+
+      expect(updateRemoteSelectedRole).not.toHaveBeenCalled()
+      expect(handleSignoutEvent).not.toHaveBeenCalled()
+      expect(mockSetLogoutModalType).toHaveBeenCalledWith(undefined)
+
+      const updaterFn = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
+      const updatedState = updaterFn({
+        showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false
+      })
+
+      expect(updatedState.action).toBe("extending")
+      expect(updatedState.buttonDisabled).toBe(true)
+    })
+
     it("should extend the session when a role is selected", async () => {
       const {result} = renderHookWithRouter()
 
