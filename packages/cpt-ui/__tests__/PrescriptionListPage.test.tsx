@@ -368,7 +368,7 @@ describe("PrescriptionListPage", () => {
       })
 
       expect(logger.info).toHaveBeenCalledWith(
-        "No search parameter provided - redirecting to prescription ID search"
+        "No search type available - redirecting to prescription ID search"
       )
     })
 

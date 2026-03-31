@@ -73,7 +73,8 @@ const TableResultsRow = ({patient}: TableResultsRowProps) => {
       navigationContext.getRelevantSearchParameters("basicDetails")
     searchContext.setAllSearchParameters({
       ...relevantParams,
-      nhsNumber: nhsNumber
+      nhsNumber: nhsNumber,
+      searchType: "basicDetails"
     })
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
@@ -152,9 +153,12 @@ export default function SearchResultsPage() {
       if (payload.length === 1) {
         const relevantParams =
           navigationContext.getRelevantSearchParameters("basicDetails")
+        // Set the search type before passing to prescription list current page
+        // So that the useEffect will detect and treat the search type correctly
         searchContext.setAllSearchParameters({
           ...relevantParams,
-          nhsNumber: payload[0].nhsNumber
+          nhsNumber: payload[0].nhsNumber,
+          searchType: "basicDetails"
         })
         navigate(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
         return
