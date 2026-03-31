@@ -271,7 +271,7 @@ describe("Response Mapper Tests", () => {
               authoredOn: "20250204000000",
               extension: [
                 {
-                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
                   extension: [{
                     url: "status",
                     valueCoding : {
@@ -329,7 +329,7 @@ describe("Response Mapper Tests", () => {
               authoredOn: "20250204000000",
               extension: [
                 {
-                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
                   extension: [{
                     url: "status",
                     valueCoding : {
