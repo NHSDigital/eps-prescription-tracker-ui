@@ -73,7 +73,8 @@ const TableResultsRow = ({patient}: TableResultsRowProps) => {
       navigationContext.getRelevantSearchParameters("basicDetails")
     searchContext.setAllSearchParameters({
       ...relevantParams,
-      nhsNumber: nhsNumber
+      nhsNumber: nhsNumber,
+      searchType: "basicDetails"
     })
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
