@@ -194,9 +194,14 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : undefined
 
           if (remainingSeconds !== undefined) {
-            const twoMinutes = 2 * 60 // Minutes into seconds
+            const twoMinutes = 14 * 60 // Minutes into seconds
 
             if (remainingSeconds <= twoMinutes && remainingSeconds > 0) {
+              const currentPath = normalizePath(location.pathname)
+              if (currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+                return
+              }
+
               // Show timeout modal when 2 minutes or less remaining
               logger.info("Session timeout warning triggered - showing modal", {
                 remainingTime,
@@ -207,7 +212,8 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
                 showModal: true,
                 timeLeft: remainingSeconds,
                 buttonDisabled: false,
-                action: undefined
+                action: undefined,
+                sessionEndTime: Date.now() + (remainingSeconds * 1000)
               })
             } else if (remainingSeconds <= 0) {
               logger.warn("Session expired - automatically logging out user")
@@ -220,7 +226,8 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
                 showModal: false,
                 timeLeft: remainingSeconds,
                 buttonDisabled: false,
-                action: undefined
+                action: undefined,
+                sessionEndTime: null
               })
             }
           } else {

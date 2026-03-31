@@ -112,7 +112,7 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const [sessionTimeoutModalInfo, setSessionTimeoutModalInfo] = useLocalStorageState<SessionTimeoutModal>(
     "sessionTimeoutModalInfo",
     "sessionTimeoutModalInfo",
-    {showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined}
+    {showModal: false, timeLeft: 0, sessionEndTime: null, buttonDisabled: false, action: undefined}
   )
   const [logoutModalType, setLogoutModalType] = useLocalStorageState<"userInitiated" | "timeout" | undefined>(
     "logoutModalType",
@@ -140,7 +140,13 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     setIsSigningIn(false)
     setIsConcurrentSession(false)
     setRemainingSessionTime(undefined)
-    setSessionTimeoutModalInfo({showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined})
+    setSessionTimeoutModalInfo({
+      showModal: false,
+      timeLeft: 0,
+      sessionEndTime: null,
+      buttonDisabled: false,
+      action: undefined
+    })
     setSessionId(undefined)
     setSentRumRoleLogs(false)
   }

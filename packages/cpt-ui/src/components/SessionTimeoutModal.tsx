@@ -8,7 +8,7 @@ import {useAuth} from "@/context/AuthProvider"
 
 interface SessionTimeoutModalProps {
   isOpen: boolean
-  timeLeft: number
+  sessionEndTime: number | null
   onStayLoggedIn: () => Promise<void>
   onLogOut: () => Promise<void>
   onTimeOut: () => Promise<void>
@@ -97,12 +97,21 @@ const useAriaLiveAnnouncements = (
 
 export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   isOpen,
-  timeLeft,
+  sessionEndTime,
   onStayLoggedIn,
   onLogOut,
   onTimeOut,
   buttonDisabledState
 }) => {
+  // Helper function to calculate remaining time
+  const calculateRemainingTime = useCallback((endTime: number | null): number => {
+    if (endTime === null) return 0
+    return Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
+  }, [])
+
+  // Calculate current timeLeft from sessionEndTime
+  const timeLeft = sessionEndTime ? calculateRemainingTime(sessionEndTime) : 0
+
   const liveRegionRef = useRef<HTMLSpanElement>(null)
   const auth = useAuth()
 
@@ -127,22 +136,18 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     }
   }
 
-  // // Effect to start/stop countdown based on modal visibility
+  // Effect to start/stop countdown based on modal visibility
   useEffect(() => {
-    if (isOpen && timeLeft > 0) {
-      // Only start if not already running or if starting fresh
+    if (isOpen && sessionEndTime) {
+      // Only start if not already running
       if (!countdownTimerRef.current) {
-
-        // Set initial time
-        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
-
-        // Start countdown that decrements every second
+        // Start countdown that recalculates every second
         countdownTimerRef.current = setInterval(() => {
-          timeLeft -= 1
+          const currentTimeLeft = calculateRemainingTime(sessionEndTime)
+          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: currentTimeLeft}))
 
-          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
           // Auto-logout when countdown reaches 0
-          if (timeLeft <= 0) {
+          if (currentTimeLeft <= 0) {
             clearInterval(countdownTimerRef.current!)
             countdownTimerRef.current = null
             onTimeOut()
@@ -156,7 +161,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
 
     // Cleanup on unmount
     return clearCountdownTimer
-  }, [isOpen]) // Only depend on showModal, not timeLeft
+  }, [isOpen, sessionEndTime, calculateRemainingTime, auth, onTimeOut, clearCountdownTimer])
 
   return (
     <EpsModal

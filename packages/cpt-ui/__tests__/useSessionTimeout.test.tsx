@@ -80,6 +80,7 @@ const createAuthMock = (overrides: Partial<AuthContextType> = {}): AuthContextTy
   sessionTimeoutModalInfo: {
     showModal: false,
     timeLeft: 60,
+    sessionEndTime: null,
     action: undefined,
     buttonDisabled: false
   },
