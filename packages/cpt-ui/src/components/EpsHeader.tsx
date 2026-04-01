@@ -11,8 +11,8 @@ import {getHomeLink} from "@/helpers/loginFunctions"
 import {HEADER_STRINGS} from "@/constants/ui-strings/HeaderStrings"
 import {EpsLogoutModal} from "@/components/EpsLogoutModal"
 import {normalizePath} from "@/helpers/utils"
-import {FRONTEND_PATHS, AUTH_CONFIG} from "@/constants/environment"
-import {signOut} from "@/helpers/logout"
+import {FRONTEND_PATHS} from "@/constants/environment"
+import {handleSignoutEvent} from "@/helpers/logout"
 import NhsLogo from "@/components/icons/NhsLogo"
 
 export default function EpsHeader() {
@@ -24,6 +24,7 @@ export default function EpsHeader() {
   const [shouldShowSelectRole, setShouldShowSelectRole] = useState(false)
   const [shouldShowChangeRole, setShouldShowChangeRole] = useState(false)
   const [shouldShowLogoutLink, setShouldShowLogoutLink] = useState(false)
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
   const [actionButtonsDisabled, setActionButtonsDisabled] = useState(false)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
@@ -75,6 +76,7 @@ export default function EpsHeader() {
 
   const handleLogoutClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    setShowLogoutModal(true)
     authContext.setLogoutModalType("userInitiated")
   }
 
@@ -87,9 +89,10 @@ export default function EpsHeader() {
     setActionButtonsDisabled(true)
 
     try {
-      await signOut(authContext, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+      await handleSignoutEvent(authContext, navigate, "UserInitiatedHeaderLogout")
     } finally {
       buttonDisabledRef.current = false
+      setShowLogoutModal(false)
     }
   }
 
@@ -273,7 +276,7 @@ export default function EpsHeader() {
       </header>
 
       <EpsLogoutModal
-        isOpen={authContext?.logoutModalType === "userInitiated"}
+        isOpen={showLogoutModal && authContext?.logoutModalType === "userInitiated"}
         onClose={() => {
           authContext?.setLogoutModalType(undefined)
           buttonDisabledRef.current = false

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react"
+import React, {useState, useEffect} from "react"
 import {useNavigate} from "react-router-dom"
 import {
   Container,
@@ -15,13 +15,11 @@ import "../styles/roleselectionpage.scss"
 import {useAuth} from "@/context/AuthProvider"
 import {Button} from "./ReactRouterButton"
 import {ENV_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
-import {getSearchParams} from "@/helpers/getSearchParams"
 import {logger} from "@/helpers/logger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {CHANGE_YOUR_ROLE_PAGE_TEXT} from "@/constants/ui-strings/ChangeRolePageStrings"
-import LoadingPage from "@/pages/LoadingPage"
 import {
   RolesWithAccessProps,
   RolesWithoutAccessProps,
@@ -137,13 +135,13 @@ export default function RoleSelectionPage({
   const auth = useAuth()
   const navigate = useNavigate()
   const location = {pathname: globalThis.location.pathname}
-  const redirecting = useRef(false)
   const [isSelectingRole, setIsSelectingRole] = useState(false)
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null)
   const [roleComponentProps, setRoleComponentProps] = useState<RoleComponentProps>({
     rolesWithAccess: [],
     rolesWithoutAccess: []
   })
+  const [sentRumRoleLogs, setSentRumRoleLogs] = useState<boolean>(false)
 
   usePageTitle(auth.rolesWithAccess.length === 0
     ? CHANGE_YOUR_ROLE_PAGE_TEXT.NO_ACCESS_pageTitle
@@ -166,7 +164,7 @@ export default function RoleSelectionPage({
     } catch (err) {
       if (axios.isAxiosError(err) && (err.response?.status === 401)) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
-        handleRestartLogin(auth, invalidSessionCause)
+        handleSignoutEvent(auth, navigate, "RoleSelection Call Failure", invalidSessionCause)
         return
       }
       logger.error("Error selecting role:", err)
@@ -213,24 +211,11 @@ export default function RoleSelectionPage({
       noODSCode
     )
 
-    logRoleChunks(auth, transformedData.rolesWithAccess, transformedData.rolesWithoutAccess, location)
+    logRoleChunks(auth, transformedData.rolesWithAccess,
+      transformedData.rolesWithoutAccess, location, sentRumRoleLogs)
+    setSentRumRoleLogs(true)
     setRoleComponentProps(transformedData)
   }, [auth.rolesWithAccess, auth.rolesWithoutAccess])
-
-  // Handle auto-redirect for single role
-  useEffect(() => {
-    if (auth.isSigningIn) {
-      const {codeParams, stateParams} = getSearchParams(window)
-      if (codeParams && stateParams) {
-        redirecting.current = true
-        return
-      } else {
-        handleRestartLogin(auth, "NoSearchParams")
-      }
-    } else {
-      redirecting.current = false
-    }
-  }, [auth.isSigningIn])
 
   useEffect(() => {
     if (auth.hasSingleRoleAccess() && auth.isSignedIn) {
@@ -250,13 +235,6 @@ export default function RoleSelectionPage({
   // Early returns for error and loading states
   if (auth.error) {
     return <ErrorState error={auth.error} errorDuringRoleSelection={errorDuringRoleSelection} />
-  }
-
-  // TODO: Remove this loading logic in favor of AccessProvider.shouldBlockChildren()
-  // when auth changes are complete - avoid duplicate auth state handling
-  const shouldShowLoading = redirecting.current || auth.isSigningOut
-  if (shouldShowLoading) {
-    return <MainLayout><LoadingPage /></MainLayout>
   }
 
   return (

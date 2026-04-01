@@ -25,7 +25,7 @@ import UnknownErrorMessage from "@/components/UnknownErrorMessage"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import axios from "axios"
 import {useAuth} from "@/context/AuthProvider"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {STRINGS} from "@/constants/ui-strings/PatientDetailsBannerStrings"
 import {format} from "date-fns"
 import {DOB_FORMAT, NHS_NUMBER_FORMAT_REGEX} from "@/constants/misc"
@@ -73,7 +73,8 @@ const TableResultsRow = ({patient}: TableResultsRowProps) => {
       navigationContext.getRelevantSearchParameters("basicDetails")
     searchContext.setAllSearchParameters({
       ...relevantParams,
-      nhsNumber: nhsNumber
+      nhsNumber: nhsNumber,
+      searchType: "basicDetails"
     })
     navigate(`${FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT}`)
   }
@@ -152,9 +153,12 @@ export default function SearchResultsPage() {
       if (payload.length === 1) {
         const relevantParams =
           navigationContext.getRelevantSearchParameters("basicDetails")
+        // Set the search type before passing to prescription list current page
+        // So that the useEffect will detect and treat the search type correctly
         searchContext.setAllSearchParameters({
           ...relevantParams,
-          nhsNumber: payload[0].nhsNumber
+          nhsNumber: payload[0].nhsNumber,
+          searchType: "basicDetails"
         })
         navigate(FRONTEND_PATHS.PRESCRIPTION_LIST_CURRENT)
         return
@@ -165,7 +169,7 @@ export default function SearchResultsPage() {
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 401) {
         const invalidSessionCause = err.response?.data?.invalidSessionCause
-        handleRestartLogin(auth, invalidSessionCause)
+        handleSignoutEvent(auth, navigate, "BasicDetailsError", invalidSessionCause)
         return
       }
       logger.error("Error loading search results:", err)

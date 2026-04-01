@@ -17,13 +17,6 @@ jest.mock("@/helpers/awsRum", () => ({
   }
 }))
 
-jest.mock("@/constants/environment", () => ({
-  FRONTEND_PATHS: {
-    SEARCH_BY_PRESCRIPTION_ID: "/search",
-    LOGIN: "/login"
-  }
-}))
-
 jest.mock("@/constants/ui-strings/CookieStrings", () => ({
   CookieStrings: {
     banner : {

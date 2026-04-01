@@ -53,7 +53,7 @@ import http from "@/helpers/axios"
 
 // Mock logout helpers
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
+  handleSignoutEvent: jest.fn(),
   signOut: jest.fn()
 }))
 
@@ -368,7 +368,7 @@ describe("PrescriptionListPage", () => {
       })
 
       expect(logger.info).toHaveBeenCalledWith(
-        "No search parameter provided - redirecting to prescription ID search"
+        "No search type available - redirecting to prescription ID search"
       )
     })
 
@@ -494,8 +494,10 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           "InvalidSession"
         )
       })
@@ -531,8 +533,10 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           "ConcurrentSession"
         )
       })
@@ -568,8 +572,10 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           "Timeout"
         )
       })
@@ -605,8 +611,10 @@ describe("PrescriptionListPage", () => {
       )
 
       await waitFor(() => {
-        expect(logoutHelpers.handleRestartLogin).toHaveBeenCalledWith(
+        expect(logoutHelpers.handleSignoutEvent).toHaveBeenCalledWith(
           mockAuth,
+          mockNavigate,
+          "PrescriptionListPage",
           undefined
         )
       })

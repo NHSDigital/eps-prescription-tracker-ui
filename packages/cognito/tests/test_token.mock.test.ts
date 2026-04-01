@@ -224,7 +224,10 @@ describe("token mock handler", () => {
     mockTryGetTokenMapping.mockImplementation(() => {
       return Promise.resolve({
         username: "Mock_user_details_sub",
-        lastActivityTime: Date.now()
+        lastActivityTime: Date.now(),
+        sessionId: "session-id",
+        apigeeAccessToken: "foo",
+        apigeeExpiresIn: "3600"
       })
     })
 
@@ -259,10 +262,11 @@ describe("token mock handler", () => {
     }, dummyContext)
 
     // check call
+    expect(mockInsertTokenMapping).toHaveBeenCalledOnce()
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(), // documentClient
       "test-session-management-table", // tableName
-      {
+      ({
         username: "Mock_user_details_sub",
         apigeeAccessToken: "new-access-token",
         apigeeRefreshToken: "new-refresh-token",
@@ -279,7 +283,7 @@ describe("token mock handler", () => {
         },
         lastActivityTime: expect.any(Number),
         sessionId: expect.any(String)
-      }, // item
+      }), // item
       expect.anything() // logger
     )
     // Check response structure
@@ -342,7 +346,7 @@ describe("token mock handler", () => {
     expect(mockInsertTokenMapping).toHaveBeenCalledWith(
       expect.anything(), // documentClient
       "dummyTable", // tableName
-      {
+      ({
         username: "Mock_user_details_sub",
         apigeeAccessToken: "new-access-token",
         apigeeRefreshToken: "new-refresh-token",
@@ -359,7 +363,7 @@ describe("token mock handler", () => {
         },
         lastActivityTime: expect.any(Number),
         sessionId: expect.any(String)
-      }, // item
+      }), // item
       expect.anything() // logger
     )
     // Check response structure

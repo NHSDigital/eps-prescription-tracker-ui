@@ -522,7 +522,7 @@ describe("PrescriptionListPage", () => {
 
     await waitFor(() => {
       expect(loggerInfoSpy).toHaveBeenCalledWith(
-        "No search parameter provided - redirecting to prescription ID search"
+        "No search type available - redirecting to prescription ID search"
       )
     })
 
