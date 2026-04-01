@@ -24,6 +24,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {useAuth} from "@/context/AuthProvider"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -41,6 +42,7 @@ export default function BasicDetailsSearch() {
   const inlineErrors = getInlineErrors(errors)
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
+  const auth = useAuth()
 
   usePageTitle(errors.length > 0
     ? STRINGS.PAGE_TITLE_ERROR
@@ -55,6 +57,9 @@ export default function BasicDetailsSearch() {
     // Auto-focus the error summary block if there are any validation errors
     if (errors.length > 0 && errorRef.current) {
       errorRef.current.focus()
+    }
+    return () => {
+      auth.clearBeforeUnloadGuard()
     }
   }, [errors])
 

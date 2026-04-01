@@ -45,7 +45,9 @@ export const mockAuthState = {
   setStateForSignIn: jest.fn().mockImplementation(() => Promise.resolve()),
   setSessionTimeoutModalInfo: jest.fn(),
   setLogoutModalType: jest.fn(),
-  remainingSessionTime: undefined
+  remainingSessionTime: undefined,
+  registerBeforeUnloadGuard: jest.fn(),
+  clearBeforeUnloadGuard: jest.fn()
 } as unknown as AuthContextType
 
 /**

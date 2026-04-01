@@ -112,7 +112,6 @@ export default function SearchResultsPage() {
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
-
   const [error, setError] = useState(false)
 
   const auth = useAuth()
@@ -125,6 +124,9 @@ export default function SearchResultsPage() {
 
   useEffect(() => {
     getSearchResults()
+    return () => {
+      auth.clearBeforeUnloadGuard()
+    }
   }, [])
 
   const getSearchResults = async () => {
@@ -157,6 +159,8 @@ export default function SearchResultsPage() {
       const payload: Array<PatientSummary> = response.data
       if (!payload) {
         throw new Error("No payload received from the API")
+      } else {
+        auth.registerBeforeUnloadGuard()
       }
 
       if (payload.length === 1) {

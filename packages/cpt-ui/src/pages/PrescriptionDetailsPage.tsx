@@ -85,6 +85,9 @@ export default function PrescriptionDetailsPage() {
       return
     }
 
+    // Protect against navigating away using browser controls or refreshing
+    auth.registerBeforeUnloadGuard()
+
     // Use the populated payload
     setPrescriptionInformation(payload)
     setItems(payload.items)
@@ -120,6 +123,10 @@ export default function PrescriptionDetailsPage() {
     }
 
     runGetPrescriptionDetails()
+
+    return () => {
+      auth.clearBeforeUnloadGuard()
+    }
   }, [])
 
   if (loading) {
