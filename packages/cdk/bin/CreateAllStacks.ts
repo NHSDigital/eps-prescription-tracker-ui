@@ -176,7 +176,7 @@ export async function createAllStacks(app: App, props: StandardStackProps, confi
     crossRegionReferences: true,
     stackName: calculateVersionedStackName(`${serviceName}-us`, props),
     cloudfrontDistribution: statelessResourcesStack.cloudfrontDistribution,
-    cloudfrontLogDelivery: usCertsStack.logDelivery
+    deliveryDestination: usCertsStack.deliveryDestination
   })
 
   new FrontDoorStack(app, "FrontDoorStack", {

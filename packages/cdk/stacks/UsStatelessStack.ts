@@ -1,11 +1,10 @@
 import {App, Names, Stack} from "aws-cdk-lib"
 import {CloudfrontDistribution} from "../resources/CloudfrontDistribution"
 import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
-import {CfnDelivery, CfnDeliverySource} from "aws-cdk-lib/aws-logs"
-import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
+import {CfnDelivery, CfnDeliveryDestination, CfnDeliverySource} from "aws-cdk-lib/aws-logs"
 
 export interface UsStatelessStackProps extends StandardStackProps {
-  readonly cloudfrontLogDelivery: CloudfrontLogDelivery
+  readonly deliveryDestination: CfnDeliveryDestination
   readonly cloudfrontDistribution: CloudfrontDistribution
 }
 
@@ -25,7 +24,7 @@ export class UsStatelessStack extends Stack {
 
     const delivery = new CfnDelivery(this, "DistributionDelivery", {
       deliverySourceName: distDeliverySource.name,
-      deliveryDestinationArn: props.cloudfrontLogDelivery.deliveryDestination.attrArn
+      deliveryDestinationArn: props.deliveryDestination.attrArn
     })
     delivery.node.addDependency(distDeliverySource)
   }

@@ -1,10 +1,15 @@
-import {App, ArnFormat, Stack} from "aws-cdk-lib"
+import {
+  App,
+  ArnFormat,
+  Names,
+  Stack
+} from "aws-cdk-lib"
 import {ARecord, HostedZone, RecordTarget} from "aws-cdk-lib/aws-route53"
 import {Certificate, CertificateValidation} from "aws-cdk-lib/aws-certificatemanager"
 import {AllowList, WebACL} from "../resources/WebApplicationFirewall"
-import {CloudfrontLogDelivery} from "../resources/CloudfrontLogDelivery"
 import {usRegionLogGroups} from "../resources/usRegionLogGroups"
 import {StandardStackProps} from "@nhsdigital/eps-cdk-constructs"
+import {CfnDeliveryDestination} from "aws-cdk-lib/aws-logs"
 
 export interface UsCertsStackProps extends StandardStackProps {
   readonly serviceName: string
@@ -30,7 +35,7 @@ export class UsCertsStack extends Stack {
   public readonly cognitoCertificate: Certificate
   public readonly fullCognitoDomain: string
   public readonly webAcl: WebACL
-  public readonly logDelivery: CloudfrontLogDelivery
+  public readonly deliveryDestination: CfnDeliveryDestination
 
   public constructor(scope: App, id: string, props: UsCertsStackProps) {
     super(scope, id, props)
@@ -100,8 +105,10 @@ export class UsCertsStack extends Stack {
     })
 
     // cloudfront log group - needs to be in us-east-1 region
-    this.logDelivery = new CloudfrontLogDelivery(this, "cloudfrontLogDelivery", {
-      cloudfrontLogGroup: logGroups.cloudfrontLogGroup
+    this.deliveryDestination = new CfnDeliveryDestination(this, "DistributionDeliveryDestination", {
+      name: `${Names.uniqueResourceName(this, {maxLength:55})}-dest`,
+      destinationResourceArn: logGroups.cloudfrontLogGroup.logGroupArn,
+      outputFormat: "json"
     })
   }
 }
