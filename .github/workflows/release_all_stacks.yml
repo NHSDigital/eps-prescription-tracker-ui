@@ -83,14 +83,14 @@ jobs:
         id: check_fresh_stateful_stack
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
-          RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+          RUM_APP_ID=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Name" \
+              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:rum:rumApp:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
           FRESH_STATEFUL_STACK="false"
-          if [ -z "${RUM_APP_NAME}" ]; then
-            echo "RUM_APP_NAME not found - fresh stateful stack deployment"
+          if [ -z "${RUM_APP_ID}" ]; then
+            echo "RUM_APP_ID not found - fresh stateful stack deployment"
             FRESH_STATEFUL_STACK="true"
           fi
 
@@ -109,7 +109,6 @@ jobs:
             --parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=${CDK_CONFIG_apigeeDoHSApiKey}"
         shell: bash
         env: &deployment_env_vars
-          CDK_APP_NAME: "MainDeploymentApp"
           CDK_CONFIG_serviceName: "${{ inputs.SERVICE_NAME }}"
           CDK_CONFIG_versionNumber: "${{ inputs.VERSION_NUMBER }}"
           CDK_CONFIG_commitId: "${{ inputs.COMMIT_ID }}"

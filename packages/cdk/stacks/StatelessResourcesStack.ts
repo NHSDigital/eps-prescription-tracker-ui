@@ -286,17 +286,9 @@ export class StatelessResourcesStack extends Stack {
 
     // Exports
     if (props.allowLocalhostAccess) {
-      new CfnOutput(this, "jwtKid", {
-        value: props.jwtKid,
-        exportName: `${props.stackName}:local:jwtKid`
-      })
-      new CfnOutput(this, "VERSION_NUMBER", {
-        value: props.version,
-        exportName: `${props.stackName}:local:VERSION-NUMBER`
-      })
-      new CfnOutput(this, "COMMIT_ID", {
-        value: props.commitId,
-        exportName: `${props.stackName}:local:COMMIT-ID`
+      new CfnOutput(this, "cloudfrontOriginCustomHeader", {
+        value: props.cloudfrontOriginCustomHeader,
+        exportName: `${props.serviceName}:local:cloudfrontOriginCustomHeader`
       })
     }
     nagSuppressions(this, !!props.mockOidcConfig)

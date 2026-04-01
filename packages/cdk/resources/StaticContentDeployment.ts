@@ -139,7 +139,8 @@ export class StaticContentDeployment extends Construct {
           }
         }),
         Source.asset("../staticContent", {exclude: ["jwks"]}),
-        Source.asset(`../staticContent/jwks/${props.environment}`)
+        Source.asset(`../staticContent/jwks/${props.environment}`),
+        Source.data("version.txt", props.version)
       ],
       destinationKeyPrefix: props.version,
       destinationBucket: props.staticContentBucket.bucket,

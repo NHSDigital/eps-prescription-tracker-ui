@@ -134,20 +134,36 @@ export class StatefulResourcesStack extends Stack {
     })
 
     // Exports
-    new CfnOutput(this, "rumAppName", {
-      value: this.rum.rumApp.ref,
-      exportName: `${props.stackName}:rum:rumApp:Name`
+    new CfnOutput(this, "userPoolClientId", {
+      value: this.cognito.userPoolClient.userPoolClientId,
+      exportName: `${props.serviceName}:userPoolClient:Id`
+    })
+    new CfnOutput(this, "userPoolId", {
+      value: this.cognito.userPool.userPoolId,
+      exportName: `${props.serviceName}:userPool:Id`
+    })
+    new CfnOutput(this, "rumGuestRoleArn", {
+      value: this.rum.guestRole.roleArn,
+      exportName: `${props.serviceName}:rum:guestRole:Arn`
+    })
+    new CfnOutput(this, "rumIdentityPoolId", {
+      value: this.rum.identityPool.ref,
+      exportName: `${props.serviceName}:rum:identityPool:Id`
+    })
+    new CfnOutput(this, "rumAppId", {
+      value: this.rum.rumApp.attrId,
+      exportName: `${props.serviceName}:rum:rumApp:Id`
     })
 
     if (props.allowLocalhostAccess) {
       new CfnOutput(this, "primaryOidcClientId", {
         value: props.primaryOidcConfig.clientId,
-        exportName: `${props.stackName}:local:primaryOidcClientId`
+        exportName: `${props.serviceName}:local:primaryOidcClientId`
       })
       if (props.mockOidcConfig) {
         new CfnOutput(this, "mockOidcClientId", {
           value: props.mockOidcConfig.clientId,
-          exportName: `${props.stackName}:local:mockOidcClientId`
+          exportName: `${props.serviceName}:local:mockOidcClientId`
         })
       }
     }

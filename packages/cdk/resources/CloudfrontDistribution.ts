@@ -139,7 +139,8 @@ export class CloudfrontDistribution extends Construct {
           cachePolicy: CachePolicy.CACHING_DISABLED,
           responseHeadersPolicy: headersPolicy.policy
         },
-        "/jwks.json": {
+        // Apps are currently configured to use /jwks/ but the files are uploaded with a key of jwks so support both
+        "/jwks*": {
           origin: props.staticContentBucketOrigin,
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,

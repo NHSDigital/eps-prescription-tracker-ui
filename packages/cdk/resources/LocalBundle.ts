@@ -8,6 +8,9 @@ interface LocalBundleProps {
   environment?: Record<string, string>
 }
 
+// Markers implementation inspired by
+// https://github.com/aws/aws-cdk/blob/main/packages/aws-cdk-lib/aws-s3-deployment/lib/render-data.ts
+
 export class LocalBundle implements ISource {
   markers: Record<string, string> = {}
   asset: Asset

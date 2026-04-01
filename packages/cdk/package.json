@@ -2,9 +2,9 @@
   "name": "cdk",
   "version": "0.1.0",
   "scripts": {
-    "cdk-synth": "cdk synth --output ../../cdk.out --quiet --app \"tsx bin/${CDK_APP_NAME}.ts\"",
-    "cdk-deploy": "cdk deploy ${CDK_STACK_NAME} --app \"tsx bin/${CDK_APP_NAME}.ts\" --exclusively --require-approval ${REQUIRE_APPROVAL}",
-    "cdk-watch": "cdk deploy --app \"tsx bin/${CDK_APP_NAME}.ts\" --watch --all --require-approval never",
+    "cdk-synth": "cdk synth --output ../../cdk.out --quiet --app \"tsx bin/MainDeploymentApp.ts\"",
+    "cdk-deploy": "cdk deploy ${CDK_STACK_NAME} --app \"tsx bin/MainDeploymentApp.ts\" --exclusively --require-approval ${REQUIRE_APPROVAL}",
+    "cdk-watch": "cdk deploy --app \"tsx bin/LocalToPrDeploymentApp.ts\" --watch --all --require-approval never",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs ."
   },
   "dependencies": {
