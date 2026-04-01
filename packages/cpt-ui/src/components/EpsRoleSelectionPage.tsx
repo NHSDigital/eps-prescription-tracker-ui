@@ -85,7 +85,7 @@ function RolesWithoutAccessSection({
           {roles_without_access_table_title}
         </Details.Summary>
         <Details.Text>
-          <Table>
+          <Table data-testid="roles-without-access-table">
             <Table.Head>
               <Table.Row>
                 <Table.Cell>{organisation}</Table.Cell>
@@ -268,13 +268,15 @@ export default function RoleSelectionPage({
               noRoleName={noRoleName}
             />
           )}
-          <RolesWithoutAccessSection
-            rolesWithoutAccess={roleComponentProps.rolesWithoutAccess}
-            rolesWithoutAccessHeader={rolesWithoutAccessHeader}
-            roles_without_access_table_title={roles_without_access_table_title}
-            organisation={organisation}
-            role={role}
-          />
+          {roleComponentProps.rolesWithoutAccess.length > 0 && (
+            <RolesWithoutAccessSection
+              rolesWithoutAccess={roleComponentProps.rolesWithoutAccess}
+              rolesWithoutAccessHeader={rolesWithoutAccessHeader}
+              roles_without_access_table_title={roles_without_access_table_title}
+              organisation={organisation}
+              role={role}
+            />
+          )}
         </Row>
       </Container>
     </MainLayout>
