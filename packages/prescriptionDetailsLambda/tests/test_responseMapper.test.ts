@@ -95,7 +95,7 @@ describe("mergePrescriptionDetails", () => {
       authoredOn: "2020-01-01T00:00:00Z",
       extension: [
         {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
           extension: [
             {url: "status", valueCoding: {
               system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
@@ -121,7 +121,7 @@ describe("mergePrescriptionDetails", () => {
           ]
         },
         {
-          url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+          url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
           extension: [
             {url: "cancellationReason", valueCoding: {
               system: "https://fhir.nhs.uk/CodeSystem/medicationrequest-status-reason",

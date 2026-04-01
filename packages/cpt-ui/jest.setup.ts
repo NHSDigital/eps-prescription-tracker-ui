@@ -88,6 +88,7 @@ jest.mock("@/constants/environment", () => ({
     SELECT_YOUR_ROLE: "/select-your-role",
     YOUR_SELECTED_ROLE: "/your-selected-role",
     CHANGE_YOUR_ROLE: "/change-your-role",
+    SESSION_SELECTION: "/select-active-session",
     SEARCH_BY_PRESCRIPTION_ID: "/search-by-prescription-id",
     SEARCH_BY_NHS_NUMBER: "/search-by-nhs-number",
     SEARCH_BY_BASIC_DETAILS: "/search-by-basic-details",
@@ -99,7 +100,6 @@ jest.mock("@/constants/environment", () => ({
     NO_PRESCRIPTIONS_FOUND: "/no-prescriptions-found",
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected",
-    SESSION_SELECTION: "/select-active-session",
     NOT_FOUND: "/notfound"
   },
   ALLOWED_NO_ROLE_PATHS: [
@@ -144,7 +144,14 @@ jest.mock("@/constants/environment", () => ({
     "/cookies-selected",
     "/"
   ],
-  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"]
+  MOCK_AUTH_ALLOWED_ENVIRONMENTS: ["dev", "dev-pr", "int", "qa"],
+  LOGOUT_MARKER_STORAGE_KEY: "logoutMarker",
+  LOGOUT_MARKER_STORAGE_GROUP: "logoutMarker",
+  LOGOUT_MARKER_MAX_AGE_MS: 10000,
+  TAB_ID_SESSION_KEY: "tabId",
+  OPEN_TABS_STORAGE_KEY: "openTabIds",
+  TAB_HEARTBEATS_STORAGE_KEY: "tabHeartbeats",
+  TAB_STALE_THRESHOLD_MS: 5 * 60 * 1000
 }))
 
 // Allows for tab selection

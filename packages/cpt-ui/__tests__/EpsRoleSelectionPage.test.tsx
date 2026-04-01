@@ -11,20 +11,20 @@ import {useAuth, AuthContextType} from "@/context/AuthProvider"
 import {MemoryRouter, useNavigate} from "react-router-dom"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {getSearchParams} from "@/helpers/getSearchParams"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import axios from "axios"
 import {RoleDetails} from "@cpt-ui-common/common-types"
 import {logger} from "@/helpers/logger"
 import {mockAuthState} from "./mocks/AuthStateMock"
-import {LOADING_STRINGS} from "@/constants/ui-strings/LoadingPage"
 
 jest.mock("@/context/AuthProvider")
 jest.mock("@/helpers/getSearchParams")
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
+  handleSignoutEvent: jest.fn(),
   signOut: jest.fn().mockImplementation((auth: AuthContextType) => {
     auth.isSigningOut = true
-  })
+  }),
+  checkForRecentLogoutMarker: jest.fn().mockImplementation(() => undefined)
 }))
 jest.mock("@/helpers/axios", () => ({
   __esModule: true,
@@ -104,26 +104,6 @@ describe("RoleSelectionPage", () => {
     //windowSpy.mockRestore()
   })
 
-  it("renders loading spinner if redirecting during sign in", () => {
-    mockUseAuth.mockReturnValue({
-      isSigningIn: true,
-      rolesWithAccess: [],
-      rolesWithoutAccess: [],
-      error: null,
-      clearAuthState: jest.fn(),
-      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
-    })
-    mockGetSearchParams.mockReturnValue({
-      codeParams: "foo",
-      stateParams: "bar"
-    })
-
-    render(<MemoryRouter>
-      <RoleSelectionPage contentText={defaultContentText} />
-    </MemoryRouter>)
-    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
-  })
-
   it("renders error message if auth.error exists", () => {
     mockUseAuth.mockReturnValue({
       isSigningIn: false,
@@ -154,45 +134,6 @@ describe("RoleSelectionPage", () => {
     </MemoryRouter>)
     expect(screen.getByText("You do not have access")).toBeInTheDocument()
     expect(screen.getByText("Please contact support.")).toBeInTheDocument()
-  })
-
-  it("redirects to login if logging in but not in callback", async () => {
-    const navigateMock = jest.fn()
-    mockNavigate.mockReturnValue(navigateMock)
-    const authState = {
-      ...mockAuthState,
-      isSigningIn: true
-    }
-    mockUseAuth.mockReturnValue(authState)
-    mockGetSearchParams.mockReturnValue({
-      codeParams: undefined,
-      stateParams: undefined
-    })
-
-    const {rerender} = render(
-      <MemoryRouter>
-        <RoleSelectionPage contentText={defaultContentText} />
-      </MemoryRouter>
-    )
-
-    // Mock signOut to update the authState AND refresh the mock
-    ;(signOut as jest.Mock).mockImplementation((authState: AuthContextType) => {
-      authState.isSigningOut = true
-      mockUseAuth.mockReturnValue(authState) // Update what useAuth returns
-    })
-
-    await act(async () => {
-      signOut(authState)
-    })
-
-    // Rerender to pick up the new auth state
-    rerender(
-      <MemoryRouter>
-        <RoleSelectionPage contentText={defaultContentText} />
-      </MemoryRouter>
-    )
-
-    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
   })
 
   it("redirects if user has single roleWithAccess", () => {
@@ -354,6 +295,7 @@ describe("RoleSelectionPage", () => {
     // eslint-disable-next-line no-undef
     jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
     mockUseAuth.mockReturnValue({
+      ...mockAuthState,
       sessionId: "session-1234",
       user: "cognito-user",
       userDetails: {
@@ -413,6 +355,7 @@ describe("RoleSelectionPage", () => {
     // eslint-disable-next-line no-undef
     jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
     mockUseAuth.mockReturnValue({
+      ...mockAuthState,
       sessionId: "session-1234",
       user: "cognito-user",
       userDetails: {
@@ -480,6 +423,7 @@ describe("RoleSelectionPage", () => {
     // eslint-disable-next-line no-undef
     jest.spyOn(global.crypto, "randomUUID").mockReturnValueOnce("some-log-id-uuid-value")
     mockUseAuth.mockReturnValue({
+      ...mockAuthState,
       sessionId: "session-1234",
       user: "cognito-user",
       userDetails: {
@@ -571,6 +515,39 @@ describe("RoleSelectionPage", () => {
     render(<RoleSelectionPage contentText={defaultContentText} />)
 
     expect(logger.debug).toHaveBeenCalledTimes(10)
+
+    expect(logger.debug).toHaveBeenCalledWith("Counts of roles returned vs rendered", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      currentlySelectedRole: true,
+      returnedRolesWithAccessCount: 6,
+      returnedRolesWithoutAccessCount: 5,
+      renderedRolesWithAccessCount: 5,
+      renderedRolesWithoutAccessCount: 5
+    }, true)
+
+    expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
+      logId: "some-log-id-uuid-value",
+      sessionId: "session-1234",
+      userId: "12345",
+      pageName: "/",
+      authContext: {
+        cognitoUsername: "cognito-user",
+        name: "Test User",
+        currentlySelectedRole: {
+          role_id: "1"
+        },
+        isSignedIn: true,
+        isSigningIn: false,
+        isSigningOut: false,
+        isConcurrentSession: false,
+        error: null,
+        invalidSessionCause: undefined
+      }
+    }, true)
+
     expect(logger.debug).toHaveBeenCalledWith("Returned roles with access", {
       logId: "some-log-id-uuid-value",
       sessionId: "session-1234",
@@ -684,7 +661,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 1,
-      renderedRolesWithAccessProps: [
+      renderedRolesWithAccess: [
         {
           link: "/your-selected-role",
           role: {
@@ -734,7 +711,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 2,
-      renderedRolesWithAccessProps: [
+      renderedRolesWithAccess: [
         {
           link: "/your-selected-role",
           role: {
@@ -754,7 +731,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 1,
-      renderedRolesWithoutAccessProps: [
+      renderedRolesWithoutAccess: [
         {
           roleName: "Technician",
           odsCode: "XYZ",
@@ -788,7 +765,7 @@ describe("RoleSelectionPage", () => {
       pageName: "/",
       totalChunks: 2,
       chunkNo: 2,
-      renderedRolesWithoutAccessProps: [
+      renderedRolesWithoutAccess: [
         {
           roleName: "Technician",
           odsCode: "XYZ",
@@ -855,7 +832,6 @@ describe("RoleSelectionPage", () => {
         <RoleSelectionPage contentText={defaultContentText} />
       </MemoryRouter>
     )
-    expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
 
     // Step 2: Simulate login complete and role assignment
     act(() => {
@@ -1035,9 +1011,9 @@ describe("RoleSelectionPage", () => {
       })
 
       await waitFor(() => {
-        expect(handleRestartLogin).toHaveBeenCalledWith(
-          expect.objectContaining({updateSelectedRole: mockUpdateSelectedRole}),
-          "session_expired"
+        expect(handleSignoutEvent).toHaveBeenCalledWith(
+          expect.objectContaining({updateSelectedRole: mockUpdateSelectedRole}), mockNavigate,
+          expect.anything(), "session_expired"
         )
       })
     })
@@ -1110,7 +1086,7 @@ describe("RoleSelectionPage", () => {
       expect(screen.getByText(/No Org/)).toBeInTheDocument()
       expect(screen.getByText(/No ODS/)).toBeInTheDocument()
       expect(screen.getByText("No Role")).toBeInTheDocument()
-      expect(screen.getByText("No Address")).toBeInTheDocument()
+      expect(screen.getByText("No address available")).toBeInTheDocument()
     })
 
     it("filters out selected role from available roles", () => {
@@ -1143,39 +1119,6 @@ describe("RoleSelectionPage", () => {
 
       const cards = screen.getAllByTestId("eps-card")
       expect(cards).toHaveLength(1)
-    })
-  })
-  describe("Loading Page Interactions", () => {
-    it("Render loading when user clicks signout", async () => {
-      const authState = {
-        ...mockAuthState,
-        isSignedIn: true
-      }
-      mockUseAuth.mockReturnValue(authState)
-      const {rerender} = render(
-        <MemoryRouter>
-          <RoleSelectionPage contentText={defaultContentText} />
-        </MemoryRouter>
-      )
-
-      // Mock signOut to update the authState AND refresh the mock
-      ;(signOut as jest.Mock).mockImplementation((authState: AuthContextType) => {
-        authState.isSigningOut = true
-        mockUseAuth.mockReturnValue(authState) // Update what useAuth returns
-      })
-
-      await act(async () => {
-        signOut(authState)
-      })
-
-      // Rerender to pick up the new auth state
-      rerender(
-        <MemoryRouter>
-          <RoleSelectionPage contentText={defaultContentText} />
-        </MemoryRouter>
-      )
-
-      expect(screen.getByRole("heading", {name: `${LOADING_STRINGS.HEADER}`})).toBeInTheDocument()
     })
   })
 })

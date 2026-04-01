@@ -46,7 +46,7 @@ jobs:
 
       - name: Generate a token to authenticate regression testing
         id: generate-token
-        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859
         with:
           app-id: ${{ vars.REGRESSION_TESTS_APP_ID }}
           private-key: ${{ secrets.REGRESSION_TESTS_PEM }}
@@ -60,8 +60,8 @@ jobs:
           GITHUB-TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           if [[ "$TARGET_ENVIRONMENT" != "prod" && "$TARGET_ENVIRONMENT" != "ref" ]]; then
-            REGRESSION_TEST_REPO_TAG="v3.9.10" # This is the tag or branch of the regression test code to run, usually a version tag like v3.1.0 or a branch name
-            REGRESSION_TEST_WORKFLOW_TAG="v3.9.10" # This is the tag of the github workflow to run, usually the same as REGRESSION_TEST_REPO_TAG
+            REGRESSION_TEST_REPO_TAG="v3.10.9" # This is the tag or branch of the regression test code to run, usually a version tag like v3.1.0 or a branch name
+            REGRESSION_TEST_WORKFLOW_TAG="v3.10.9" # This is the tag of the github workflow to run, usually the same as REGRESSION_TEST_REPO_TAG
 
 
             if [[ -z "$REGRESSION_TEST_REPO_TAG" || -z "$REGRESSION_TEST_WORKFLOW_TAG" ]]; then

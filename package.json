@@ -49,7 +49,7 @@
         "@types/node": "^25.5.0",
         "@typescript-eslint/eslint-plugin": "^8.56.1",
         "@typescript-eslint/parser": "^8.57.0",
-        "@vitest/coverage-v8": "^4.1.0",
+        "@vitest/coverage-v8": "^4.1.1",
         "aws-sdk-client-mock": "^4.1.0",
         "eslint": "^9.39.2",
         "eslint-config-prettier": "^10.1.8",
@@ -62,7 +62,7 @@
         "jest-junit": "^16.0.0",
         "ts-jest": "^29.4.6",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.57.1",
+        "typescript-eslint": "^8.57.2",
         "vitest": "^4.0.18"
     },
     "dependencies": {

@@ -54,11 +54,14 @@ http.interceptors.request.use(
 
     const authSession = await fetchAuthSession()
     const idToken = authSession.tokens?.idToken
-    if (idToken === undefined) {
-      logger.error("Could not get a cognito token")
+    const isAmplifyHostRequest = config.url?.includes("/api/cis2-signout") ?? false
+    if (idToken === undefined && !isAmplifyHostRequest) {
       controller.abort()
+      throw new Error("Could not get a cognito token")
     }
-    config.headers.Authorization = `Bearer ${idToken?.toString()}`
+    if (idToken) {
+      config.headers.Authorization = `Bearer ${idToken.toString()}`
+    }
 
     // Make sure we have a retry counter in headers so we can track how many times we've retried
     if (!config.headers[x_retry_header]) {

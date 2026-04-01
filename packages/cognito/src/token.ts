@@ -18,7 +18,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {headers} from "@cpt-ui-common/lambdaUtils"
 
 import {rewriteRequestBody} from "./helpers"
-import {insertTokenMapping, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
+import {insertTokenMapping, tryGetTokenMapping, TokenMappingItem} from "@cpt-ui-common/dynamoFunctions"
 
 /*
 This is the lambda code that is used to intercept calls to token endpoint as part of the cognito login flow
@@ -71,6 +71,18 @@ const errorResponseBody = {
 }
 
 const middyErrorHandler = new MiddyErrorHandler(errorResponseBody)
+
+function checkIfValidTokenMapping(tokenMapping: TokenMappingItem | undefined): boolean {
+  const fifteenMinutes = 15 * 60 * 1000
+
+  return tokenMapping !== undefined &&
+    tokenMapping.sessionId !== undefined &&
+    tokenMapping.cis2AccessToken !== undefined &&
+    tokenMapping.cis2IdToken !== undefined &&
+    tokenMapping.cis2ExpiresIn !== undefined &&
+    tokenMapping.lastActivityTime !== undefined &&
+    tokenMapping.lastActivityTime > Date.now() - fifteenMinutes
+}
 
 const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   logger.appendKeys({
@@ -132,13 +144,13 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     throw new Error("Can not get expiry time from decoded token")
   }
 
-  const tokenMappingItem = {
+  const tokenMappingItem: TokenMappingItem = {
     username: username,
     sessionId: decodedIdToken.at_hash,
     cis2AccessToken: accessToken,
     cis2IdToken: idToken,
     cis2ExpiresIn: decodedIdToken.exp.toString(),
-    selectedRoleId: decodedIdToken.selected_roleid,
+    currentlySelectedRole: decodedIdToken.selected_roleid,
     lastActivityTime: Date.now()
   }
 
@@ -148,10 +160,9 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
     logger
   )
 
-  const fifteenMinutes = 15 * 60 * 1000
   const sessionManagementTableName = cis2OidcConfig.sessionManagementTableName
-
-  if (existingTokenMapping !== undefined && existingTokenMapping.lastActivityTime > Date.now() - fifteenMinutes) {
+  const validToken = checkIfValidTokenMapping(existingTokenMapping)
+  if (validToken) {
     logger.info("User already exists in token mapping table, creating draft session",
       {username}, {sessionManagementTableName})
     await insertTokenMapping(documentClient, sessionManagementTableName, tokenMappingItem, logger)
