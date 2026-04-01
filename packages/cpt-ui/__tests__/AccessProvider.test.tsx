@@ -6,7 +6,7 @@ import {useAuth as mockUseAuth} from "@/context/AuthProvider"
 import {useNavigate, useLocation, MemoryRouter} from "react-router-dom"
 import {normalizePath as mockNormalizePath} from "@/helpers/utils"
 import {logger} from "@/helpers/logger"
-import {handleRestartLogin} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import Layout from "@/Layout"
 import LoadingPage from "@/pages/LoadingPage"
 import {mockAuthState} from "./mocks/AuthStateMock"
@@ -50,7 +50,8 @@ jest.mock("@/constants/environment", () => ({
     "/session-logged-out",
     "/cookies-selected",
     "/",
-    "/select-active-session"
+    "/select-active-session",
+    "/select-your-role"
   ],
   PUBLIC_PATHS: [
     "/login",
@@ -82,13 +83,26 @@ jest.mock("@/helpers/logger", () => ({
 }))
 
 jest.mock("@/helpers/logout", () => ({
-  handleRestartLogin: jest.fn(),
-  signOut: jest.fn()
+  handleSignoutEvent: jest.fn(),
+  signOut: jest.fn(),
+  checkForRecentLogoutMarker: jest.fn().mockReturnValue(false)
 }))
 
 jest.mock("@/helpers/userInfo", () => ({
   updateRemoteSelectedRole: jest.fn().mockResolvedValue({currentlySelectedRole: {}})
 }))
+
+jest.mock("@/helpers/tabHelpers", () => {
+  const actual = jest.requireActual("@/helpers/tabHelpers")
+  return {
+    ...actual,
+    getOrCreateTabId: jest.fn().mockReturnValue("default-tab"),
+    getOpenTabCount: jest.fn().mockReturnValue(1),
+    updateOpenTabs: jest.fn(),
+    heartbeatTab: jest.fn(),
+    pruneStaleTabIds: jest.fn()
+  }
+})
 
 const TestComponent = () => {
   useAccess() // Just to test the context
@@ -107,6 +121,7 @@ describe("AccessProvider", () => {
     jest.useFakeTimers()
 
     mockNavigateHook.mockReturnValue(navigate)
+    mockNormalizePathFn.mockImplementation((path: string) => path)
   })
 
   afterEach(() => {
@@ -199,7 +214,7 @@ describe("AccessProvider", () => {
   it("skips redirection logic when signing in and on select-your-role path", () => {
     mockAuthHook.mockReturnValue({
       ...mockAuthState,
-      isSignedIn: false,
+      isSignedIn: true,
       isSigningIn: true,
       updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
       clearAuthState: jest.fn(),
@@ -250,13 +265,14 @@ describe("AccessProvider", () => {
       clearAuthState: jest.fn(),
       updateInvalidSessionCause: jest.fn()
     })
-    mockLocationHook.mockReturnValue({pathname: "/"})
-    mockNormalizePathFn.mockReturnValue("/")
+    const path = "/"
+    mockLocationHook.mockReturnValue({pathname: path})
+    mockNormalizePathFn.mockReturnValue(path)
 
     renderWithProvider()
 
     expect(navigate).toHaveBeenCalledWith(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
-    expect(logger.info).toHaveBeenCalledWith("Authenticated user on root path - redirecting to search")
+    expect(logger.info).toHaveBeenCalledWith(`Signed-in user on ${path} - blocking render until redirect`)
   })
 
   describe("shouldBlockChildren", () => {
@@ -415,7 +431,7 @@ describe("AccessProvider", () => {
       clearIntervalSpy.mockRestore()
     })
 
-    it("should skip user info check when isSigningIn is true", async () => {
+    it("shouldn't skip user info check when isSigningIn is true on protected page", async () => {
       mockAuthHook.mockReturnValue({
         ...mockAuthState,
         isSignedIn: true,
@@ -423,7 +439,7 @@ describe("AccessProvider", () => {
         selectedRole: {name: "TestRole"},
         updateTrackerUserInfo: mockUpdateTrackerUserInfo
       })
-      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"})
+      mockLocationHook.mockReturnValue({pathname: "/search-by-prescription-id"}) // protected page
 
       renderWithProvider()
 
@@ -432,9 +448,9 @@ describe("AccessProvider", () => {
       })
 
       expect(logger.debug).toHaveBeenCalledWith(
-        "Not checking user info"
+        "Refreshing user info"
       )
-      expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
+      expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
     })
 
     it("should skip user info check when on allowed no-role paths", async () => {
@@ -502,7 +518,8 @@ describe("AccessProvider", () => {
       })
 
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalled()
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
+        navigate, expect.anything(), "InvalidSession")
     })
 
     it("should not call updateTrackerUserInfo when user is not signed in", async () => {
@@ -522,7 +539,7 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(60001)
       })
 
-      expect(logger.debug).toHaveBeenCalledWith("Not checking user info")
+      expect(logger.debug).toHaveBeenCalledWith("No conditions met - not checking user info")
       expect(mockUpdateTrackerUserInfo).not.toHaveBeenCalled()
     })
 
@@ -569,8 +586,13 @@ describe("AccessProvider", () => {
         jest.advanceTimersByTime(60001)
       })
 
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
+        navigate, expect.anything(), "InvalidSession")
       expect(mockUpdateTrackerUserInfo).toHaveBeenCalledTimes(2)
+
+      // Verify the interval continues to exist and can be cleared
+      // No need to test second execution since handleSignoutEvent changes auth state
+      // which causes useEffect to re-run and reset the interval
     })
   })
 
@@ -598,8 +620,8 @@ describe("AccessProvider", () => {
     })
 
     it("should show timeout modal when remaining time is within threshold", async () => {
-      const oneMinuteInMs = 60 * 1000
-      const remainingTime = oneMinuteInMs // 1 minute remaining, within 2-minute threshold
+      const twoMinutesMs = 2 * 60 * 1000
+      const remainingTime = twoMinutesMs - 1000 // 1 second less than threshold
       mockUpdateTrackerUserInfo.mockResolvedValue({
         error: null,
         remainingSessionTime: remainingTime
@@ -646,7 +668,8 @@ describe("AccessProvider", () => {
 
       expect(logger.warn).toHaveBeenCalledWith("Session expired - automatically logging out user")
       expect(authContext.updateInvalidSessionCause).toHaveBeenCalledWith("Timeout")
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "Timeout")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext,
+        navigate, "Timeout")
     })
 
     it("should hide modal when session is still valid", async () => {
@@ -699,7 +722,7 @@ describe("AccessProvider", () => {
         "No remainingSessionTime in response - session may be corrupted, logging out user"
       )
       expect(authContext.updateInvalidSessionCause).toHaveBeenCalledWith("InvalidSession")
-      expect(handleRestartLogin).toHaveBeenCalledWith(authContext, "InvalidSession")
+      expect(handleSignoutEvent).toHaveBeenCalledWith(authContext, navigate, "InvalidSession")
     })
   })
 })

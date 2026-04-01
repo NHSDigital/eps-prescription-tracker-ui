@@ -1,11 +1,11 @@
 import {Container, Col, Row} from "nhsuk-react-components"
 import {Button} from "@/components/ReactRouterButton"
 import {useNavigate} from "react-router-dom"
-import {AUTH_CONFIG, FRONTEND_PATHS} from "@/constants/environment"
+import {FRONTEND_PATHS} from "@/constants/environment"
 import {postSessionManagementUpdate} from "@/helpers/sessionManagement"
 import {useAuth} from "@/context/AuthProvider"
 import {logger} from "@/helpers/logger"
-import {signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {useState} from "react"
 import {usePageTitle} from "@/hooks/usePageTitle"
 import {SESSION_SELECTION_PAGE_STRINGS} from "@/constants/ui-strings/SessionSelectionPage"
@@ -18,7 +18,7 @@ export default function SessionSelectionPage() {
   usePageTitle(SESSION_SELECTION_PAGE_STRINGS.pageTitle)
 
   const logout = async () => {
-    signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    handleSignoutEvent(auth, navigate, "SessionSelectionPage")
   }
 
   const redirectUser = (destination: string) => {
@@ -37,7 +37,7 @@ export default function SessionSelectionPage() {
       redirectUser(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
     } else {
       logger.info("Redirecting user to login")
-      signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+      handleSignoutEvent(auth, navigate, "SessionSelectionPage")
     }
   }
 

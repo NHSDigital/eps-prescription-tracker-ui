@@ -1,7 +1,18 @@
 import "@testing-library/jest-dom"
-import {signOut, handleRestartLogin} from "@/helpers/logout"
+import {
+  handleSignoutEvent,
+  signOut,
+  clearLogoutMarkerFromStorage,
+  LogoutMarker
+} from "@/helpers/logout"
 import {logger} from "@/helpers/logger"
-import {AUTH_CONFIG} from "@/constants/environment"
+import {
+  AUTH_CONFIG,
+  FRONTEND_PATHS,
+  LOGOUT_MARKER_STORAGE_KEY,
+  LOGOUT_MARKER_STORAGE_GROUP,
+  OPEN_TABS_STORAGE_KEY
+} from "@/constants/environment"
 import {AuthContextType} from "@/context/AuthProvider"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
@@ -9,68 +20,51 @@ import {mockAuthState} from "./mocks/AuthStateMock"
 jest.mock("@/helpers/logger", () => ({
   logger: {
     info: jest.fn(),
+    debug: jest.fn(),
     error: jest.fn()
   }
 }))
 
-// Mock AUTH_CONFIG
-jest.mock("@/constants/environment", () => ({
-  AUTH_CONFIG: {
-    REDIRECT_SIGN_OUT: "/default-signout",
-    REDIRECT_SESSION_SIGN_OUT: "/session-signout"
+// Mock useNavigate and assign to a variable for assertions
+const mockNavigate = jest.fn()
+jest.mock("react-router-dom", () => {
+  const actual = jest.requireActual("react-router-dom")
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate
   }
-}))
-
-const createMockAuth = (overrides = {}): AuthContextType => ({
-  ...mockAuthState,
-  error: null,
-  user: null,
-  isSignedIn: false,
-  isSigningIn: false,
-  isSigningOut: false,
-  isConcurrentSession: false,
-  invalidSessionCause: undefined,
-  sessionId: undefined,
-  deviceId: undefined,
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  selectedRole: undefined,
-  userDetails: undefined,
-  remainingSessionTime: undefined,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn().mockResolvedValue(true),
-  clearAuthState: jest.fn(),
-  hasSingleRoleAccess: jest.fn().mockReturnValue(false),
-  updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn(),
-  setIsSigningOut: jest.fn(),
-  setStateForSignOut: jest.fn().mockResolvedValue(undefined),
-  ...overrides
 })
 
 describe("logout helpers", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    localStorage.clear()
+    sessionStorage.clear()
   })
 
-  describe("signOut", () => {
+  describe("signOut function", () => {
     it("calls setStateForSignOut and cognitoSignOut", async () => {
-      const mockAuth = createMockAuth()
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
 
       await signOut(mockAuth)
 
       expect(mockAuth.setStateForSignOut).toHaveBeenCalledTimes(1)
       expect(logger.info).toHaveBeenCalledWith(
-        expect.stringContaining("Called signOut helper from")
+        expect.stringContaining("Called signOut helper from"), mockAuth
       )
     })
 
     it("uses provided redirectUri when specified", async () => {
-      const mockAuth = createMockAuth()
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
       const customRedirectUri = "/custom-redirect"
 
-      await signOut(mockAuth, customRedirectUri)
+      await signOut(mockAuth, mockNavigate, customRedirectUri)
 
       expect(logger.info).toHaveBeenCalledWith(
         "Signing out with specified redirect path",
@@ -79,145 +73,217 @@ describe("logout helpers", () => {
       expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(customRedirectUri)
     })
 
-    it("uses default redirectUri when not specified", async () => {
-      const mockAuth = createMockAuth()
-
-      await signOut(mockAuth)
-
-      expect(logger.info).toHaveBeenCalledWith(
-        "Signing out with default redirect path",
-        AUTH_CONFIG.REDIRECT_SIGN_OUT
-      )
-      expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(AUTH_CONFIG.REDIRECT_SIGN_OUT)
-    })
-
-    it("handles cognitoSignOut errors and sets isSigningOut to false", async () => {
+    it("handles cognitoSignOut errors and navigates to logout", async () => {
       const signOutError = new Error("Cognito signout failed")
-      const mockAuth = createMockAuth({
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
         cognitoSignOut: jest.fn().mockRejectedValue(signOutError)
-      })
+      }
 
-      await expect(signOut(mockAuth, "/test-redirect")).rejects.toThrow("Cognito signout failed")
+      await signOut(mockAuth, mockNavigate, "/test-redirect")
 
-      expect(logger.error).toHaveBeenCalledWith("Error during logout:", signOutError)
-      expect(mockAuth.setIsSigningOut).toHaveBeenCalledWith(false)
+      expect(logger.error).toHaveBeenCalledWith(
+        "Error during sign out with specified redirect path: /test-redirect", signOutError
+      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGOUT)
     })
 
-    it("re-throws the error after handling it", async () => {
+    it("handles cognitoSignOut errors without redirect uri", async () => {
       const signOutError = new Error("Network error")
-      const mockAuth = createMockAuth({
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
         cognitoSignOut: jest.fn().mockRejectedValue(signOutError)
-      })
+      }
 
-      await expect(signOut(mockAuth)).rejects.toThrow("Network error")
-    })
+      await signOut(mockAuth, mockNavigate)
 
-    it("handles null cognitoSignOut gracefully", async () => {
-      const mockAuth = createMockAuth({
-        cognitoSignOut: null
-      })
-
-      // Should log but not throw error due to optional chaining
-      await expect(signOut(mockAuth)).rejects.toThrow("is not a function")
-    })
-
-    it("handles undefined cognitoSignOut gracefully", async () => {
-      const mockAuth = createMockAuth({
-        cognitoSignOut: undefined
-      })
-
-      await expect(signOut(mockAuth)).rejects.toThrow("is not a function")
+      expect(logger.error).toHaveBeenCalledWith(
+        "Error during sign out", signOutError
+      )
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGOUT)
     })
   })
 
-  describe("handleRestartLogin", () => {
-    it("logs the restart login initiation and AUTH_CONFIG values", async () => {
-      const mockAuth = createMockAuth()
-      const invalidSessionCause = "Timeout"
-
-      await handleRestartLogin(mockAuth, invalidSessionCause)
-
-      expect(logger.info).toHaveBeenCalledWith(
-        "Handling restart login instruction from backend",
-        invalidSessionCause
-      )
-      expect(logger.info).toHaveBeenCalledWith("AUTH_CONFIG values:", {
-        REDIRECT_SIGN_OUT: AUTH_CONFIG.REDIRECT_SIGN_OUT,
-        REDIRECT_SESSION_SIGN_OUT: AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT
-      })
-    })
-
+  describe("handleSignoutEvent", () => {
     it("handles invalid session cause by updating cause and using session sign out", async () => {
-      const mockAuth = createMockAuth()
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
       const invalidSessionCause = "ConcurrentSession"
 
-      await handleRestartLogin(mockAuth, invalidSessionCause)
+      await handleSignoutEvent(mockAuth, mockNavigate, "Reason", invalidSessionCause)
 
       expect(logger.info).toHaveBeenCalledWith(
         `Invalid session cause supplied, ${invalidSessionCause}`
       )
       expect(mockAuth.updateInvalidSessionCause).toHaveBeenCalledWith(invalidSessionCause)
       expect(logger.info).toHaveBeenCalledWith(
-        "About to sign out with REDIRECT_SESSION_SIGN_OUT:",
-        AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT
+        "Handling sign out event with caller: Reason and invalid session reason: ConcurrentSession"
       )
       expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
     })
 
     it("uses default sign out when no invalid session cause provided", async () => {
-      const mockAuth = createMockAuth()
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
 
-      await handleRestartLogin(mockAuth, undefined)
+      await handleSignoutEvent(mockAuth, mockNavigate, "Reason", undefined)
 
       expect(logger.info).toHaveBeenCalledWith(
-        "No invalid session cause, using REDIRECT_SIGN_OUT:",
-        AUTH_CONFIG.REDIRECT_SIGN_OUT
+        "No invalid session cause, using standard logout"
       )
       expect(mockAuth.updateInvalidSessionCause).not.toHaveBeenCalled()
       expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(AUTH_CONFIG.REDIRECT_SIGN_OUT)
     })
 
     it("uses default sign out when empty string invalid session cause provided", async () => {
-      const mockAuth = createMockAuth()
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
 
-      await handleRestartLogin(mockAuth, "")
+      await handleSignoutEvent(mockAuth, mockNavigate, "Reason")
 
       expect(logger.info).toHaveBeenCalledWith(
-        "No invalid session cause, using REDIRECT_SIGN_OUT:",
-        AUTH_CONFIG.REDIRECT_SIGN_OUT
+        "No invalid session cause, using standard logout"
       )
       expect(mockAuth.updateInvalidSessionCause).not.toHaveBeenCalled()
       expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(AUTH_CONFIG.REDIRECT_SIGN_OUT)
     })
 
     it("handles various invalid session cause values", async () => {
-      const mockAuth = createMockAuth()
       const testCases = ["Timeout", "Expired", "InvalidToken", "ConcurrentSession"]
 
       for (const cause of testCases) {
         jest.clearAllMocks()
+        localStorage.clear()
+        const mockAuth: AuthContextType = {
+          ...mockAuthState,
+          cognitoSignOut: jest.fn().mockResolvedValue(true)
+        }
 
-        await handleRestartLogin(mockAuth, cause)
+        await handleSignoutEvent(mockAuth, mockNavigate, "Reason", cause)
         expect(mockAuth.updateInvalidSessionCause).toHaveBeenCalledWith(cause)
         expect(mockAuth.cognitoSignOut).toHaveBeenCalledWith(AUTH_CONFIG.REDIRECT_SESSION_SIGN_OUT)
       }
     })
 
-    it("propagates errors from signOut function", async () => {
-      const mockAuth = createMockAuth({
+    it("navigates to logout when signOut encounters an error", async () => {
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
         cognitoSignOut: jest.fn().mockRejectedValue(new Error("Sign out failed"))
-      })
+      }
 
-      await expect(handleRestartLogin(mockAuth, "Timeout"))
-        .rejects.toThrow("Sign out failed")
+      await handleSignoutEvent(mockAuth, mockNavigate, "Reason", "Timeout")
+
+      expect(mockNavigate).toHaveBeenCalledWith(FRONTEND_PATHS.LOGOUT)
     })
 
     it("propagates errors from updateInvalidSessionCause", async () => {
-      const mockAuth = createMockAuth({
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
         updateInvalidSessionCause: jest.fn().mockRejectedValue(new Error("Update failed"))
-      })
-      await expect(handleRestartLogin(mockAuth, "Timeout"))
+      }
+
+      await expect(handleSignoutEvent(mockAuth, mockNavigate, "Reason", "Timeout"))
         .rejects.toThrow("Update failed")
+    })
+  })
+
+  describe("signOut duplicate marker handling", () => {
+    const writeMarkerToStorage = (marker: LogoutMarker) => {
+      const markerGroup: Record<string, LogoutMarker> = {[LOGOUT_MARKER_STORAGE_KEY]: marker}
+      localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+    }
+
+    it("skips signOut when recent marker exists from an active tab", async () => {
+      const activeTabId = "active-tab-123"
+      writeMarkerToStorage({
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: activeTabId
+      })
+      // Register the tab as active
+      localStorage.setItem(OPEN_TABS_STORAGE_KEY, JSON.stringify([activeTabId]))
+
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
+
+      await signOut(mockAuth)
+
+      expect(mockAuth.cognitoSignOut).not.toHaveBeenCalled()
+      expect(logger.info).toHaveBeenCalledWith(
+        "Skipping duplicate signOut call due to in-progress marker from active tab"
+      )
+    })
+
+    it("proceeds with signOut when recent marker exists from an inactive tab", async () => {
+      const deadTabId = "dead-tab-456"
+      writeMarkerToStorage({
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: deadTabId
+      })
+      // No tabs registered as active (dead tab closed)
+      localStorage.setItem(OPEN_TABS_STORAGE_KEY, JSON.stringify([]))
+
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
+
+      await signOut(mockAuth)
+
+      expect(mockAuth.setStateForSignOut).toHaveBeenCalled()
+      expect(mockAuth.cognitoSignOut).toHaveBeenCalled()
+      expect(logger.info).toHaveBeenCalledWith(
+        "Logout marker exists from inactive tab - allowing signOut to proceed"
+      )
+    })
+
+    it("bypasses duplicate check when duplicateSignout is true", async () => {
+      const activeTabId = "active-tab-123"
+      writeMarkerToStorage({
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: activeTabId
+      })
+      localStorage.setItem(OPEN_TABS_STORAGE_KEY, JSON.stringify([activeTabId]))
+
+      const mockAuth: AuthContextType = {
+        ...mockAuthState,
+        cognitoSignOut: jest.fn().mockResolvedValue(true)
+      }
+
+      await signOut(mockAuth, mockNavigate, "/redirect", true)
+
+      expect(mockAuth.cognitoSignOut).toHaveBeenCalled()
+    })
+  })
+
+  describe("clearLogoutMarkerFromStorage", () => {
+    it("removes the logout marker from localStorage", () => {
+      const marker: LogoutMarker = {
+        timestamp: Date.now(),
+        reason: "signOut",
+        initiatedByTabId: "tab-123"
+      }
+      const markerGroup: Record<string, LogoutMarker> = {[LOGOUT_MARKER_STORAGE_KEY]: marker}
+      localStorage.setItem(LOGOUT_MARKER_STORAGE_GROUP, JSON.stringify(markerGroup))
+
+      clearLogoutMarkerFromStorage()
+
+      const stored = JSON.parse(localStorage.getItem(LOGOUT_MARKER_STORAGE_GROUP)!)
+      expect(stored[LOGOUT_MARKER_STORAGE_KEY]).toBeUndefined()
+    })
+
+    it("does not throw when localStorage is empty", () => {
+      expect(() => clearLogoutMarkerFromStorage()).not.toThrow()
     })
   })
 })

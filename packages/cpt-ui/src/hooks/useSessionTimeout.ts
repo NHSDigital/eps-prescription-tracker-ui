@@ -2,8 +2,10 @@ import {useCallback, useRef} from "react"
 import {logger} from "@/helpers/logger"
 import {useAuth} from "@/context/AuthProvider"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
-import {AUTH_CONFIG} from "@/constants/environment"
+import {handleSignoutEvent} from "@/helpers/logout"
+import {useLocation, useNavigate} from "react-router-dom"
+import {normalizePath} from "@/helpers/utils"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export interface SessionTimeoutProps {
   onStayLoggedIn: () => Promise<void>
@@ -13,7 +15,10 @@ export interface SessionTimeoutProps {
 
 export const useSessionTimeout = () => {
   const auth = useAuth()
+  const navigate = useNavigate()
   const actionLockRef = useRef<"extending" | "loggingOut" | undefined>(undefined)
+  const location = useLocation()
+  const path = normalizePath(location.pathname)
 
   const clearCountdownTimer = () => {
     auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: 0}))
@@ -23,6 +28,13 @@ export const useSessionTimeout = () => {
     // Prevent multiple simultaneous extension attempts or cross-calls
     if (actionLockRef.current !== undefined) {
       logger.info("Session action already in progress, ignoring duplicate request")
+      return
+    }
+
+    if (path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+      // Maintain session time but don't show the modal right now
+      auth.setLogoutModalType(undefined)
+      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: undefined, buttonDisabled: false, showModal: false}))
       return
     }
 
@@ -56,7 +68,7 @@ export const useSessionTimeout = () => {
       actionLockRef.current = undefined
       await handleLogOut()
     }
-  }, [auth])
+  }, [auth, path])
 
   const handleLogOut = useCallback(async () => {
     // Prevent multiple simultaneous logout attempts or cross-calls
@@ -67,15 +79,14 @@ export const useSessionTimeout = () => {
     actionLockRef.current = "loggingOut"
     logger.info("User chose to log out from session timeout modal")
     auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
-    await signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+    await handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
     auth.setLogoutModalType(undefined)
   }, [auth])
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
     clearCountdownTimer()
-    auth.updateInvalidSessionCause("Timeout")
-    await handleRestartLogin(auth, "Timeout")
+    await handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
   }, [auth])
 
   return {

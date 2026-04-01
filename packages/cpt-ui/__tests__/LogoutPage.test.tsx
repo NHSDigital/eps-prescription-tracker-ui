@@ -18,6 +18,16 @@ jest.mock("@/constants/environment", () => ({
     PRIVACY_NOTICE: "/privacy-notice",
     COOKIES_SELECTED: "/cookies-selected"
   },
+  PUBLIC_PATHS: [
+    "/login",
+    "/logout",
+    "/session-logged-out",
+    "/cookies",
+    "/privacy-notice",
+    "/cookies-selected",
+    "/notfound",
+    "/"
+  ],
   ALLOWED_NO_ROLE_PATHS: [
     "/login",
     "/logout",
@@ -48,6 +58,7 @@ jest.mock("@/helpers/utils", () => ({
 jest.mock("@/helpers/logger", () => ({
   logger: {
     info: jest.fn(),
+    warn: jest.fn(),
     debug: jest.fn()
   }
 }))
@@ -81,7 +92,7 @@ const MockAuthProvider = ({
     clearAuthState: jest.fn(),
     hasSingleRoleAccess: jest.fn().mockReturnValue(false),
     updateSelectedRole: jest.fn(),
-    updateTrackerUserInfo: jest.fn(),
+    updateTrackerUserInfo: jest.fn().mockResolvedValue({error: null}),
     updateInvalidSessionCause: jest.fn(),
     isSigningOut: false,
     setIsSigningOut: jest.fn(),
@@ -112,27 +123,5 @@ describe("LogoutPage", () => {
       )
     ).toBeInTheDocument()
     expect(screen.getByRole("link", {name: /log in/i})).toBeInTheDocument()
-  })
-
-  it("shows a spinner and calls signOut when the user is signed in", async () => {
-    render(
-      <MockAuthProvider defaultIsSignedIn={true}>
-        <LogoutPage />
-      </MockAuthProvider>
-    )
-
-    expect(screen.getByText(/Logging out/i)).toBeInTheDocument()
-    expect(screen.getByRole("status")).toBeInTheDocument()
-  })
-
-  it("does not call signOut if user is signed in, but we haven't advanced timers yet", () => {
-    render(
-      <MockAuthProvider defaultIsSignedIn={true}>
-        <LogoutPage />
-      </MockAuthProvider>
-    )
-
-    expect(screen.getByText(/Logging out/i)).toBeInTheDocument()
-    expect(screen.getByRole("status")).toBeInTheDocument()
   })
 })

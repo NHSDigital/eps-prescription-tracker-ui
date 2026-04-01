@@ -23,9 +23,8 @@ import http from "@/helpers/axios"
 import {logger} from "@/helpers/logger"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
-import {handleRestartLogin, signOut} from "@/helpers/logout"
+import {handleSignoutEvent} from "@/helpers/logout"
 import {useAuth} from "@/context/AuthProvider"
-import {AUTH_CONFIG} from "@/constants/environment"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionListPage() {
@@ -56,11 +55,10 @@ export default function PrescriptionListPage() {
 
       // Handle basic details case - redirect only if we still have no NHS number or prescription ID
       const hasAnyNhsNumber = Boolean(originalSearchParams?.nhsNumber || searchContext.nhsNumber)
-      const hasAnyPrescriptionId = Boolean(originalSearchParams?.prescriptionId || searchContext.prescriptionId)
       if (originalSearchParams &&
           (originalSearchParams.firstName || originalSearchParams.lastName) &&
-          (!hasAnyNhsNumber && !hasAnyPrescriptionId)) {
-        logger.info("Basic details present but no NHS number/ prescription ID - redirecting to prescription ID search")
+          (!hasAnyNhsNumber)) {
+        logger.info("Basic details present but no NHS number - redirecting to prescription ID search")
         navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
         return
       }
@@ -88,7 +86,7 @@ export default function PrescriptionListPage() {
           break
         default:
           // Unrecognized search type - redirect to search page
-          logger.info("No search parameter provided - redirecting to prescription ID search")
+          logger.info("No search type available - redirecting to prescription ID search")
           navigate(FRONTEND_PATHS.SEARCH_BY_PRESCRIPTION_ID)
           return
       }
@@ -114,9 +112,8 @@ export default function PrescriptionListPage() {
           searchResults.pastPrescriptions.length === 0 &&
           searchResults.futurePrescriptions.length === 0
         ) {
-          logger.error(
-            "A patient was returned, but they do not have any prescriptions.",
-            searchResults
+          logger.info(
+            "A patient was returned, but they do not have any prescriptions."
           )
           setPatientDetails(searchResults.patient)
           setPatientFallback(searchResults.patientFallback)
@@ -154,7 +151,7 @@ export default function PrescriptionListPage() {
           if ((err.response?.status === 401) && err.response.data?.restartLogin) {
             const invalidSessionCause = err.response?.data?.invalidSessionCause
             logger.warn("prescriptionList triggered restart login due to:", invalidSessionCause)
-            handleRestartLogin(auth, invalidSessionCause)
+            handleSignoutEvent(auth, navigate, "PrescriptionListPage", invalidSessionCause)
             return
           } else if (err.response?.status === 404) {
             logger.warn("No search results were returned", err)
@@ -166,7 +163,7 @@ export default function PrescriptionListPage() {
           }
         } else if (err instanceof Error && err.message === "canceled") {
           logger.warn("Signing out due to request cancellation")
-          signOut(auth, AUTH_CONFIG.REDIRECT_SIGN_OUT)
+          handleSignoutEvent(auth, navigate, "PrescriptionListPage", "RequestCanceled")
           return
         } else {
           setError(true)

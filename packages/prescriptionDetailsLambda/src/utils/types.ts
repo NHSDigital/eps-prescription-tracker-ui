@@ -84,7 +84,7 @@ export const extensionUrlMappings = {
     "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-TaskBusinessStatus"
   ],
   PRESCRIPTION_STATUS_HISTORY: [
-    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory"
+    "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
   ],
   DM_PRESCRIPTION_STATUS_UPDATE_HISTORY: [
     "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
