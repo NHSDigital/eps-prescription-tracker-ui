@@ -77,6 +77,17 @@ export class CloudfrontDistribution extends Construct {
     on how many can be created simultaneously */
     s3StaticContentRootSlashRedirect.node.addDependency(s3StaticContentUriRewriteFunction)
 
+    const s3JwksUriRewriteFunction = new Function(this, "S3JwksUriRewriteFunction", {
+      functionName: `${props.serviceName}-S3JwksUriRewriteFunction`,
+      code: FunctionCode.fromInline("function handler(event) {event.request.uri = '/jwks.json'; return event.request}"),
+      runtime: FunctionRuntime.JS_2_0,
+      autoPublish: true
+    })
+
+    /* Add dependency on previous function to force them to build one by one to avoid aws limits
+    on how many can be created simultaneously */
+    s3JwksUriRewriteFunction.node.addDependency(s3StaticContentRootSlashRedirect)
+
     const headersPolicy = new CustomSecurityHeadersPolicy(this, "AdditionalBehavioursHeadersPolicy", {
       policyName: `${props.serviceName}-AdditionalBehavioursCustomSecurityHeaders`,
       fullCognitoDomain: props.fullCognitoDomain
@@ -144,6 +155,12 @@ export class CloudfrontDistribution extends Construct {
           origin: props.staticContentBucketOrigin,
           allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          functionAssociations: [
+            {
+              function: s3JwksUriRewriteFunction,
+              eventType: FunctionEventType.VIEWER_REQUEST
+            }
+          ],
           responseHeadersPolicy: headersPolicy.policy
         },
         "/500.html": {
