@@ -73,42 +73,63 @@ jobs:
             const maxRetries = 120; // 20 minutes at 10 seconds each
             let attempts = 0;
 
-            async function fetchQCJob() {
+            async function fetchQCJobs() {
               const { data } = await github.rest.actions.listJobsForWorkflowRun({
                 owner, repo, run_id: runId
               });
-              return data.jobs.find(job => job.name === 'quality_checks / quality_checks');
+              return data.jobs.filter(job => job.name.startsWith('quality_checks'));
             }
 
-            let qc = await fetchQCJob();
-            while ((!qc || qc.status !== 'completed') && attempts < maxRetries) {
+            let qcJobs = await fetchQCJobs();
+            while (attempts < maxRetries) {
+              const allCompleted = qcJobs.length > 0 && qcJobs.every(qc => qc.status === 'completed');
+              if (allCompleted) {
+                break;
+              }
+
               attempts++;
-              console.log(`Attempt #${attempts}: ` +
-                (qc
-                  ? `found job “${qc.name}” with status=${qc.status}`
-                  : 'no matching quality_checks job yet'));
+
+              if (qcJobs.length === 0) {
+                console.log(`Attempt #${attempts}: no matching quality_checks jobs yet`);
+              } else {
+                const incompleteJobs = qcJobs
+                  .filter(qc => qc.status !== 'completed')
+                  .map(qc => `“${qc.name}” status=${qc.status}`)
+                  .join(', ');
+                console.log(`Attempt #${attempts}: waiting for quality_checks jobs to complete: ${incompleteJobs}`);
+              }
+
+              if (attempts >= maxRetries) {
+                break;
+              }
+
               await new Promise(r => setTimeout(r, pollTime));
-              qc = await fetchQCJob();
+              qcJobs = await fetchQCJobs();
             }
 
-            if (!qc) {
+            if (qcJobs.length === 0) {
               core.setFailed(
                 `Timed out waiting for a “quality_checks” job (after ${attempts} polls).`
               );
               return;
             }
 
-            if (qc.status !== 'completed') {
-              core.setFailed(
-                `Quality checks job never completed (last status=${qc.status}).`
-              );
-              return;
+            for (const qc of qcJobs) {
+              if (qc.status !== 'completed') {
+                core.setFailed(
+                  `Quality checks job ${qc.name} never completed (last status=${qc.status})`
+                );
+                return;
+              }
             }
 
-            if (qc.conclusion !== 'success') {
-              core.setFailed(
-                `Quality checks failed (conclusion=${qc.conclusion}).`
-              );
+            for (const qc of qcJobs) {
+              if (qc.conclusion !== 'success') {
+                core.setFailed(
+                  `Quality checks job ${qc.name} failed (conclusion=${qc.conclusion}).`
+                );
+                return;
+              }
             }
 
       - name: Bypass QC gate
