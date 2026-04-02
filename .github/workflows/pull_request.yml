@@ -69,6 +69,7 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const runId = context.runId;
+            console.log("Commit message is “" + needs.get_commit_message.outputs.commit_message + "”, waiting for quality_checks jobs to complete...");
 
             // How many times to poll
             const pollTime = 10000; // 10 seconds
