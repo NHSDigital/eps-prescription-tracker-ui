@@ -130,6 +130,8 @@ export default function PrescriptionDetailsPage() {
   }, [])
 
   if (loading) {
+    // Protect against navigating away using browser controls or refreshing while loading
+    auth.registerBeforeUnloadGuard()
     return (
       <main
         id="main-content"

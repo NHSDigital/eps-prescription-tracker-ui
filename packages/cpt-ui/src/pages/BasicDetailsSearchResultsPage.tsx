@@ -123,6 +123,7 @@ export default function SearchResultsPage() {
   usePageTitle(pageTitle)
 
   useEffect(() => {
+    auth.registerBeforeUnloadGuard()
     getSearchResults()
     return () => {
       auth.clearBeforeUnloadGuard()
@@ -159,8 +160,6 @@ export default function SearchResultsPage() {
       const payload: Array<PatientSummary> = response.data
       if (!payload) {
         throw new Error("No payload received from the API")
-      } else {
-        auth.registerBeforeUnloadGuard()
       }
 
       if (payload.length === 1) {
@@ -196,6 +195,8 @@ export default function SearchResultsPage() {
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   if (loading) {
+    // Protect against navigating away using browser controls or refreshing while loading
+    auth.registerBeforeUnloadGuard()
     return (
       <main className="nhsuk-main-wrapper" id="main-content" role="main">
         <Container>

@@ -183,6 +183,8 @@ export default function PrescriptionListPage() {
   }, [])
 
   if (loading) {
+    // Protect against navigating away using browser controls or refreshing while loading
+    auth.registerBeforeUnloadGuard()
     return (
       <main id="main-content" className="nhsuk-main-wrapper">
         <Container>
