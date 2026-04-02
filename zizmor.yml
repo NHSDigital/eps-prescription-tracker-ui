@@ -5,7 +5,7 @@ rules:
       - cdk_package_code.yml:21:7
       - release_all_stacks.yml:95:7
       - run_regression_tests.yml:27:7
-      - pull_request.yml:220:7
+      - pull_request.yml:222:7
   secrets-outside-env:
     # these are ignored because they are using known secrets
     ignore:
