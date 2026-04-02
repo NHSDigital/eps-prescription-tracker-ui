@@ -23,8 +23,7 @@ jest.mock("@/constants/environment", () => ({
   ENV_CONFIG: {
     TARGET_ENVIRONMENT: "dev",
     API_DOMAIN_OVERRIDE: "",
-    BASE_PATH: "site",
-    LOCAL_DEV: false
+    BASE_PATH: "site"
   },
   AUTH_CONFIG: {
     USER_POOL_ID: "mock-pool-id",

@@ -12,6 +12,7 @@ import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import {getUsernameFromEvent, getSessionIdFromEvent} from "@cpt-ui-common/authFunctions"
 import {deleteTokenMapping, deleteRecordAllowFailures, tryGetTokenMapping} from "@cpt-ui-common/dynamoFunctions"
 import {injectCorrelationLoggerMiddleware} from "@cpt-ui-common/lambdaUtils"
+import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 const logger = new Logger({serviceName: "CIS2SignOut"})
 
 const dynamoClient = new DynamoDBClient({})
@@ -63,7 +64,7 @@ export const handler = middy(lambdaHandler)
   .use(
     inputOutputLogger({
       logger: (request) => {
-        logger.info(request)
+        logger.info(request as LogItemMessage)
       }
     })
   )

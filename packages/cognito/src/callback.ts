@@ -4,6 +4,7 @@ import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
+import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 import {buildCallbackRedirect} from "./helpers"
 
 /*
@@ -43,7 +44,7 @@ export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(
     inputOutputLogger({
-      logger: (request) => logger.info(request)
+      logger: (request) => logger.info(request as LogItemMessage)
     })
   )
   .use(middyErrorHandler.errorHandler({logger}))

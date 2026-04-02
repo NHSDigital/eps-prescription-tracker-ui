@@ -23,20 +23,18 @@ import {
 } from "aws-cdk-lib/aws-route53"
 import {UserPoolDomainTarget} from "aws-cdk-lib/aws-route53-targets"
 
+export interface OidcConfig {
+  readonly clientId: string,
+  readonly issuer: string,
+  readonly authorizeEndpoint: string,
+  readonly userInfoEndpoint: string,
+  readonly jwksEndpoint: string,
+  readonly tokenEndpoint: string
+}
+
 export interface CognitoProps {
-  readonly primaryOidcClientId: string
-  readonly primaryOidcIssuer: string
-  readonly primaryOidcAuthorizeEndpoint: string
-  readonly primaryOidcUserInfoEndpoint: string
-  readonly primaryOidcjwksEndpoint: string
-  readonly primaryOidcTokenEndpoint: string
-  readonly useMockOidc: boolean
-  readonly mockOidcClientId?: string
-  readonly mockOidcIssuer?: string
-  readonly mockOidcAuthorizeEndpoint?: string
-  readonly mockOidcUserInfoEndpoint?: string
-  readonly mockOidcjwksEndpoint?: string
-  readonly mockOidcTokenEndpoint: string
+  readonly primaryOidcConfig: OidcConfig
+  readonly mockOidcConfig?: OidcConfig
   readonly shortCognitoDomain: string
   readonly fullCloudfrontDomain: string
   readonly fullCognitoDomain: string
@@ -54,7 +52,7 @@ export class Cognito extends Construct {
   public readonly userPoolClient: UserPoolClient
   public readonly userPoolDomain: UserPoolDomain
   public readonly primaryPoolIdentityProvider: UserPoolIdentityProviderOidc
-  public readonly mockPoolIdentityProvider: UserPoolIdentityProviderOidc
+  public readonly mockPoolIdentityProvider?: UserPoolIdentityProviderOidc
 
   public constructor(scope: Construct, id: string, props: CognitoProps) {
     super(scope, id)
@@ -101,9 +99,9 @@ export class Cognito extends Construct {
     // note we override the token endpoint to point back to our custom token
     const oidcEndpoints: OidcEndpoints = {
       authorization: `https://${props.fullCloudfrontDomain}/oauth2/authorize`,
-      jwksUri: props.primaryOidcjwksEndpoint,
+      jwksUri: props.primaryOidcConfig.jwksEndpoint,
       token: `https://${props.fullCloudfrontDomain}/oauth2/token`,
-      userInfo: props.primaryOidcUserInfoEndpoint
+      userInfo: props.primaryOidcConfig.userInfoEndpoint
     }
 
     // eslint-disable-next-line max-len
@@ -111,10 +109,10 @@ export class Cognito extends Construct {
     // about claims that we need
     const primaryPoolIdentityProvider = new UserPoolIdentityProviderOidc(this, "UserPoolIdentityProvider", {
       name: "Primary", // this name is used in the web client
-      clientId: props.primaryOidcClientId,
+      clientId: props.primaryOidcConfig.clientId,
       // secret not needed for usage but needed for cdk
       clientSecret: "dummy_value",
-      issuerUrl: props.primaryOidcIssuer,
+      issuerUrl: props.primaryOidcConfig.issuer,
       userPool: userPool,
       attributeRequestMethod: OidcAttributeRequestMethod.GET,
       scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess", "associatedorgs"],
@@ -129,31 +127,22 @@ export class Cognito extends Construct {
     let mockPoolIdentityProvider!: UserPoolIdentityProviderOidc
 
     // set up things for mock login
-    if (props.useMockOidc) {
-      if (props.mockOidcAuthorizeEndpoint === undefined ||
-        props.mockOidcjwksEndpoint === undefined ||
-        props.mockOidcUserInfoEndpoint === undefined ||
-        props.mockOidcClientId === undefined ||
-        props.mockOidcIssuer === undefined
-      ) {
-        throw new Error("Attempt to use mock oidc but variables are not defined")
-      }
-
+    if (props.mockOidcConfig) {
       // these are the endpoints that are added to user pool identity provider
       // note we override the token endpoint to point back to our custom token
       const mockOidcEndpoints: OidcEndpoints = {
         authorization: `https://${props.fullCloudfrontDomain}/oauth2/mock-authorize`,
-        jwksUri: `https://${props.fullCloudfrontDomain}/jwks/`,
+        jwksUri: `https://${props.fullCloudfrontDomain}/jwks.json`,
         token: `https://${props.fullCloudfrontDomain}/oauth2/mock-token`,
-        userInfo: props.mockOidcUserInfoEndpoint
+        userInfo: props.mockOidcConfig.userInfoEndpoint
       }
 
       mockPoolIdentityProvider = new UserPoolIdentityProviderOidc(this, "MockUserPoolIdentityProvider", {
         name: "Mock",
-        clientId: props.mockOidcClientId,
+        clientId: props.mockOidcConfig.clientId,
         // secret not needed for usage but needed for cdk
         clientSecret: "dummy_value",
-        issuerUrl: props.mockOidcIssuer,
+        issuerUrl: props.mockOidcConfig.issuer,
         userPool: userPool,
         attributeRequestMethod: OidcAttributeRequestMethod.GET,
         scopes: ["openid", "profile", "email", "nhsperson", "nationalrbacaccess", "associatedorgs"],
@@ -239,7 +228,7 @@ export class Cognito extends Construct {
 
     // ensure dependencies are set correctly so items are created in the correct order
     userPoolWebClient.node.addDependency(primaryPoolIdentityProvider)
-    if (props.useMockOidc) {
+    if (props.mockOidcConfig) {
       userPoolWebClient.node.addDependency(mockPoolIdentityProvider)
     }
 
@@ -248,6 +237,6 @@ export class Cognito extends Construct {
     this.userPoolClient = userPoolWebClient
     this.userPoolDomain = userPoolDomain
     this.primaryPoolIdentityProvider = primaryPoolIdentityProvider
-    this.mockPoolIdentityProvider = mockPoolIdentityProvider!
+    this.mockPoolIdentityProvider = mockPoolIdentityProvider
   }
 }

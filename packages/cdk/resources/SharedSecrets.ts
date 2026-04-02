@@ -9,16 +9,22 @@ import {
   PolicyDocument,
   AccountRootPrincipal
 } from "aws-cdk-lib/aws-iam"
-import {SecretValue, RemovalPolicy, Duration} from "aws-cdk-lib"
+import {
+  SecretValue,
+  RemovalPolicy,
+  Duration,
+  CfnParameter
+} from "aws-cdk-lib"
 
 // Interface defining the properties for SharedSecrets construct
 export interface SharedSecretsProps {
   readonly stackName: string
   readonly deploymentRole: IRole
   readonly useMockOidc?: boolean
-  readonly apigeeApiKey: string
-  readonly apigeeApiSecret: string
-  readonly apigeeDoHSApiKey: string
+  readonly apigeeApiKey: CfnParameter
+  readonly apigeeSecretKey: CfnParameter
+  readonly apigeeDoHSApiKey: CfnParameter
+  readonly jwtPrivateKey: CfnParameter
 }
 
 // Construct for managing shared secrets and associated resources
@@ -31,7 +37,7 @@ export class SharedSecrets extends Construct {
   public readonly getMockJwtPrivateKeyPolicy: ManagedPolicy
   public readonly apigeeSecretsKmsKey: IKey
   public readonly apigeeApiKey: Secret
-  public readonly apigeeApiSecret: Secret
+  public readonly apigeeSecretKey: Secret
   public readonly apigeeDoHSApiKey: Secret
   public readonly getApigeeSecretsPolicy: ManagedPolicy
 
@@ -90,19 +96,20 @@ export class SharedSecrets extends Construct {
         ]
       })
     })
-    this.apigeeApiKey = new Secret(this, "ApigeeApiKey", {
+
+    this.apigeeApiKey = new Secret(this, "ApigeeApiKeySecret", {
       secretName: `${props.stackName}-apigeeApiKey`,
-      secretStringValue: SecretValue.unsafePlainText(props.apigeeApiKey),
+      secretStringValue: SecretValue.cfnParameter(props.apigeeApiKey),
       encryptionKey: this.apigeeSecretsKmsKey
     })
-    this.apigeeApiSecret = new Secret(this, "ApigeeApiSecret", {
-      secretName: `${props.stackName}-apigeeApiSecret`,
-      secretStringValue: SecretValue.unsafePlainText(props.apigeeApiSecret),
+    this.apigeeSecretKey = new Secret(this, "ApigeeSecretKeySecret", {
+      secretName: `${props.stackName}-apigeeSecretKey`,
+      secretStringValue: SecretValue.cfnParameter(props.apigeeSecretKey),
       encryptionKey: this.apigeeSecretsKmsKey
     })
-    this.apigeeDoHSApiKey = new Secret(this, "ApigeeDoHSApiKey", {
+    this.apigeeDoHSApiKey = new Secret(this, "ApigeeDoHSApiKeySecret", {
       secretName: `${props.stackName}-apigeeDoHSApiKey`,
-      secretStringValue: SecretValue.unsafePlainText(props.apigeeDoHSApiKey),
+      secretStringValue: SecretValue.cfnParameter(props.apigeeDoHSApiKey),
       encryptionKey: this.apigeeSecretsKmsKey
     })
 
@@ -113,7 +120,7 @@ export class SharedSecrets extends Construct {
           actions: ["secretsmanager:GetSecretValue"],
           resources: [
             this.apigeeApiKey.secretArn,
-            this.apigeeApiSecret.secretArn,
+            this.apigeeSecretKey.secretArn,
             this.apigeeDoHSApiKey.secretArn]
         }),
         new PolicyStatement({
@@ -139,19 +146,9 @@ export class SharedSecrets extends Construct {
     // Create the primary JWT private key secret
     this.primaryJwtPrivateKey = new Secret(this, "PrimaryJwtPrivateKey", {
       secretName: `${props.stackName}-primaryJwtPrivateKey`,
-      secretStringValue: SecretValue.unsafePlainText("ChangeMe"),
+      secretStringValue: SecretValue.cfnParameter(props.jwtPrivateKey),
       encryptionKey: this.jwtKmsKey
     })
-
-    // Add a policy to allow the deployment role to update the secret
-    this.primaryJwtPrivateKey.addToResourcePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        principals: [props.deploymentRole],
-        actions: ["secretsmanager:PutSecretValue"],
-        resources: ["*"]
-      })
-    )
 
     // Create a managed policy to allow getting the primary JWT private key secret
     this.getPrimaryJwtPrivateKeyPolicy = new ManagedPolicy(this, "GetPrimaryJwtPrivateKeyPolicy", {
@@ -167,19 +164,9 @@ export class SharedSecrets extends Construct {
     if (props.useMockOidc) {
       this.mockJwtPrivateKey = new Secret(this, "MockJwtPrivateKey", {
         secretName: `${props.stackName}-mockJwtPrivateKey`,
-        secretStringValue: SecretValue.unsafePlainText("mock-secret"),
+        secretStringValue: SecretValue.cfnParameter(props.jwtPrivateKey),
         encryptionKey: this.jwtKmsKey
       })
-
-      // Add a policy to allow the deployment role to update the mock secret
-      this.mockJwtPrivateKey.addToResourcePolicy(
-        new PolicyStatement({
-          effect: Effect.ALLOW,
-          principals: [props.deploymentRole],
-          actions: ["secretsmanager:PutSecretValue"],
-          resources: ["*"]
-        })
-      )
 
       // Create a managed policy to allow getting the mock JWT private key secret
       this.getMockJwtPrivateKeyPolicy = new ManagedPolicy(this, "GetMockJwtPrivateKeyPolicy", {

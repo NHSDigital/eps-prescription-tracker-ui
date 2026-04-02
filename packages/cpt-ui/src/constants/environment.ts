@@ -3,9 +3,9 @@ export const AUTH_CONFIG = {
   USER_POOL_ID: import.meta.env.VITE_userPoolId,
   USER_POOL_CLIENT_ID: import.meta.env.VITE_userPoolClientId,
   HOSTED_LOGIN_DOMAIN: import.meta.env.VITE_hostedLoginDomain,
-  REDIRECT_SIGN_IN: import.meta.env.VITE_redirectSignIn,
-  REDIRECT_SIGN_OUT: import.meta.env.VITE_redirectSignOut,
-  REDIRECT_SESSION_SIGN_OUT: import.meta.env.VITE_redirectSessionSignOut
+  REDIRECT_SIGN_IN: `https://${import.meta.env.VITE_fullCloudfrontDomain}/site/select-your-role`,
+  REDIRECT_SIGN_OUT: `https://${import.meta.env.VITE_fullCloudfrontDomain}/site/logout`,
+  REDIRECT_SESSION_SIGN_OUT: `https://${import.meta.env.VITE_fullCloudfrontDomain}/site/session-logged-out`
 } as const
 
 // Environment Configuration
@@ -13,7 +13,6 @@ export const ENV_CONFIG = {
   TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT || "prod",
   API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
   BASE_PATH: import.meta.env.BASE_PATH || "site",
-  LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true",
   BASE_URL: import.meta.env.BASE_URL,
   BASE_URL_PATH: `${import.meta.env.BASE_URL}/${import.meta.env.BASE_PATH || "site"}/`,
   RUM_ERROR_TIMER_INTERVAL: Number(import.meta.env.VITE_RUM_ERROR_TIMER_INTERVAL) || 10000
@@ -46,10 +45,6 @@ export const RUM_CONFIG = {
   APPLICATION_ID: import.meta.env.VITE_RUM_APPLICATION_ID,
   REGION: "eu-west-2",
   VERSION: "1.0.0",
-  ALLOW_COOKIES: import.meta.env.VITE_RUM_ALLOW_COOKIES === "true",
-  ENABLE_XRAY: import.meta.env.VITE_RUM_ENABLE_XRAY === "true",
-  SESSION_SAMPLE_RATE: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
-  TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES?.split(",") || [],
   RELEASE_ID: import.meta.env.VITE_COMMIT_ID
 } as const
 

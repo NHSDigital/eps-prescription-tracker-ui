@@ -31,42 +31,44 @@ export class OAuth2ApiGatewayMethods extends Construct {
       props.oauth2APiGatewayRole.addManagedPolicy(policy)
     }
 
-    const tokenResource = props.oauth2ApiGateway.root.addResource("token")
+    const oauth2Root = props.oauth2ApiGateway.root.addResource("oauth2")
+
+    const tokenResource = oauth2Root.addResource("token")
     tokenResource.addMethod("POST", new LambdaIntegration(props.tokenLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
 
     // mock token endpoint
     if (props.useMockOidc) {
-      const mockTokenResource = props.oauth2ApiGateway.root.addResource("mock-token")
+      const mockTokenResource = oauth2Root.addResource("mock-token")
       mockTokenResource.addMethod("POST", new LambdaIntegration(props.mockTokenLambda, {
         credentialsRole: props.oauth2APiGatewayRole
       }))
     }
 
     // Authorize redirection endpoint
-    const authorizeResource = props.oauth2ApiGateway.root.addResource("authorize")
+    const authorizeResource = oauth2Root.addResource("authorize")
     authorizeResource.addMethod("GET", new LambdaIntegration(props.authorizeLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
 
     // MOCK Authorize redirection endpoint
     if (props.useMockOidc) {
-      const mockAuthorizeResource = props.oauth2ApiGateway.root.addResource("mock-authorize")
+      const mockAuthorizeResource = oauth2Root.addResource("mock-authorize")
       mockAuthorizeResource.addMethod("GET", new LambdaIntegration(props.mockAuthorizeLambda, {
         credentialsRole: props.oauth2APiGatewayRole
       }))
     }
 
     // Return journey login callback.
-    const callbackResource = props.oauth2ApiGateway.root.addResource("callback")
+    const callbackResource = oauth2Root.addResource("callback")
     callbackResource.addMethod("GET", new LambdaIntegration(props.callbackLambda, {
       credentialsRole: props.oauth2APiGatewayRole
     }))
 
     // Return journey login callback.
     if (props.useMockOidc) {
-      const mockCallbackResource = props.oauth2ApiGateway.root.addResource("mock-callback")
+      const mockCallbackResource = oauth2Root.addResource("mock-callback")
       mockCallbackResource.addMethod("GET", new LambdaIntegration(props.mockCallbackLambda, {
         credentialsRole: props.oauth2APiGatewayRole
       }))

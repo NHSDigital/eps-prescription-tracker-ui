@@ -200,7 +200,7 @@ repos:
       - id: lint-githubactions
         name: Lint github actions
         entry: make
-        args: ["lint-githubactions"]
+        args: ["actionlint"]
         language: system
         files: ^.github
         types_or: [yaml]
