@@ -160,7 +160,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({
         !originalSearchParameters ||
         originalSearchParameters.searchType !== searchType
       ) {
-        logger.info("Navigation: No relevant search parameters found", {
+        logger.debug("Navigation: No relevant search parameters found", {
           searchType,
           originalSearchParameters
         })
