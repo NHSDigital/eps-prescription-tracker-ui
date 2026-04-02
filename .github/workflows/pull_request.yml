@@ -26,6 +26,8 @@ jobs:
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
   get_commit_message:
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     outputs:
       commit_message: ${{ steps.commit_message.outputs.commit_message }}
     steps:
