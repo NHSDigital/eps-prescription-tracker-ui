@@ -16,8 +16,6 @@ inputs:
     description: "COMMIT_ID"
   useMockOidc:
     description: "useMockOidc"
-  RUN_REGRESSION_TESTS:
-    description: "RUN_REGRESSION_TESTS"
   primaryOidcIssuer:
     description: "primaryOidcIssuer"
   primaryOidcAuthorizeEndpoint:
@@ -76,18 +74,31 @@ inputs:
   FORWARD_CSOC_LOGS:
     description: "FORWARD_CSOC_LOGS"
     required: true
-  pinned_image:
-    description: "pinned_image"
+  CIS2_OIDC_CLIENT_ID:
+    description: "CIS2_OIDC_CLIENT_ID"
     required: true
-
+  MOCK_OIDC_CLIENT_ID:
+    description: "MOCK_OIDC_CLIENT_ID"
+    required: true
+  APIGEE_API_KEY:
+    description: "APIGEE_API_KEY"
+    required: true
+  APIGEE_API_SECRET:
+    description: "APIGEE_API_SECRET"
+    required: true
+  APIGEE_DOHS_API_KEY:
+    description: "APIGEE_DOHS_API_KEY"
+    required: true
+  CLOUDFRONT_ORIGIN_CUSTOM_HEADER:
+    description: "CLOUDFRONT_ORIGIN_CUSTOM_HEADER"
+    required: true
+  JWT_PRIVATE_KEY:
+    description: "JWT_PRIVATE_KEY"
+    required: true
 
 runs:
   using: "composite"
   steps:
-    - name: copy .tool-versions
-      shell: bash
-      run: |
-        cp /home/vscode/.tool-versions "$HOME/.tool-versions"
     - name: Checkout local github actions
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
@@ -102,6 +113,7 @@ runs:
         name: build_artifact
 
     - name: extract build_artifact
+      shell: bash
       run: |
         mkdir -p .build
         tar -xf artifact.tar -C .build
@@ -111,7 +123,7 @@ runs:
       uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
       with:
         aws-region: eu-west-2
-        role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+        role-to-assume: ${{ inputs.CLOUD_FORMATION_DEPLOY_ROLE }}
         role-session-name: prescription-clinical-tracker-ui-deployment
         output-credentials: true
 
@@ -164,6 +176,7 @@ runs:
         SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
     - name: fix cdk.json for deployment stateful stack
+      shell: bash
       run: |
         ./.github/scripts/fix_cdk_json.sh .build/stateful_resources.json
         echo "******"
@@ -175,13 +188,13 @@ runs:
         LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
         AUTO_DELETE_OBJECTS: "true"
         USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
-        PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+        PRIMARY_OIDC_CLIENT_ID: "${{ inputs.CIS2_OIDC_CLIENT_ID }}"
         PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
         PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
         PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
         PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
         PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-        MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+        MOCK_OIDC_CLIENT_ID: "${{ inputs.MOCK_OIDC_CLIENT_ID }}"
         MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
         MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
         MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -194,16 +207,16 @@ runs:
         APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
         APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
         APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
-        APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
-        APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-        APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+        APIGEE_API_KEY: ${{ inputs.APIGEE_API_KEY }}
+        APIGEE_API_SECRET: ${{ inputs.APIGEE_API_SECRET }}
+        APIGEE_DOHS_API_KEY: ${{ inputs.APIGEE_DOHS_API_KEY }}
         JWT_KID: ${{ inputs.JWT_KID }}
         ROLE_ID: ${{ inputs.ROLE_ID }}
         CDK_APP_NAME: StatefulResourcesApp
         USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
         ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
         WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
-        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{inputs.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
         IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
         FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
 
@@ -219,6 +232,7 @@ runs:
       env:
         CONFIG_FILE_NAME: stateful_resources.json
     - name: Set Environment Variables for website deployment
+      shell: bash
       id: setup_env_website_deployment
       run: |
         CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
@@ -252,6 +266,7 @@ runs:
         SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
     - name: build react app
+      shell: bash
       run: |
         export VITE_hostedLoginDomain=${hostedLoginDomain}
         export VITE_userPoolClientId=${userPoolClientId}
@@ -280,6 +295,7 @@ runs:
         VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
 
     - name: deploy website
+      shell: bash
       run: |
         staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
         aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
@@ -290,6 +306,7 @@ runs:
         aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${COMMIT_ID}/site/assets/" --exclude "*" --include "*.map" --recursive
 
     - name: fix cdk.json for deployment for stateless stack
+      shell: bash
       run: |
         ./.github/scripts/fix_cdk_json.sh .build/stateless_resources.json
       env:
@@ -300,13 +317,13 @@ runs:
         LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
         AUTO_DELETE_OBJECTS: "true"
         USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
-        PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+        PRIMARY_OIDC_CLIENT_ID: "${{ inputs.CIS2_OIDC_CLIENT_ID }}"
         PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
         PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
         PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
         PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
         PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-        MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+        MOCK_OIDC_CLIENT_ID: "${{ inputs.MOCK_OIDC_CLIENT_ID }}"
         MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
         MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
         MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -319,16 +336,16 @@ runs:
         APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
         APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
         APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
-        APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
-        APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-        APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+        APIGEE_API_KEY: ${{ inputs.APIGEE_API_KEY }}
+        APIGEE_API_SECRET: ${{ inputs.APIGEE_API_SECRET }}
+        APIGEE_DOHS_API_KEY: ${{ inputs.APIGEE_DOHS_API_KEY }}
         JWT_KID: ${{ inputs.JWT_KID }}
         ROLE_ID: ${{ inputs.ROLE_ID }}
         CDK_APP_NAME: StatelessResourcesApp
         USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
         ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
         WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
-        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{inputs.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
         IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
         FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
         TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
@@ -409,10 +426,11 @@ runs:
         fi
       env:
         VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
-        JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+        JWT_PRIVATE_KEY: ${{ inputs.JWT_PRIVATE_KEY }}
         SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
     - name: fix cdk.json for deployment for stateful stack redeployment
+      shell: bash
       if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
       run: |
         ./.github/scripts/fix_cdk_json.sh .build/stateful_resources.json
@@ -424,13 +442,13 @@ runs:
         LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
         AUTO_DELETE_OBJECTS: "true"
         USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
-        PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+        PRIMARY_OIDC_CLIENT_ID: "${{ inputs.CIS2_OIDC_CLIENT_ID }}"
         PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
         PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
         PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
         PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
         PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
-        MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+        MOCK_OIDC_CLIENT_ID: "${{ inputs.MOCK_OIDC_CLIENT_ID }}"
         MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
         MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
         MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
@@ -443,16 +461,16 @@ runs:
         APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
         APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
         APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
-        APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
-        APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
-        APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+        APIGEE_API_KEY: ${{ inputs.APIGEE_API_KEY }}
+        APIGEE_API_SECRET: ${{ inputs.APIGEE_API_SECRET }}
+        APIGEE_DOHS_API_KEY: ${{ inputs.APIGEE_DOHS_API_KEY }}
         JWT_KID: ${{ inputs.JWT_KID }}
         ROLE_ID: ${{ inputs.ROLE_ID }}
         CDK_APP_NAME: StatefulResourcesApp
         USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
         ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
         WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
-        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ inputs.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
         IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
         FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
 
