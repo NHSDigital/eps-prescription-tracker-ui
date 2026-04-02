@@ -58,10 +58,14 @@ export default function BasicDetailsSearch() {
     if (errors.length > 0 && errorRef.current) {
       errorRef.current.focus()
     }
+  }, [errors])
+
+  useEffect(() => {
+    // Clear the before-unload guard when leaving/unmounting this page
     return () => {
       auth.clearBeforeUnloadGuard()
     }
-  }, [errors])
+  }, [])
 
   // restore original search parameters when available
   useEffect(() => {
