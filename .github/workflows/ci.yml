@@ -64,6 +64,9 @@ jobs:
   release_dev:
     needs: [tag_release, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
+    permissions:
+      contents: write
+      id-token: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       SERVICE_NAME: cpt-ui
@@ -102,6 +105,9 @@ jobs:
   release_qa:
     needs: [tag_release, release_dev, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
+    permissions:
+      contents: write
+      id-token: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       SERVICE_NAME: cpt-ui
