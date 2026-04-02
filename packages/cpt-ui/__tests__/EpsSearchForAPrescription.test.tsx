@@ -129,7 +129,7 @@ describe("SearchForAPrescription", () => {
   it("renders the warning callout content", () => {
     renderWithProviders(<SearchForAPrescription />)
 
-    expect(screen.getByTestId("search-warning-callout")).toBeInTheDocument()
+    expect(screen.getByTestId("warning-callout")).toBeInTheDocument()
     expect(screen.getByTestId("callout-heading")).toHaveTextContent("Important")
     expect(screen.getByTestId("callout-description")).toHaveTextContent(
       "By using the Prescription Tracker, you are taking part in a private beta and"
