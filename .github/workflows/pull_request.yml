@@ -275,6 +275,7 @@ jobs:
           APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
     if: |

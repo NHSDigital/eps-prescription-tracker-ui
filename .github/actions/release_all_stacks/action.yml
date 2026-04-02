@@ -95,6 +95,9 @@ inputs:
   JWT_PRIVATE_KEY:
     description: "JWT_PRIVATE_KEY"
     required: true
+  CLOUD_FORMATION_DEPLOY_ROLE:
+    description: "CLOUD_FORMATION_DEPLOY_ROLE"
+    required: true
 
 runs:
   using: "composite"
