@@ -1,0 +1,470 @@
+name: release_all_stacks
+description: "release all stacks"
+
+inputs:
+  SERVICE_NAME:
+    required: true
+    description: "SERVICE_NAME"
+  TARGET_ENVIRONMENT:
+    required: true
+    description: "TARGET_ENVIRONMENT"
+  VERSION_NUMBER:
+    required: true
+    description: "VERSION_NUMBER"
+  COMMIT_ID:
+    required: true
+    description: "COMMIT_ID"
+  useMockOidc:
+    description: "useMockOidc"
+  RUN_REGRESSION_TESTS:
+    description: "RUN_REGRESSION_TESTS"
+  primaryOidcIssuer:
+    description: "primaryOidcIssuer"
+  primaryOidcAuthorizeEndpoint:
+    description: "primaryOidcAuthorizeEndpoint"
+  primaryOidcTokenEndpoint:
+    description: "primaryOidcTokenEndpoint"
+  primaryOidcUserInfoEndpoint:
+    description: "primaryOidcUserInfoEndpoint"
+  primaryOidcjwksEndpoint:
+    description: "primaryOidcjwksEndpoint"
+  mockOidcIssuer:
+    description: "mockOidcIssuer"
+  mockOidcAuthorizeEndpoint:
+    description: "mockOidcAuthorizeEndpoint"
+  mockOidcTokenEndpoint:
+    description: "mockOidcTokenEndpoint"
+  mockOidcUserInfoEndpoint:
+    description: "mockOidcUserInfoEndpoint"
+  mockOidcjwksEndpoint:
+    description: "mockOidcjwksEndpoint"
+  allowLocalhostAccess:
+    description: "allowLocalhostAccess"
+  useCustomCognitoDomain:
+    description: "useCustomCognitoDomain"
+  LOG_LEVEL:
+    description: "LOG_LEVEL"
+  APIGEE_CIS2_TOKEN_ENDPOINT:
+    description: "APIGEE_CIS2_TOKEN_ENDPOINT"
+  APIGEE_MOCK_TOKEN_ENDPOINT:
+    description: "APIGEE_MOCK_TOKEN_ENDPOINT"
+  APIGEE_PRESCRIPTIONS_ENDPOINT:
+    description: "APIGEE_PRESCRIPTIONS_ENDPOINT"
+  APIGEE_PDS_ENDPOINT:
+    description: "APIGEE_PDS_ENDPOINT"
+  APIGEE_DOHS_ENDPOINT:
+    description: "APIGEE_DOHS_ENDPOINT"
+  JWT_KID:
+    description: "JWT_KID"
+  ROLE_ID:
+    description: "ROLE_ID"
+  WAF_ALLOW_GA_RUNNER_CONNECTIVITY:
+    description: "WAF_ALLOW_GA_RUNNER_CONNECTIVITY"
+  USE_ZONE_APEX:
+    description: If this is set to true, then the website is deployed using name of the apex of the route 53 zone, otherwise it deploys at cpt-ui..
+  ROUTE53_EXPORT_NAME:
+    description: This is the part of the route53 export name to use to identify the route 53 zone where the domain names are created - can be either EPS (for *.national.nhs.uk) or CPT (for prescriptiontracker.nhs.uk)
+  REACT_LOG_LEVEL:
+    description: "REACT_LOG_LEVEL"
+    required: true
+  LOG_RETENTION_IN_DAYS:
+    description: "LOG_RETENTION_IN_DAYS"
+    required: true
+  IS_PULL_REQUEST:
+    description: "IS_PULL_REQUEST"
+    required: true
+  FORWARD_CSOC_LOGS:
+    description: "FORWARD_CSOC_LOGS"
+    required: true
+  pinned_image:
+    description: "pinned_image"
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: copy .tool-versions
+      shell: bash
+      run: |
+        cp /home/vscode/.tool-versions "$HOME/.tool-versions"
+    - name: Checkout local github actions
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+        sparse-checkout: |
+          .github
+
+    - name: build_artifact download
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: build_artifact
+
+    - name: extract build_artifact
+      run: |
+        mkdir -p .build
+        tar -xf artifact.tar -C .build
+
+    - name: Configure AWS Credentials
+      id: connect_aws_for_deployment
+      uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
+      with:
+        aws-region: eu-west-2
+        role-to-assume: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+        role-session-name: prescription-clinical-tracker-ui-deployment
+        output-credentials: true
+
+    - name: check redeploy stateful stack
+      id: check_redeploy_stateful_stack
+      run: |
+        CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+        CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
+            jq \
+            --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+            -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+            jq \
+            --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Arn" \
+            -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
+            jq \
+            --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
+            -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
+            jq \
+            --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
+            -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        REDEPLOY_STATEFUL_STACK="false"
+
+        if [ -z "${CLOUDFRONT_DISTRIBUTION_ID}" ]; then
+          echo "CLOUDFRONT_DISTRIBUTION_ID not found - setting redeploy stateful stack to true"
+          REDEPLOY_STATEFUL_STACK="true"
+        fi
+        if [ -z "${CLOUDFRONT_DISTRIBUTION_ARN}" ]; then
+          echo "CLOUDFRONT_DISTRIBUTION_ARN not found - setting redeploy stateful stack to true"
+          REDEPLOY_STATEFUL_STACK="true"
+        fi
+        if [ -z "${RUM_LOG_GROUP_ARN}" ]; then
+          echo "RUM_LOG_GROUP_ARN not found - setting redeploy stateful stack to true"
+          REDEPLOY_STATEFUL_STACK="true"
+        fi
+        if [ -z "${RUM_APP_NAME}" ]; then
+          echo "RUM_APP_NAME not found - setting redeploy stateful stack to true"
+          REDEPLOY_STATEFUL_STACK="true"
+        fi
+
+        if [ "${REDEPLOY_STATEFUL_STACK}" == "false" ]; then
+          echo "Everything already set - setting redeploy stateful stack to false"
+        fi
+
+        echo "REDEPLOY_STATEFUL_STACK=$REDEPLOY_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
+      shell: bash
+      env:
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+
+    - name: fix cdk.json for deployment stateful stack
+      run: |
+        ./.github/scripts/fix_cdk_json.sh .build/stateful_resources.json
+        echo "******"
+      env:
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+        VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
+        COMMIT_ID: "${{ inputs.COMMIT_ID }}"
+        LOG_RETENTION_IN_DAYS: ${{ inputs.LOG_RETENTION_IN_DAYS }}
+        LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
+        AUTO_DELETE_OBJECTS: "true"
+        USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
+        PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+        PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
+        PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
+        PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
+        PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
+        PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
+        MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+        MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
+        MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
+        MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
+        MOCK_OIDC_USERINFO_ENDPOINT: "${{ inputs.mockOidcUserInfoEndpoint }}"
+        MOCK_OIDC_JWKS_ENDPOINT: ${{ inputs.mockOidcjwksEndpoint }}
+        USE_CUSTOM_COGNITO_DOMAIN: ${{ inputs.useCustomCognitoDomain }}
+        ALLOW_LOCALHOST_ACCESS: ${{ inputs.allowLocalhostAccess }}
+        APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
+        APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
+        APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
+        APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+        APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
+        APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+        APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
+        APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+        JWT_KID: ${{ inputs.JWT_KID }}
+        ROLE_ID: ${{ inputs.ROLE_ID }}
+        CDK_APP_NAME: StatefulResourcesApp
+        USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+        ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
+        WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+        IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
+        FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+
+    - name: Deploy for stateful stack
+      run: |
+        cd .build
+        npx cdk deploy \
+        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
+        --all \
+        --require-approval=never \
+        --ci true
+      shell: bash
+      env:
+        CONFIG_FILE_NAME: stateful_resources.json
+    - name: Set Environment Variables for website deployment
+      id: setup_env_website_deployment
+      run: |
+        CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+        CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
+        hostedLoginDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        userPoolClientId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        userPoolId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPool:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        fullCloudfrontDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCloudfrontDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumUnauthenticatedRumRoleArn=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:unauthenticatedRumRole:Arn" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumIdentityPoolId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:identityPool:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumAppId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumAllowCookies=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:allowCookies" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumEnableXRay=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:enableXRay" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumSessionSampleRate=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:sessionSampleRate" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        rumTelemetries=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:config:telemetries" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
+        {
+          echo "hostedLoginDomain=${hostedLoginDomain}"
+          echo "userPoolClientId=${userPoolClientId}"
+          echo "userPoolId=${userPoolId}"
+          echo "fullCloudfrontDomain=${fullCloudfrontDomain}"
+          echo "rumUnauthenticatedRumRoleArn=${rumUnauthenticatedRumRoleArn}"
+          echo "rumIdentityPoolId=${rumIdentityPoolId}"
+          echo "rumAppId=${rumAppId}"
+          echo "rumAllowCookies=${rumAllowCookies}"
+          echo "rumEnableXRay=${rumEnableXRay}"
+          echo "rumSessionSampleRate=${rumSessionSampleRate}"
+          echo "rumTelemetries=${rumTelemetries}"
+          } >> "$GITHUB_ENV"
+      env:
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+
+    - name: build react app
+      run: |
+        export VITE_hostedLoginDomain=${hostedLoginDomain}
+        export VITE_userPoolClientId=${userPoolClientId}
+        export VITE_userPoolId=${userPoolId}
+        export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-your-role"
+        export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
+        export VITE_redirectSessionSignOut="https://${fullCloudfrontDomain}/site/session-logged-out"
+        export VITE_COMMIT_ID=${COMMIT_ID}
+        export VITE_VERSION_NUMBER=${VERSION_NUMBER}
+        export VITE_TARGET_ENVIRONMENT=${TARGET_ENVIRONMENT}
+        export VITE_RUM_GUEST_ROLE_ARN=${rumUnauthenticatedRumRoleArn}
+        export VITE_RUM_IDENTITY_POOL_ID=${rumIdentityPoolId}
+        export VITE_RUM_APPLICATION_ID=${rumAppId}
+        export VITE_RUM_ALLOW_COOKIES=${rumAllowCookies}
+        export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}
+        export VITE_RUM_SESSION_SAMPLE_RATE=${rumSessionSampleRate}
+        export VITE_RUM_TELEMETRIES=${rumTelemetries}
+        export VITE_REACT_LOG_LEVEL=${REACT_LOG_LEVEL}
+
+        cd .build
+        make react-build
+      env:
+        REACT_LOG_LEVEL: ${{ inputs.REACT_LOG_LEVEL }}
+        TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+        COMMIT_ID: ${{ inputs.COMMIT_ID }}
+        VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+
+    - name: deploy website
+      run: |
+        staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
+        aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
+        aws s3 cp ".build/packages/staticContent/404.css" "s3://${staticBucketName}/404.css"
+        aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
+        aws s3 cp ".build/packages/staticContent/jwks/${TARGET_ENVIRONMENT}/jwks.json" "s3://${staticBucketName}/jwks.json"
+        aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${VERSION_NUMBER}/"
+        aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${COMMIT_ID}/site/assets/" --exclude "*" --include "*.map" --recursive
+
+    - name: fix cdk.json for deployment for stateless stack
+      run: |
+        ./.github/scripts/fix_cdk_json.sh .build/stateless_resources.json
+      env:
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+        VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
+        COMMIT_ID: "${{ inputs.COMMIT_ID }}"
+        LOG_RETENTION_IN_DAYS: ${{ inputs.LOG_RETENTION_IN_DAYS }}
+        LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
+        AUTO_DELETE_OBJECTS: "true"
+        USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
+        PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+        PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
+        PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
+        PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
+        PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
+        PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
+        MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+        MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
+        MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
+        MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
+        MOCK_OIDC_USERINFO_ENDPOINT: "${{ inputs.mockOidcUserInfoEndpoint }}"
+        MOCK_OIDC_JWKS_ENDPOINT: ${{ inputs.mockOidcjwksEndpoint }}
+        USE_CUSTOM_COGNITO_DOMAIN: ${{ inputs.useCustomCognitoDomain }}
+        ALLOW_LOCALHOST_ACCESS: ${{ inputs.allowLocalhostAccess }}
+        APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
+        APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
+        APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
+        APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+        APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
+        APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+        APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
+        APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+        JWT_KID: ${{ inputs.JWT_KID }}
+        ROLE_ID: ${{ inputs.ROLE_ID }}
+        CDK_APP_NAME: StatelessResourcesApp
+        USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+        ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
+        WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+        IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
+        FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+        TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+
+    - name: Deploy code for stateless stack
+      run: |
+        cd .build
+        npx cdk deploy \
+        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
+        --all \
+        --require-approval=never \
+        --ci true
+      shell: bash
+      env:
+        CONFIG_FILE_NAME: stateless_resources.json
+    - name: update cloudfront kvs
+      id: update_cloudfront_kvs
+      shell: bash
+      run: |
+        CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+        keyValueStore=$(echo "$CF_LONDON_EXPORTS" | \
+            jq \
+            --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:KeyValueStore:Arn" \
+            -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+        cloudfrontDistributionId=$(echo "$CF_LONDON_EXPORTS" | \
+            jq \
+            --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+            -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          primaryJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:primaryJwtPrivateKey:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          mockJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:mockJwtPrivateKey:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+
+        newVersion="${VERSION_NUMBER}"
+
+        ETag=$(aws cloudfront-keyvaluestore describe-key-value-store \
+            --kvs-arn="$keyValueStore" \
+            --query ETag --output text)
+
+        existing_keys=$(aws cloudfront-keyvaluestore list-keys --kvs-arn "$keyValueStore" --query "Items[?Key=='site_version']" --output text)
+
+        # Check if "version" key exists
+        if [[ -z "$existing_keys" ]]; then
+          # Insert a new "version" key
+          aws cloudfront-keyvaluestore put-key \
+            --if-match="${ETag}" \
+            --key=site_version \
+            --value="$newVersion"\
+            --kvs-arn "$keyValueStore"
+          echo "Inserted new 'site_version' key with value $newVersion."
+        else
+          # Update the existing "version" key
+          aws cloudfront-keyvaluestore update-keys \
+            --if-match="${ETag}" \
+            --kvs-arn "$keyValueStore" \
+            --puts Key=site_version,Value="$newVersion"
+          echo "Updated the 'site_version' key to $newVersion."
+        fi
+
+        # invalidate the cache
+        aws cloudfront create-invalidation --distribution-id "${cloudfrontDistributionId}" --paths '/*'
+
+        # set the primaryJwtPrivateKeyArn secret
+        if [ -z "${primaryJwtPrivateKeyArn}" ]; then
+          echo "primaryJwtPrivateKeyArn is unset or set to the empty string"
+        else
+          aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${JWT_PRIVATE_KEY}"
+        fi
+        # set the mockJwtPrivateKeyArn secret
+        if [ -z "${mockJwtPrivateKeyArn}" ]; then
+          echo "mockJwtPrivateKeyArn is unset or set to the empty string"
+        else
+          aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${JWT_PRIVATE_KEY}"
+        fi
+      env:
+        VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+        JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+
+    - name: fix cdk.json for deployment for stateful stack redeployment
+      if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
+      run: |
+        ./.github/scripts/fix_cdk_json.sh .build/stateful_resources.json
+      env:
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+        VERSION_NUMBER: "${{ inputs.VERSION_NUMBER }}"
+        COMMIT_ID: "${{ inputs.COMMIT_ID }}"
+        LOG_RETENTION_IN_DAYS: ${{ inputs.LOG_RETENTION_IN_DAYS }}
+        LOG_LEVEL: "${{ inputs.LOG_LEVEL }}"
+        AUTO_DELETE_OBJECTS: "true"
+        USE_MOCK_OIDC: "${{ inputs.useMockOidc }}"
+        PRIMARY_OIDC_CLIENT_ID: "${{ secrets.CIS2_OIDC_CLIENT_ID }}"
+        PRIMARY_OIDC_ISSUER: "${{ inputs.primaryOidcIssuer }}"
+        PRIMARY_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.primaryOidcAuthorizeEndpoint }}"
+        PRIMARY_OIDC_TOKEN_ENDPOINT: "${{ inputs.primaryOidcTokenEndpoint }}"
+        PRIMARY_OIDC_USERINFO_ENDPOINT: "${{ inputs.primaryOidcUserInfoEndpoint }}"
+        PRIMARY_OIDC_JWKS_ENDPOINT: "${{ inputs.primaryOidcjwksEndpoint }}"
+        MOCK_OIDC_CLIENT_ID: "${{ secrets.MOCK_OIDC_CLIENT_ID }}"
+        MOCK_OIDC_ISSUER: "${{ inputs.mockOidcIssuer }}"
+        MOCK_OIDC_AUTHORIZE_ENDPOINT: "${{ inputs.mockOidcAuthorizeEndpoint }}"
+        MOCK_OIDC_TOKEN_ENDPOINT: "${{ inputs.mockOidcTokenEndpoint }}"
+        MOCK_OIDC_USERINFO_ENDPOINT: "${{ inputs.mockOidcUserInfoEndpoint }}"
+        MOCK_OIDC_JWKS_ENDPOINT: ${{ inputs.mockOidcjwksEndpoint }}
+        USE_CUSTOM_COGNITO_DOMAIN: ${{ inputs.useCustomCognitoDomain }}
+        ALLOW_LOCALHOST_ACCESS: ${{ inputs.allowLocalhostAccess }}
+        APIGEE_CIS2_TOKEN_ENDPOINT: ${{ inputs.APIGEE_CIS2_TOKEN_ENDPOINT }}
+        APIGEE_MOCK_TOKEN_ENDPOINT: ${{ inputs.APIGEE_MOCK_TOKEN_ENDPOINT }}
+        APIGEE_PRESCRIPTION_ENDPOINT: ${{ inputs.APIGEE_PRESCRIPTIONS_ENDPOINT }}
+        APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT: ${{ inputs.APIGEE_PDS_ENDPOINT }}
+        APIGEE_DOHS_ENDPOINT: ${{ inputs.APIGEE_DOHS_ENDPOINT }}
+        APIGEE_API_KEY: ${{ secrets.APIGEE_API_KEY }}
+        APIGEE_API_SECRET: ${{ secrets.APIGEE_API_SECRET }}
+        APIGEE_DOHS_API_KEY: ${{ secrets.APIGEE_DOHS_API_KEY }}
+        JWT_KID: ${{ inputs.JWT_KID }}
+        ROLE_ID: ${{ inputs.ROLE_ID }}
+        CDK_APP_NAME: StatefulResourcesApp
+        USE_ZONE_APEX: ${{ inputs.USE_ZONE_APEX }}
+        ROUTE53_EXPORT_NAME: ${{ inputs.ROUTE53_EXPORT_NAME }}
+        WAF_ALLOW_GA_RUNNER_CONNECTIVITY: ${{ inputs.WAF_ALLOW_GA_RUNNER_CONNECTIVITY }}
+        CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
+        IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
+        FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+
+    - name: Deploy code for stateful stack redeployment
+      if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
+      run: |
+        cd .build
+        npx cdk deploy \
+        --app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" \
+        --all \
+        --require-approval=never \
+        --ci true
+      shell: bash
+      env:
+        CONFIG_FILE_NAME: stateful_resources.json
