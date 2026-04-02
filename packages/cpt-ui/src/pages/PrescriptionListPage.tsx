@@ -121,6 +121,9 @@ export default function PrescriptionListPage() {
           return
         }
 
+        // Protect against navigating away using browser controls or refreshing
+        auth.registerBeforeUnloadGuard()
+
         setCurrentPrescriptions(searchResults.currentPrescriptions)
         setFuturePrescriptions(searchResults.futurePrescriptions)
         setPastPrescriptions(searchResults.pastPrescriptions)
@@ -174,9 +177,14 @@ export default function PrescriptionListPage() {
     }
 
     runSearch()
+    return () => {
+      auth.clearBeforeUnloadGuard()
+    }
   }, [])
 
   if (loading) {
+    // Protect against navigating away using browser controls or refreshing while loading
+    auth.registerBeforeUnloadGuard()
     return (
       <main id="main-content" className="nhsuk-main-wrapper">
         <Container>

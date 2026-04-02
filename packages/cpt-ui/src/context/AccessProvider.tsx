@@ -36,13 +36,16 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
 
     updateOpenTabs(tabId, "add")
 
-    const onBeforeUnload = () => {
+    const onPageHide = () => {
       updateOpenTabs(tabId, "remove")
     }
 
-    window.addEventListener("beforeunload", onBeforeUnload)
+    // pagehide fires only on actual unload (confirmed navigation, tab close).
+    // beforeunload fires even when the user cancels the prompt and stays on the page,
+    // which would incorrectly remove the tab ID from the open-tabs list.
+    window.addEventListener("pagehide", onPageHide)
     return () => {
-      window.removeEventListener("beforeunload", onBeforeUnload)
+      window.removeEventListener("pagehide", onPageHide)
       updateOpenTabs(tabId, "remove")
     }
   }, [])
