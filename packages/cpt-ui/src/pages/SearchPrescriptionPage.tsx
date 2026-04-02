@@ -253,7 +253,7 @@ export default function SearchPrescriptionPage() {
                   </div>
                 </Col>
                 <Col width="one-half">
-                  <WarningCallout data-testid="search-warning-callout">
+                  <WarningCallout data-testid="warning-callout">
                     <h3 className="nhsuk-warning-callout__label" data-testid="callout-heading">
                       Important
                     </h3>

@@ -341,7 +341,7 @@ function UserInfoSection({
 
   return (
     <Col width="two-thirds">
-      <WarningCallout data-testid="search-warning-callout">
+      <WarningCallout data-testid="warning-callout">
         <h3 className="nhsuk-warning-callout__label" data-testid="callout-heading">
           Important
         </h3>

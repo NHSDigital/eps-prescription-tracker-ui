@@ -126,6 +126,20 @@ describe("SearchForAPrescription", () => {
     expect(heroContainer).toHaveClass("nhsuk-hero-wrapper")
   })
 
+  it("renders the warning callout content", () => {
+    renderWithProviders(<SearchForAPrescription />)
+
+    expect(screen.getByTestId("search-warning-callout")).toBeInTheDocument()
+    expect(screen.getByTestId("callout-heading")).toHaveTextContent("Important")
+    expect(screen.getByTestId("callout-description")).toHaveTextContent(
+      "By using the Prescription Tracker, you are taking part in a private beta and"
+      + " giving us permission to contact you for feedback."
+    )
+
+    const privacyNoticeLink = screen.getByRole("link", {name: "privacy notice"})
+    expect(privacyNoticeLink).toHaveAttribute("href", "/privacy-notice")
+  })
+
   it("sets active tab based on pathname - prescription ID", () => {
     renderWithProviders(<SearchForAPrescription />, {
       initialEntries: ["/search-by-prescription-id"]
