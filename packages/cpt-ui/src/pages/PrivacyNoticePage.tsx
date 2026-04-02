@@ -75,6 +75,12 @@ export default function PrivacyNoticePage() {
             <li>{PrivacyNoticeStrings.usage.legal}</li>
           </ul>
 
+          <h3 className="nhsuk-heading-m">{PrivacyNoticeStrings.betaParticipation.header}</h3>
+          <p>{PrivacyNoticeStrings.betaParticipation.p1}</p>
+          <p>{PrivacyNoticeStrings.betaParticipation.p2}</p>
+          <p>{PrivacyNoticeStrings.betaParticipation.p3}</p>
+          <p>{PrivacyNoticeStrings.betaParticipation.p4}</p>
+
           <h2 className="nhsuk-heading-l">
             {PrivacyNoticeStrings.legal.header}
           </h2>
