@@ -4,8 +4,7 @@ on:
   push:
     branches: [main]
 
-env:
-  BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
+permissions: {}
 
 jobs:
   get_config_values:
@@ -41,7 +40,6 @@ jobs:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
-    secrets: inherit
 
   package_code:
     needs: [tag_release, get_commit_id, get_config_values]
@@ -88,7 +86,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
 
   release_qa:
     needs: [tag_release, release_dev, package_code, get_commit_id, get_config_values]
@@ -127,4 +124,3 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit

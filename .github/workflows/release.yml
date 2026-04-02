@@ -3,8 +3,7 @@ name: deploy to environments
 on:
   workflow_dispatch:
 
-env:
-  BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
+permissions: {}
 
 jobs:
   get_config_values:
@@ -90,7 +89,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
 
   release_ref:
     needs: [tag_release, package_code, get_commit_id, release_dev, get_config_values]
@@ -129,7 +127,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
 
   release_qa:
     needs: [tag_release, package_code, get_commit_id, release_dev, get_config_values]
@@ -168,7 +165,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
   release_int:
     needs: [tag_release, package_code, get_commit_id, release_qa, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
@@ -202,7 +198,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
   release_prod:
     needs: [tag_release, package_code, get_commit_id, release_int, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
@@ -236,4 +231,3 @@ jobs:
       LOG_RETENTION_IN_DAYS: 731
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: true
-    secrets: inherit

@@ -4,8 +4,7 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+permissions: {}
 
 jobs:
   get_config_values:
@@ -26,7 +25,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          persist-credentials: false
           fetch-depth: 0
       - name: Get Commit message
         id: commit_message
@@ -145,7 +144,6 @@ jobs:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
-    secrets: inherit
 
   get_commit_id:
     runs-on: ubuntu-22.04
@@ -211,7 +209,6 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: true
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
   report_deployed_url:
     needs: [release_code, get_issue_number]
     if: |
@@ -222,4 +219,6 @@ jobs:
     steps:
       - name: Report Deployed URL
         run: |
-          echo "Deployed URL: https://cpt-ui-pr-${{ needs.get_issue_number.outputs.issue_number }}.dev.eps.national.nhs.uk" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed URL: https://cpt-ui-pr-${ISSUE_NUMBER}.dev.eps.national.nhs.uk" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          ISSUE_NUMBER: ${{ needs.get_issue_number.outputs.issue_number }}
