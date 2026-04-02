@@ -265,13 +265,15 @@ export default function SearchPrescriptionPage() {
                   </WarningCallout>
                 </Col>
                 {/* Aria-live region for announcing tab switch events */}
-                <div
-                  aria-live="polite"
-                  aria-atomic="true"
-                  className="sr-only"
-                >
-                  {ariaLiveMessage}
-                </div>
+                <Col width="full">
+                  <div
+                    aria-live="polite"
+                    aria-atomic="true"
+                    className="sr-only"
+                  >
+                    {ariaLiveMessage}
+                  </div>
+                </Col>
               </Row>
             </Container>
           </div>
