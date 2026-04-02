@@ -55,6 +55,10 @@ jobs:
   package_code:
     needs: [tag_release, get_commit_id, get_config_values]
     uses: ./.github/workflows/cdk_package_code.yml
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
     with:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}

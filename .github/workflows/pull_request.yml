@@ -170,6 +170,10 @@ jobs:
 
   package_code:
     needs: [get_issue_number, get_commit_id, quality_gate, get_config_values]
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
     if: |
       always() &&
       ! contains(needs.*.result, 'failure') &&
