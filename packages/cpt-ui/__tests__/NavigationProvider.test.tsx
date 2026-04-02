@@ -8,7 +8,8 @@ import {logger} from "@/helpers/logger"
 jest.mock("@/helpers/logger", () => ({
   logger: {
     info: jest.fn(),
-    warn: jest.fn()
+    warn: jest.fn(),
+    debug: jest.fn()
   }
 }))
 
