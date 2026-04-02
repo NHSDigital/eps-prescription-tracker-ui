@@ -22,6 +22,7 @@ import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
 import "@/styles/searchforaprescription.scss"
 import {useSearchContext} from "@/context/SearchProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function SearchPrescriptionPage() {
   const location = useLocation()
@@ -260,7 +261,7 @@ export default function SearchPrescriptionPage() {
                     <p data-testid="callout-description">
                       By using the Prescription Tracker, you are taking part in a private beta
                        and giving us permission to contact you for feedback.
-                      View the <Link to="/privacy-notice">privacy notice</Link> for more information.
+                      View the <Link to={FRONTEND_PATHS.PRIVACY_NOTICE}>privacy notice</Link> for more information.
                     </p>
                   </WarningCallout>
                 </Col>

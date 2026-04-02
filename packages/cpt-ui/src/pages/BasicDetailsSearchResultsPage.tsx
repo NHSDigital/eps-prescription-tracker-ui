@@ -228,7 +228,7 @@ export default function SearchResultsPage() {
             <Col width="full"></Col>
           </Row>
           <Row>
-            <Col width="one-half">
+            <Col width="full">
               <h1 className="nhsuk-u-margin-bottom-3 nhsuk-heading-m" id="results-header">
                 {SearchResultsPageStrings.TITLE}
               </h1>

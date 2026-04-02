@@ -348,7 +348,7 @@ function UserInfoSection({
         <p data-testid="callout-description">
           By using the Prescription Tracker, you are taking part in a private beta
             and giving us permission to contact you for feedback.
-          View the <Link to="/privacy-notice">privacy notice</Link> for more information.
+          View the <Link to={FRONTEND_PATHS.PRIVACY_NOTICE}>privacy notice</Link> for more information.
         </p>
       </WarningCallout>
       <h1 className="nhsuk-heading-xl">
