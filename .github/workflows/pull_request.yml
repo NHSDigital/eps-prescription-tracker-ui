@@ -219,7 +219,13 @@ jobs:
     container:
       image: ${{ needs.get_config_values.outputs.pinned_image }}
       options: --user 1001:1001 --group-add 128
+    defaults:
+      run:
+        shell: bash
     steps:
+      - name: copy .tool-versions
+        run: |
+          cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Release code to environment
         uses: ./.github/actions/release_all_stacks
         with:
