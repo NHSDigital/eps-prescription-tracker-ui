@@ -124,7 +124,7 @@ jobs:
             }
 
             for (const qc of qcJobs) {
-              if (qc.conclusion !== 'success') {
+              if (qc.conclusion !== 'success' || (qc.conclusion !== 'skipped') {
                 core.setFailed(
                   `Quality checks job ${qc.name} failed (conclusion=${qc.conclusion}).`
                 );
