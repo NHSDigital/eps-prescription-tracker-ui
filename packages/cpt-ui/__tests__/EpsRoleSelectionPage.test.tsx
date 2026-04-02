@@ -336,7 +336,11 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
     expect(logger.debug).toHaveBeenCalledWith("Counts of roles returned vs rendered", {
       logId: "some-log-id-uuid-value",
@@ -396,7 +400,11 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
     expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
       logId: "some-log-id-uuid-value",
@@ -512,7 +520,11 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
     expect(logger.debug).toHaveBeenCalledTimes(10)
 
