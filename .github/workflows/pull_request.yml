@@ -117,6 +117,8 @@ jobs:
 
   pr_title_format_check:
     uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@5ac2707dd9cd60ad127275179495b9c890d74711
+    permissions:
+      pull-requests: write
 
   get_issue_number:
     runs-on: ubuntu-22.04
