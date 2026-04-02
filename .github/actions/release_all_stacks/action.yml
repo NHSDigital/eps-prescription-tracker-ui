@@ -99,14 +99,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout local github actions
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 0
-        sparse-checkout: |
-          .github
-
     - name: build_artifact download
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
