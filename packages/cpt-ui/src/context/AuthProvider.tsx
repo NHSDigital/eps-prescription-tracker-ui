@@ -303,7 +303,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   const registerBeforeUnloadGuard = () => {
     if (beforeUnloadHandlerRef.current) return // already registered
     beforeUnloadHandlerRef.current = (e: BeforeUnloadEvent) => {
+      // Ensure navigate-away protection works consistently across browsers
       e.preventDefault()
+      e.returnValue = ""
     }
     window.addEventListener("beforeunload", beforeUnloadHandlerRef.current)
   }
