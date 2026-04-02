@@ -100,14 +100,14 @@ const mockSetAllSearchParameters = jest.fn()
 const defaultSearchState: SearchProviderContextType = {
   prescriptionId: undefined,
   issueNumber: undefined,
-  firstName: undefined,
-  lastName: undefined,
-  dobDay: undefined,
-  dobMonth: undefined,
-  dobYear: undefined,
-  postcode: undefined,
+  firstName: "John",
+  lastName: "Doe",
+  dobDay: "01",
+  dobMonth: "01",
+  dobYear: "1990",
+  postcode: "SW1A 1AA",
   nhsNumber: undefined,
-  searchType: undefined,
+  searchType: "basicDetails",
   clearSearchParameters: mockClearSearchParameters,
   setPrescriptionId: mockSetPrescriptionId,
   setIssueNumber: mockSetIssueNumber,
@@ -144,10 +144,13 @@ const mockPatients: Array<PatientSummary> = [
   }
 ]
 
-function renderWithRouter(initialEntries = ["/patient-search-results"]) {
+function renderWithRouter(
+  initialEntries = ["/patient-search-results"],
+  searchState: SearchProviderContextType = defaultSearchState
+) {
   return render(
     <AuthContext.Provider value={mockAuthContext}>
-      <SearchContext.Provider value={defaultSearchState}>
+      <SearchContext.Provider value={searchState}>
         <MemoryRouter initialEntries={initialEntries}>
           <NavigationProvider>
             <Routes>
@@ -191,6 +194,28 @@ describe("BasicDetailsSearchResultsPage", () => {
     renderWithRouter()
 
     expect(screen.getByText(SearchResultsPageStrings.LOADING)).toBeInTheDocument()
+  })
+
+  it("redirects to basic details search when required parameters are missing for basicDetails search", async () => {
+    const mockNavigate = jest.fn()
+    jest.mocked(useNavigate).mockReturnValue(mockNavigate)
+
+    const missingBasicDetailsState: SearchProviderContextType = {
+      ...defaultSearchState,
+      searchType: "nhs",
+      lastName: undefined,
+      dobDay: undefined,
+      dobMonth: undefined,
+      dobYear: undefined
+    }
+
+    renderWithRouter(["/patient-search-results"], missingBasicDetailsState)
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith("/search-by-basic-details")
+    })
+
+    expect(mockAxiosGet).not.toHaveBeenCalled()
   })
 
   it("handles expired session by redirecting to login page", async () => {

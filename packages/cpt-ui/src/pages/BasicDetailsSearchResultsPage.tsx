@@ -129,6 +129,15 @@ export default function SearchResultsPage() {
 
   const getSearchResults = async () => {
     try {
+      // Catch empty search parameters, caused by loading the page without coming from the search component
+      // ie. Hard refresh on the page
+      if (searchContext.searchType !== "basicDetails" && !searchContext.lastName &&
+         !searchContext.dobDay && !searchContext.dobMonth && !searchContext.dobYear) {
+        logger.info("Missing basic details search parameters - redirecting to basic details search")
+        navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
+        return
+      }
+
       // Attempt to fetch live search results from the API
       const response = await http.get(API_ENDPOINTS.PATIENT_SEARCH, {
         params: {
