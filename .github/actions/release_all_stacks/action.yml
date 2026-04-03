@@ -299,7 +299,9 @@ runs:
         aws s3 cp ".build/packages/staticContent/jwks/${TARGET_ENVIRONMENT}/jwks.json" "s3://${staticBucketName}/jwks.json"
         aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${VERSION_NUMBER}/"
         aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${COMMIT_ID}/site/assets/" --exclude "*" --include "*.map" --recursive
-
+      env:
+        SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+ 
     - name: fix cdk.json for deployment for stateless stack
       shell: bash
       run: |
