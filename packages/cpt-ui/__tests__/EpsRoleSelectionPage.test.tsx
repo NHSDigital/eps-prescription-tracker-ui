@@ -187,6 +187,32 @@ describe("RoleSelectionPage", () => {
     expect(screen.getByTestId("confirm-and-continue")).toBeInTheDocument()
   })
 
+  it("renders the warning callout content", () => {
+    mockUseAuth.mockReturnValue({
+      isSigningIn: false,
+      rolesWithAccess: [],
+      rolesWithoutAccess: [],
+      error: null,
+      hasSingleRoleAccess: jest.fn().mockReturnValue(false)
+    })
+
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
+
+    expect(screen.getByTestId("warning-callout")).toBeInTheDocument()
+    expect(screen.getByTestId("callout-heading")).toHaveTextContent("Important")
+    expect(screen.getByTestId("callout-description")).toHaveTextContent([
+      "By using the Prescription Tracker, you are taking part in a private beta",
+      "and giving us permission to contact you for feedback."
+    ].join(" "))
+
+    const privacyNoticeLink = screen.getByRole("link", {name: "privacy notice"})
+    expect(privacyNoticeLink).toHaveAttribute("href", "/privacy-notice")
+  })
+
   it("renders roles without access in table", () => {
     mockUseAuth.mockReturnValue({
       isSigningIn: false,
@@ -336,7 +362,11 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
     expect(logger.debug).toHaveBeenCalledWith("Counts of roles returned vs rendered", {
       logId: "some-log-id-uuid-value",
@@ -396,7 +426,11 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
     expect(logger.debug).toHaveBeenCalledWith("Auth context for rendered roles", {
       logId: "some-log-id-uuid-value",
@@ -512,7 +546,11 @@ describe("RoleSelectionPage", () => {
       hasSingleRoleAccess: jest.fn().mockReturnValue(false)
     })
 
-    render(<RoleSelectionPage contentText={defaultContentText} />)
+    render(
+      <MemoryRouter>
+        <RoleSelectionPage contentText={defaultContentText} />
+      </MemoryRouter>
+    )
 
     expect(logger.debug).toHaveBeenCalledTimes(10)
 

@@ -203,7 +203,7 @@ export default function BasicDetailsSearch() {
           </ErrorSummary.Body>
         </ErrorSummary>
       )}
-      <div className="prescription-id-aligned-element">
+      <div>
         <Form onSubmit={handleSubmit} noValidate autoComplete="off" data-testid="basic-details-form">
           <FormGroup data-testid="field-group">
             <h2
