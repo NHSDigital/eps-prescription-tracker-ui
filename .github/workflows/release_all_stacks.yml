@@ -84,6 +84,9 @@ on:
       pinned_image:
         required: true
         type: string
+
+permissions: {}
+
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -106,7 +109,7 @@ jobs:
       - name: Checkout local github actions
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          persist-credentials: false
           fetch-depth: 0
           sparse-checkout: |
             .github
@@ -136,19 +139,19 @@ jobs:
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CLOUDFRONT_DISTRIBUTION_ID=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id" \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           CLOUDFRONT_DISTRIBUTION_ARN=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Arn" \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           RUM_LOG_GROUP_ARN=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:logGroup:arn" \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:logGroup:arn" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           RUM_APP_NAME=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}-stateful-resources:rum:rumApp:Name" \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:rum:rumApp:Name" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           REDEPLOY_STATEFUL_STACK="false"
 
@@ -175,6 +178,8 @@ jobs:
 
           echo "REDEPLOY_STATEFUL_STACK=$REDEPLOY_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
         shell: bash
+        env:
+          SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
       - name: fix cdk.json for deployment stateful stack
         run: |
@@ -236,7 +241,6 @@ jobs:
         run: |
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           CF_US_EXPORTS=$(aws cloudformation list-exports --region us-east-1 --output json)
-          SERVICE_NAME='${{ inputs.SERVICE_NAME }}'
           hostedLoginDomain=$(echo "$CF_US_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-us-certs:fullCognitoDomain:Name" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           userPoolClientId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPoolClient:userPoolClientId" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
           userPoolId=$(echo "$CF_LONDON_EXPORTS" | jq  --arg EXPORT_NAME "${SERVICE_NAME}-stateful-resources:userPool:Id" -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
@@ -262,6 +266,8 @@ jobs:
             echo "rumSessionSampleRate=${rumSessionSampleRate}"
             echo "rumTelemetries=${rumTelemetries}"
             } >> "$GITHUB_ENV"
+        env:
+          SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
       - name: build react app
         run: |
@@ -271,9 +277,9 @@ jobs:
           export VITE_redirectSignIn="https://${fullCloudfrontDomain}/site/select-your-role"
           export VITE_redirectSignOut="https://${fullCloudfrontDomain}/site/logout"
           export VITE_redirectSessionSignOut="https://${fullCloudfrontDomain}/site/session-logged-out"
-          export VITE_COMMIT_ID=${{ inputs.COMMIT_ID }}
-          export VITE_VERSION_NUMBER=${{ inputs.VERSION_NUMBER }}
-          export VITE_TARGET_ENVIRONMENT=${{ inputs.TARGET_ENVIRONMENT }}
+          export VITE_COMMIT_ID=${COMMIT_ID}
+          export VITE_VERSION_NUMBER=${VERSION_NUMBER}
+          export VITE_TARGET_ENVIRONMENT=${TARGET_ENVIRONMENT}
           export VITE_RUM_GUEST_ROLE_ARN=${rumUnauthenticatedRumRoleArn}
           export VITE_RUM_IDENTITY_POOL_ID=${rumIdentityPoolId}
           export VITE_RUM_APPLICATION_ID=${rumAppId}
@@ -281,20 +287,25 @@ jobs:
           export VITE_RUM_ENABLE_XRAY=${rumEnableXRay}
           export VITE_RUM_SESSION_SAMPLE_RATE=${rumSessionSampleRate}
           export VITE_RUM_TELEMETRIES=${rumTelemetries}
-          export VITE_REACT_LOG_LEVEL=${{ inputs.REACT_LOG_LEVEL }}
+          export VITE_REACT_LOG_LEVEL=${REACT_LOG_LEVEL}
 
           cd .build
           make react-build
+        env:
+          REACT_LOG_LEVEL: ${{ inputs.REACT_LOG_LEVEL }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+          COMMIT_ID: ${{ inputs.COMMIT_ID }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
 
       - name: deploy website
         run: |
-          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${{ inputs.SERVICE_NAME }}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
+          staticBucketName=$(aws cloudformation list-exports --query "Exports[?Name=='${SERVICE_NAME}-stateful-resources:StaticContentBucket:Name'].Value" --output text)
           aws s3 cp ".build/packages/staticContent/404.html" "s3://${staticBucketName}/404.html"
           aws s3 cp ".build/packages/staticContent/404.css" "s3://${staticBucketName}/404.css"
           aws s3 cp ".build/packages/staticContent/500.html" "s3://${staticBucketName}/500.html"
-          aws s3 cp ".build/packages/staticContent/jwks/${{ inputs.TARGET_ENVIRONMENT }}/jwks.json" "s3://${staticBucketName}/jwks.json"
-          aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${{ inputs.VERSION_NUMBER }}/"
-          aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${{ inputs.COMMIT_ID }}/site/assets/" --exclude "*" --include "*.map" --recursive
+          aws s3 cp ".build/packages/staticContent/jwks/${TARGET_ENVIRONMENT}/jwks.json" "s3://${staticBucketName}/jwks.json"
+          aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${VERSION_NUMBER}/"
+          aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${COMMIT_ID}/site/assets/" --exclude "*" --include "*.map" --recursive
 
       - name: fix cdk.json for deployment for stateless stack
         run: |
@@ -338,6 +349,7 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
 
       - name: Deploy code for stateless stack
         run: |
@@ -354,16 +366,25 @@ jobs:
         id: update_cloudfront_kvs
         shell: bash
         run: |
-          # shellcheck disable=SC2140
-          keyValueStore=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:KeyValueStore:Arn"'].Value" --output text)
-          # shellcheck disable=SC2140
-          cloudfrontDistributionId=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:cloudfrontDistribution:Id"'].Value" --output text)
-          # shellcheck disable=SC2140
-          primaryJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:primaryJwtPrivateKey:Arn"'].Value" --output text)
-          # shellcheck disable=SC2140
-          mockJwtPrivateKeyArn=$(aws cloudformation list-exports --region eu-west-2 --query "Exports[?Name=='"${{ inputs.SERVICE_NAME }}-stateless-resources:mockJwtPrivateKey:Arn"'].Value" --output text)
+          CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
+          keyValueStore=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:KeyValueStore:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          cloudfrontDistributionId=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+            primaryJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
+                jq \
+                --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:primaryJwtPrivateKey:Arn" \
+                -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+            mockJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
+                jq \
+                --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:mockJwtPrivateKey:Arn" \
+                -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
-          newVersion="${{ inputs.VERSION_NUMBER }}"
+          newVersion="${VERSION_NUMBER}"
 
           ETag=$(aws cloudfront-keyvaluestore describe-key-value-store \
               --kvs-arn="$keyValueStore" \
@@ -396,14 +417,18 @@ jobs:
           if [ -z "${primaryJwtPrivateKeyArn}" ]; then
             echo "primaryJwtPrivateKeyArn is unset or set to the empty string"
           else
-            aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${{ secrets.JWT_PRIVATE_KEY }}"
+            aws secretsmanager put-secret-value --secret-id "${primaryJwtPrivateKeyArn}" --secret-string "${JWT_PRIVATE_KEY}"
           fi
           # set the mockJwtPrivateKeyArn secret
           if [ -z "${mockJwtPrivateKeyArn}" ]; then
             echo "mockJwtPrivateKeyArn is unset or set to the empty string"
           else
-            aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${{ secrets.JWT_PRIVATE_KEY }}"
+            aws secretsmanager put-secret-value --secret-id "${mockJwtPrivateKeyArn}" --secret-string "${JWT_PRIVATE_KEY}"
           fi
+        env:
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
       - name: fix cdk.json for deployment for stateful stack redeployment
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
@@ -476,25 +501,31 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+          persist-credentials: true # needed as we use them to update gh-pages
 
       - name: update release tag in github pages
         if: ${{ inputs.IS_PULL_REQUEST == false }}
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')
-          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          echo "tag,release_datetime" > "_data/${TARGET_ENVIRONMENT}_latest.csv"
+          echo "${VERSION_NUMBER},${NOW}" >> "_data/${TARGET_ENVIRONMENT}_latest.csv"
+          echo "${VERSION_NUMBER},${NOW}" >> "_data/${TARGET_ENVIRONMENT}_deployments.csv"
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
-          git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
+          git add "_data/${TARGET_ENVIRONMENT}_latest.csv"
+          git add "_data/${TARGET_ENVIRONMENT}_deployments.csv"
+          git commit -m "update releases for ${TARGET_ENVIRONMENT}"
           parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
-
+        env:
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
+    permissions:
+      contents: write
+      id-token: write
     if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
     needs: [release_all_code]
     with:

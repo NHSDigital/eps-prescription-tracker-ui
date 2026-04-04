@@ -4,19 +4,26 @@ on:
   push:
     branches: [main]
 
-env:
-  BRANCH_NAME: ${{ github.event.ref.BRANCH_NAME }}
+permissions: {}
 
 jobs:
   get_config_values:
     uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     with:
       verify_published_from_main_image: true
+    permissions:
+      attestations: read
+      contents: read
+      packages: read
   quality_checks:
     uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
     needs: [get_config_values]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
@@ -41,11 +48,14 @@ jobs:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
-    secrets: inherit
 
   package_code:
     needs: [tag_release, get_commit_id, get_config_values]
     uses: ./.github/workflows/cdk_package_code.yml
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
     with:
       VERSION_NUMBER: ${{needs.tag_release.outputs.version_tag}}
       COMMIT_ID: ${{needs.get_commit_id.outputs.commit_id}}
@@ -54,6 +64,9 @@ jobs:
   release_dev:
     needs: [tag_release, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
+    permissions:
+      contents: write
+      id-token: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       SERVICE_NAME: cpt-ui
@@ -88,11 +101,13 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
 
   release_qa:
     needs: [tag_release, release_dev, package_code, get_commit_id, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
+    permissions:
+      contents: write
+      id-token: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       SERVICE_NAME: cpt-ui
@@ -127,4 +142,3 @@ jobs:
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: false
       FORWARD_CSOC_LOGS: false
-    secrets: inherit
