@@ -279,6 +279,18 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{ secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           CLOUD_FORMATION_DEPLOY_ROLE: ${{ secrets.CLOUD_FORMATION_DEPLOY_ROLE }}
+
+  regression_tests:
+    name: Regression Tests
+    uses: ./.github/workflows/run_regression_tests.yml
+    if: ${{ always() && !failure() && !cancelled() }}
+    needs: [release_code, get_issue_number, get_config_values]
+    with:
+      ENVIRONMENT: dev-pr
+      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
+    secrets:
+      REGRESSION_TESTS_PEM: ${{ secrets.REGRESSION_TESTS_PEM }}
   report_deployed_url:
     needs: [release_code, get_issue_number]
     if: |
