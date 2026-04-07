@@ -528,6 +528,10 @@ jobs:
     uses: ./.github/workflows/run_regression_tests.yml
     if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
     needs: [release_all_code]
+    permissions:
+      contents: write
+      id-token: write
+
     with:
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
