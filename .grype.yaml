@@ -10,3 +10,7 @@ ignore:
   - vulnerability: GHSA-j3q9-mxjg-w52f
   # lodash
   - vulnerability: GHSA-r5fr-rjxr-66jc
+  # vite - only affects dev server - needs vitest and @vitejs/plugin-react-swc to be updated
+  - vulnerability: GHSA-p9ff-h696-f583
+  # vite - only affects server.fs.deny which we don't use
+  - vulnerability: GHSA-v2wj-q39q-566r
