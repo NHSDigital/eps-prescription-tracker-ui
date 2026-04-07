@@ -301,6 +301,10 @@ runs:
         aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${COMMIT_ID}/site/assets/" --exclude "*" --include "*.map" --recursive
       env:
         SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+        TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+        VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+        COMMIT_ID: ${{ inputs.COMMIT_ID }}
+
  
     - name: fix cdk.json for deployment for stateless stack
       shell: bash
