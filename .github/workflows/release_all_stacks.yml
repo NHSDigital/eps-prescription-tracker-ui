@@ -84,9 +84,7 @@ on:
       pinned_image:
         required: true
         type: string
-
 permissions: {}
-
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -293,9 +291,9 @@ jobs:
           make react-build
         env:
           REACT_LOG_LEVEL: ${{ inputs.REACT_LOG_LEVEL }}
-          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
           COMMIT_ID: ${{ inputs.COMMIT_ID }}
           VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
 
       - name: deploy website
         run: |
@@ -306,6 +304,11 @@ jobs:
           aws s3 cp ".build/packages/staticContent/jwks/${TARGET_ENVIRONMENT}/jwks.json" "s3://${staticBucketName}/jwks.json"
           aws s3 cp --recursive ".build/packages/cpt-ui/dist/" "s3://${staticBucketName}/${VERSION_NUMBER}/"
           aws s3 cp  ".build/packages/cpt-ui/dist/assets/" "s3://${staticBucketName}/source_maps/${COMMIT_ID}/site/assets/" --exclude "*" --include "*.map" --recursive
+        env:
+          SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+          COMMIT_ID: ${{ inputs.COMMIT_ID }}
 
       - name: fix cdk.json for deployment for stateless stack
         run: |
@@ -349,7 +352,6 @@ jobs:
           CLOUDFRONT_ORIGIN_CUSTOM_HEADER: ${{secrets.CLOUDFRONT_ORIGIN_CUSTOM_HEADER }}
           IS_PULL_REQUEST: ${{inputs.IS_PULL_REQUEST}}
           FORWARD_CSOC_LOGS: ${{ inputs.FORWARD_CSOC_LOGS }}
-          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
 
       - name: Deploy code for stateless stack
         run: |
@@ -375,14 +377,14 @@ jobs:
               jq \
               --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:cloudfrontDistribution:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-            primaryJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
-                jq \
-                --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:primaryJwtPrivateKey:Arn" \
-                -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
-            mockJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
-                jq \
-                --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:mockJwtPrivateKey:Arn" \
-                -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          primaryJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:primaryJwtPrivateKey:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
+          mockJwtPrivateKeyArn=$(echo "$CF_LONDON_EXPORTS" | \
+              jq \
+              --arg EXPORT_NAME "${SERVICE_NAME}-stateless-resources:mockJwtPrivateKey:Arn" \
+              -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
           newVersion="${VERSION_NUMBER}"
 
@@ -427,8 +429,8 @@ jobs:
           fi
         env:
           VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
-          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
 
       - name: fix cdk.json for deployment for stateful stack redeployment
         if: ${{ steps.check_redeploy_stateful_stack.outputs.REDEPLOY_STATEFUL_STACK == 'true' }}
@@ -501,7 +503,7 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-          persist-credentials: true # needed as we use them to update gh-pages
+          persist-credentials: true
 
       - name: update release tag in github pages
         if: ${{ inputs.IS_PULL_REQUEST == false }}
@@ -518,14 +520,12 @@ jobs:
           git commit -m "update releases for ${TARGET_ENVIRONMENT}"
           parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
         env:
-          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
           TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
+
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
-    permissions:
-      contents: write
-      id-token: write
     if: ${{ always() && !failure() && !cancelled() && inputs.RUN_REGRESSION_TESTS == true }}
     needs: [release_all_code]
     with:
