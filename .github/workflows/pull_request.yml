@@ -285,6 +285,9 @@ jobs:
     uses: ./.github/workflows/run_regression_tests.yml
     if: ${{ always() && !failure() && !cancelled() }}
     needs: [release_code, get_issue_number, get_config_values]
+    permissions:
+      contents: write
+      id-token: write
     with:
       ENVIRONMENT: dev-pr
       VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
