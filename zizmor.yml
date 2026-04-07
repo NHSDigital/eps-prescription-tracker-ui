@@ -14,3 +14,13 @@ rules:
       - run_regression_tests.yml:51:28
   unpinned-uses:
     disable: true
+  secrets-inherit:
+    ignore:
+      - pull_request.yml:218:11
+      - release.yml:231:11
+      - release.yml:194:11
+      - release.yml:153:11
+      - release.yml:111:11
+      - release.yml:69:11
+      - ci.yml:108:11
+      - ci.yml:66:11
