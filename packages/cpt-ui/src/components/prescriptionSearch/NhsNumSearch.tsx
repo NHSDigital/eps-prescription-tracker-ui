@@ -112,7 +112,7 @@ export default function NhsNumSearch() {
           </ErrorSummary.Body>
         </ErrorSummary>
       )}
-      <div>
+      <div className="prescription-id-aligned-element">
         <Form onSubmit={handleSubmit} noValidate data-testid="nhs-number-form">
           <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
             <Label htmlFor="nhs-number-input" id="nhs-number-label" data-testid="nhs-number-label">

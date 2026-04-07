@@ -135,7 +135,7 @@ export default function PrescriptionIdSearch() {
           </ErrorSummary.Body>
         </ErrorSummary>
       )}
-      <div className="prescription-id-aligned-element-with-info">
+      <div className="prescription-id-aligned-element">
         <Form onSubmit={handlePrescriptionDetails} noValidate>
           <FormGroup className={errorKey ? "nhsuk-form-group--error" : ""}>
             <Label htmlFor="presc-id-input" id="presc-id-label">
