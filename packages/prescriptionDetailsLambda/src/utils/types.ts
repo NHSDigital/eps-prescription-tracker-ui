@@ -88,7 +88,6 @@ export const extensionUrlMappings = {
     "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory" //old
   ],
   DM_PRESCRIPTION_STATUS_UPDATE_HISTORY: [
-    "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
-    "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory" //old
+    "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory"
   ]
 } satisfies Record<string, Array<string>>
