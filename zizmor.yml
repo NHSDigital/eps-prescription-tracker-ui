@@ -12,8 +12,6 @@ rules:
       - delete_old_cloudformation_stacks.yml:29:31
       - delete_old_cloudformation_stacks.yml:18:9
       - run_regression_tests.yml:51:28
-  unpinned-uses:
-    disable: true
   secrets-inherit:
     ignore:
       - pull_request.yml:218:11
