@@ -14,11 +14,11 @@ rules:
       - run_regression_tests.yml:51:28
   secrets-inherit:
     ignore:
-      - pull_request.yml:218:11
-      - release.yml:231:11
-      - release.yml:194:11
-      - release.yml:153:11
-      - release.yml:111:11
-      - release.yml:69:11
-      - ci.yml:108:11
-      - ci.yml:66:11
+      - pull_request.yml:219:11
+      - release.yml:232:11
+      - release.yml:195:11
+      - release.yml:154:11
+      - release.yml:112:11
+      - release.yml:70:11
+      - ci.yml:109:11
+      - ci.yml:67:11
