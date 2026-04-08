@@ -227,6 +227,28 @@ describe("extractPrescribedItems", () => {
     expect(result[0].pharmacyStatus).toBe("Dispatched")
   })
 
+  // old extension
+  it("should extract pharmacyStatus from EPS prescription status update extension", () => {
+    const medicationRequests: Array<MedicationRequest> = [
+      {
+        resourceType: "MedicationRequest",
+        status: "active",
+        intent: "order",
+        subject: {},
+        extension: [
+          {
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory",
+            extension: [
+              {url: "status", valueCoding: {code: "Dispatched"}}
+            ]
+          }
+        ]
+      }
+    ]
+    const result = extractItems(medicationRequests, [])
+    expect(result[0].pharmacyStatus).toBe("Dispatched")
+  })
+
   it("should return undefined pharmacyStatus if DM extension is missing", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
