@@ -1,12 +1,9 @@
 import {createApp} from "@nhsdigital/eps-cdk-constructs"
 import {getCloudFormationExports, getCFConfigValue} from "@nhsdigital/eps-deployment-utils"
-import readline from "node:readline/promises"
 import {createAllStacks} from "./CreateAllStacks"
 
 async function main() {
-  const rl = readline.createInterface({input: process.stdin, output: process.stdout})
-  const prId = await rl.question("What is the pull request id?")
-  rl.close()
+  const prId = process.env.PULL_REQUEST_ID
   const serviceName = `cpt-ui-pr-${prId}`
   process.env.CDK_CONFIG_versionNumber = `PR-${prId}`
   process.env.CDK_CONFIG_commitId = "static-pr"

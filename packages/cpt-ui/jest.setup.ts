@@ -65,12 +65,10 @@ jest.mock("@/constants/environment", () => ({
   },
   ENV_CONFIG: {
     TARGET_ENVIRONMENT: "test",
-    API_DOMAIN_OVERRIDE: "http://localhost:8080",
     BASE_PATH: "",
     RUM_ERROR_TIMER_INTERVAL: 1000 // set to 1 second for testing
   },
   APP_CONFIG: {
-    SERVICE_NAME: "Clinical prescription tracking service",
     COMMIT_ID: "test-commit-id",
     VERSION_NUMBER: "test-version-number"
   },

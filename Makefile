@@ -12,8 +12,9 @@ export CDK_CONFIG_logLevel=debug
 export CDK_CONFIG_reactLogLevel=debug
 export CDK_CONFIG_jwtKid=foo
 export CDK_CONFIG_cloudfrontOriginCustomHeader=foo
+export PULL_REQUEST_ID=${pr_id}
 
-.PHONY: install compile test publish release clean lint cdk-synth cdk-deploy cdk-diff react-dev react-build react-start react-lint cdk-synth-no-mock cdk-synth-mock
+.PHONY: install compile test publish release clean lint cdk-synth cdk-deploy cdk-diff react-build react-start react-lint cdk-synth-no-mock cdk-synth-mock
 
 install: install-node install-python install-hooks
 
@@ -88,9 +89,6 @@ deep-clean: clean
 	rm -rf .venv
 	find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
 
-react-dev:
-	npm run dev --workspace packages/cpt-ui
-
 react-build:
 	export BASE_PATH=/site && npm run build --workspace packages/cpt-ui
 
@@ -121,7 +119,10 @@ cdk-deploy:
 	npm run cdk-deploy --workspace packages/cdk
 
 cdk-watch:
-	npm run cdk-watch --workspace packages/cdk
+	mkdir -p .local_config
+	(trap 'kill 0' INT; \
+	npm run cdk-watch --workspace packages/cdk > .local_config/cdk.log 2>&1 & \
+	npm run dev --workspace packages/cpt-ui > .local_config/website.log 2>&1)
 
 cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
 

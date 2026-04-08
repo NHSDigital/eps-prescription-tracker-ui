@@ -5,14 +5,12 @@ interface ImportMetaEnv {
   readonly VITE_userPoolId: string;
   readonly VITE_userPoolClientId: string;
   readonly VITE_hostedLoginDomain: string;
-  readonly VITE_fullCloudfrontDomain: string;
+  readonly VITE_cloudfrontBaseUrl: string;
 
   // Environment Configuration
   readonly VITE_TARGET_ENVIRONMENT: "dev" | "dev-pr" | "int" | "qa" | "prod";
-  readonly VITE_API_DOMAIN_OVERRIDE: string;
 
   // Application Configuration
-  readonly VITE_SERVICE_NAME: string;
   readonly VITE_COMMIT_ID: string;
   readonly VITE_VERSION_NUMBER: string;
 

@@ -30,13 +30,11 @@ jest.mock("@/constants/environment", () => ({
   },
   ENV_CONFIG: {
     TARGET_ENVIRONMENT: "test",
-    API_DOMAIN_OVERRIDE: undefined,
     BASE_PATH: "site",
     BASE_URL: "http://localhost",
     BASE_URL_PATH: "http://localhost/site/"
   },
   APP_CONFIG: {
-    SERVICE_NAME: "test-service",
     COMMIT_ID: "test-commit",
     VERSION_NUMBER: "1.0.0",
     REACT_LOG_LEVEL: "debug"

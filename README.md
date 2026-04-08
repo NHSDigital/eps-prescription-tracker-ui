@@ -104,8 +104,7 @@ make cdk-watch
 ```
 and enter the pull request id (just the number)
 Log files are written to at
-- .local_config/stateful_app.log
-- .local_config/stateless_app.log
+- .local_config/cdk.log
 - .local_config/website.log
 
 You should monitor the stateful and stateless log files as it can take a few minutes for the sync to complete.   
@@ -171,7 +170,6 @@ These are used to do common commands related to cdk
 - `aws-login` Reconnects to AWS from a previously configured connection
 
 #### React App
-- `react-dev` Starts app in dev mode on localhost
 - `react-build` Generates static files in .next folder
 - `react-start` Starts app in production mode using build-generated static files
 

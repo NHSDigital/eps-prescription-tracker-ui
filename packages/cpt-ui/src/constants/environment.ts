@@ -3,15 +3,14 @@ export const AUTH_CONFIG = {
   USER_POOL_ID: import.meta.env.VITE_userPoolId,
   USER_POOL_CLIENT_ID: import.meta.env.VITE_userPoolClientId,
   HOSTED_LOGIN_DOMAIN: import.meta.env.VITE_hostedLoginDomain,
-  REDIRECT_SIGN_IN: `https://${import.meta.env.VITE_fullCloudfrontDomain}/site/select-your-role`,
-  REDIRECT_SIGN_OUT: `https://${import.meta.env.VITE_fullCloudfrontDomain}/site/logout`,
-  REDIRECT_SESSION_SIGN_OUT: `https://${import.meta.env.VITE_fullCloudfrontDomain}/site/session-logged-out`
+  REDIRECT_SIGN_IN: `${import.meta.env.VITE_cloudfrontBaseUrl}/site/select-your-role`,
+  REDIRECT_SIGN_OUT: `${import.meta.env.VITE_cloudfrontBaseUrl}/site/logout`,
+  REDIRECT_SESSION_SIGN_OUT: `${import.meta.env.VITE_cloudfrontBaseUrl}/site/session-logged-out`
 } as const
 
 // Environment Configuration
 export const ENV_CONFIG = {
   TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT || "prod",
-  API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
   BASE_PATH: import.meta.env.BASE_PATH || "site",
   BASE_URL: import.meta.env.BASE_URL,
   BASE_URL_PATH: `${import.meta.env.BASE_URL}/${import.meta.env.BASE_PATH || "site"}/`,
@@ -20,7 +19,6 @@ export const ENV_CONFIG = {
 
 // Application Configuration
 export const APP_CONFIG = {
-  SERVICE_NAME: import.meta.env.VITE_SERVICE_NAME,
   COMMIT_ID: import.meta.env.VITE_COMMIT_ID,
   VERSION_NUMBER: import.meta.env.VITE_VERSION_NUMBER,
   REACT_LOG_LEVEL: import.meta.env.VITE_REACT_LOG_LEVEL
