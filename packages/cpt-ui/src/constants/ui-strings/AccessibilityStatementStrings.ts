@@ -94,7 +94,7 @@ export const AccessibilityStatementStrings = {
     + " criteria that the Prescription Tracker is not compliant with and why.",
     SUBHEADER: "Non-compliance with the accessibility regulations",
     SUB_LIST_ITEMS: [
-      "screen readers do not continue to read content when you select a new tab on the "
+      "Screen readers do not continue to read content when you select a new tab on the "
       + "‘Search for a prescription’ "
       + "page. This fails WCAG 2.2 success criterion 2.4.3 (focus order).",
       "Using the tab key does not focus the ‘Skip to main content’ link after a page is loaded. This fails "
