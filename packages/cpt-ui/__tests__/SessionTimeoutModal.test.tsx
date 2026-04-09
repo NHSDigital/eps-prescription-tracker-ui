@@ -7,7 +7,9 @@ import {
 } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import React from "react"
+import {MemoryRouter} from "react-router-dom"
 import {SessionTimeoutModal} from "@/components/SessionTimeoutModal"
+import {FRONTEND_PATHS} from "@/constants/environment"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 
 // Mock useAuth
@@ -94,8 +96,18 @@ const defaultProps = {
   onStayLoggedIn: jest.fn(),
   onLogOut: jest.fn(),
   onTimeOut: jest.fn(),
-  buttonDisabledState: false
+  buttonDisabledState: false,
+  isSelectYourRolePath: false
 }
+
+const renderWithRouter = (
+  ui: React.ReactElement,
+  initialEntries = ["/"]
+) => render(
+  <MemoryRouter initialEntries={initialEntries}>
+    {ui}
+  </MemoryRouter>
+)
 
 describe("SessionTimeoutModal", () => {
   beforeEach(() => {
@@ -117,13 +129,13 @@ describe("SessionTimeoutModal", () => {
 
   describe("Modal rendering and basic functionality", () => {
     it("renders the modal when isOpen is true", () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       expect(screen.getByTestId("session-timeout-modal")).toBeInTheDocument()
       expect(screen.getByText(SESSION_TIMEOUT_MODAL_STRINGS.TITLE)).toBeInTheDocument()
     })
 
     it("does not render the modal when isOpen is false", () => {
-      render(<SessionTimeoutModal {...defaultProps} isOpen={false} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} isOpen={false} />)
       expect(screen.queryByTestId("session-timeout-modal")).not.toBeInTheDocument()
     })
 
@@ -134,15 +146,29 @@ describe("SessionTimeoutModal", () => {
     })
 
     it("renders both action buttons", () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       expect(screen.getByTestId("stay-logged-in-button")).toBeInTheDocument()
       expect(screen.getByTestId("logout-button")).toBeInTheDocument()
+    })
+
+    it("shows the select role instruction and close button text on the select your role path", () => {
+      renderWithRouter(
+        <SessionTimeoutModal {...defaultProps} />,
+        [FRONTEND_PATHS.SELECT_YOUR_ROLE]
+      )
+
+      expect(
+        screen.getByText(SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole("button", {name: SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE})
+      ).toBeInTheDocument()
     })
   })
 
   describe("Focus management", () => {
     it("focuses the stay logged in button when modal opens", async () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
 
       act(() => {
         jest.advanceTimersByTime(100)
@@ -154,7 +180,7 @@ describe("SessionTimeoutModal", () => {
     })
 
     it("does not focus when modal is closed", () => {
-      render(<SessionTimeoutModal {...defaultProps} isOpen={false} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} isOpen={false} />)
 
       act(() => {
         jest.advanceTimersByTime(100)
@@ -170,7 +196,7 @@ describe("SessionTimeoutModal", () => {
       const mockStayLoggedIn = jest.fn()
       const user = userEvent.setup({advanceTimers: jest.advanceTimersByTime})
 
-      render(
+      renderWithRouter(
         <SessionTimeoutModal
           {...defaultProps}
           onStayLoggedIn={mockStayLoggedIn}
@@ -185,20 +211,20 @@ describe("SessionTimeoutModal", () => {
       const mockLogOut = jest.fn()
       const user = userEvent.setup({advanceTimers: jest.advanceTimersByTime})
 
-      render(<SessionTimeoutModal {...defaultProps} onLogOut={mockLogOut} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} onLogOut={mockLogOut} />)
 
       await user.click(screen.getByTestId("logout-button"))
       expect(mockLogOut).toHaveBeenCalledTimes(1)
     })
 
     it("disables both buttons when buttonDisabledState is true", () => {
-      render(<SessionTimeoutModal {...defaultProps} buttonDisabledState={true} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} buttonDisabledState={true} />)
       expect(screen.getByTestId("stay-logged-in-button")).toBeDisabled()
       expect(screen.getByTestId("logout-button")).toBeDisabled()
     })
 
     it("enables both buttons when buttonDisabledState is false", () => {
-      render(<SessionTimeoutModal {...defaultProps} buttonDisabledState={false} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} buttonDisabledState={false} />)
       expect(screen.getByTestId("stay-logged-in-button")).not.toBeDisabled()
       expect(screen.getByTestId("logout-button")).not.toBeDisabled()
     })
@@ -208,12 +234,12 @@ describe("SessionTimeoutModal", () => {
         ...mockAuthValue.sessionTimeoutModalInfo,
         action: "loggingOut"
       }
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       expect(screen.getByText("Logging out...")).toBeInTheDocument()
     })
 
     it("shows normal log out text when auth action is not loggingOut", () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       expect(screen.getByText(SESSION_TIMEOUT_MODAL_STRINGS.LOG_OUT)).toBeInTheDocument()
     })
   })
@@ -222,7 +248,7 @@ describe("SessionTimeoutModal", () => {
     it("calls onStayLoggedIn when escape key is pressed", () => {
       const mockStayLoggedIn = jest.fn()
 
-      render(
+      renderWithRouter(
         <SessionTimeoutModal
           {...defaultProps}
           onStayLoggedIn={mockStayLoggedIn}
@@ -249,7 +275,7 @@ describe("SessionTimeoutModal", () => {
       const mockPreventDefault = jest.fn()
       const mockStopPropagation = jest.fn()
 
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
 
       const buttonGroup = screen.getByRole("button", {name: SESSION_TIMEOUT_MODAL_STRINGS.STAY_LOGGED_IN})
         .closest(".eps-modal-button-group")
@@ -302,7 +328,7 @@ describe("SessionTimeoutModal", () => {
 
     it("calls onTimeOut when countdown reaches 0", () => {
       const mockOnTimeOut = jest.fn()
-      render(
+      renderWithRouter(
         <SessionTimeoutModal
           {...defaultProps}
           isOpen={true}
@@ -478,19 +504,19 @@ describe("SessionTimeoutModal", () => {
 
   describe("Aria attributes", () => {
     it("sets correct aria-labelledby attribute", () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       const modal = screen.getByTestId("eps-modal")
       expect(modal).toHaveAttribute("aria-labelledby", "session-timeout-title")
     })
 
     it("sets correct aria-describedby attribute", () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       const modal = screen.getByTestId("eps-modal")
       expect(modal).toHaveAttribute("aria-describedby", "session-timeout-title")
     })
 
     it("positions aria-live region off screen", () => {
-      render(<SessionTimeoutModal {...defaultProps} />)
+      renderWithRouter(<SessionTimeoutModal {...defaultProps} />)
       const liveRegion = document.querySelector('[aria-live="assertive"]')
 
       expect(liveRegion).toHaveStyle({

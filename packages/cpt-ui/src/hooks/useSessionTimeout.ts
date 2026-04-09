@@ -3,7 +3,10 @@ import {logger} from "@/helpers/logger"
 import {useAuth} from "@/context/AuthProvider"
 import {updateRemoteSelectedRole} from "@/helpers/userInfo"
 import {handleSignoutEvent} from "@/helpers/logout"
-import {useNavigate} from "react-router-dom"
+import {useLocation, useNavigate} from "react-router-dom"
+import {normalizePath} from "@/helpers/utils"
+import {FRONTEND_PATHS} from "@/constants/environment"
+
 export interface SessionTimeoutProps {
   onStayLoggedIn: () => Promise<void>
   onLogOut: () => Promise<void>
@@ -14,11 +17,20 @@ export const useSessionTimeout = () => {
   const auth = useAuth()
   const navigate = useNavigate()
   const actionLockRef = useRef<"extending" | "loggingOut" | undefined>(undefined)
+  const location = useLocation()
+  const path = normalizePath(location.pathname)
 
   const handleStayLoggedIn = useCallback(async () => {
     // Prevent multiple simultaneous extension attempts or cross-calls
     if (actionLockRef.current !== undefined) {
       logger.info("Session action already in progress, ignoring duplicate request")
+      return
+    }
+
+    if (path === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+      // Maintain session time but don't show the modal right now
+      auth.setLogoutModalType(undefined)
+      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: undefined, buttonDisabled: false, showModal: false}))
       return
     }
 
@@ -67,7 +79,7 @@ export const useSessionTimeout = () => {
       actionLockRef.current = undefined
       await handleLogOut()
     }
-  }, [auth])
+  }, [auth, path])
 
   const handleLogOut = useCallback(async () => {
     // Prevent multiple simultaneous logout attempts or cross-calls

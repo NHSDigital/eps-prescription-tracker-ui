@@ -120,6 +120,7 @@ function AppContent() {
           onLogOut={onLogOut}
           onTimeOut={onTimeOut}
           buttonDisabledState={auth.sessionTimeoutModalInfo.buttonDisabled}
+          isSelectYourRolePath={location.pathname === FRONTEND_PATHS.SELECT_YOUR_ROLE}
         />
       </PatientDetailsProvider>
     </>

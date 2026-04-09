@@ -8,9 +8,10 @@ import {
   Col,
   Container,
   Hero,
-  Row
+  Row,
+  WarningCallout
 } from "nhsuk-react-components"
-import {useLocation, useNavigate} from "react-router-dom"
+import {Link, useLocation, useNavigate} from "react-router-dom"
 
 import TabSet from "@/components/tab-set"
 import PrescriptionIdSearch from "@/components/prescriptionSearch/PrescriptionIdSearch"
@@ -21,6 +22,7 @@ import {HERO_TEXT} from "@/constants/ui-strings/SearchForAPrescriptionStrings"
 import {PRESCRIPTION_SEARCH_TABS} from "@/constants/ui-strings/SearchTabStrings"
 import "@/styles/searchforaprescription.scss"
 import {useSearchContext} from "@/context/SearchProvider"
+import {FRONTEND_PATHS} from "@/constants/environment"
 
 export default function SearchPrescriptionPage() {
   const location = useLocation()
@@ -241,7 +243,7 @@ export default function SearchPrescriptionPage() {
           <div className="content-wrapper">
             <Container>
               <Row>
-                <Col width="full">
+                <Col width="one-half">
                   <div
                     className="content-padding"
                     role="tabpanel"
@@ -251,16 +253,30 @@ export default function SearchPrescriptionPage() {
                     {content}
                   </div>
                 </Col>
+                <Col width="one-half">
+                  <WarningCallout data-testid="warning-callout">
+                    <h3 className="nhsuk-warning-callout__label" data-testid="callout-heading">
+                      Important
+                    </h3>
+                    <p data-testid="callout-description">
+                      By using the Prescription Tracker, you are taking part in a private beta
+                       and giving us permission to contact you for feedback.
+                      View the <Link to={FRONTEND_PATHS.PRIVACY_NOTICE}>privacy notice</Link> for more information.
+                    </p>
+                  </WarningCallout>
+                </Col>
+                {/* Aria-live region for announcing tab switch events */}
+                <Col width="full">
+                  <div
+                    aria-live="polite"
+                    aria-atomic="true"
+                    className="sr-only"
+                  >
+                    {ariaLiveMessage}
+                  </div>
+                </Col>
               </Row>
             </Container>
-          </div>
-          {/* Aria-live region for announcing tab switch events */}
-          <div
-            aria-live="polite"
-            aria-atomic="true"
-            className="sr-only"
-          >
-            {ariaLiveMessage}
           </div>
         </div>
       </main>

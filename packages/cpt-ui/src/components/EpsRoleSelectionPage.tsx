@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react"
-import {useNavigate} from "react-router-dom"
+import {useNavigate, Link} from "react-router-dom"
 import {
   Container,
   Col,
@@ -7,7 +7,8 @@ import {
   Details,
   Table,
   ErrorSummary,
-  InsetText
+  InsetText,
+  WarningCallout
 } from "nhsuk-react-components"
 
 import "../styles/roleselectionpage.scss"
@@ -340,6 +341,16 @@ function UserInfoSection({
 
   return (
     <Col width="two-thirds">
+      <WarningCallout data-testid="warning-callout">
+        <h3 className="nhsuk-warning-callout__label" data-testid="callout-heading">
+          Important
+        </h3>
+        <p data-testid="callout-description">
+          By using the Prescription Tracker, you are taking part in a private beta
+            and giving us permission to contact you for feedback.
+          View the <Link to={FRONTEND_PATHS.PRIVACY_NOTICE}>privacy notice</Link> for more information.
+        </p>
+      </WarningCallout>
       <h1 className="nhsuk-heading-xl">
         <span role="text" data-testid="eps_header_selectYourRole">
           <span className="nhsuk-title">{pageTitle}</span>
