@@ -4,8 +4,8 @@ on:
   workflow_call:
     inputs:
       pinned_image:
-        type: string
         required: true
+        type: string
 
 permissions: {}
 jobs:
