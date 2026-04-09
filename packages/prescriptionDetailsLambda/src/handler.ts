@@ -2,6 +2,7 @@ import {APIGatewayProxyEventBase, APIGatewayProxyResult} from "aws-lambda"
 
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -102,7 +103,7 @@ export const newHandler = (initParams: HandlerInitialisationParameters) => {
     .use(
       inputOutputLogger({
         logger: (request) => {
-          initParams.logger.info(request)
+          initParams.logger.info(request as LogItemMessage)
         }
       })
     )

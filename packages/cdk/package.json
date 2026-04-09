@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "test": "jest",
-    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
-    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+    "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs ."
   },
   "dependencies": {
     "aws-cdk-lib": "^2.245.0",

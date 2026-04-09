@@ -1,6 +1,7 @@
 import {Logger} from "@aws-lambda-powertools/logger"
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
+import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 import {getSecret} from "@aws-lambda-powertools/parameters/secrets"
 
 import {MiddyErrorHandler} from "@cpt-ui-common/middyErrorHandler"
@@ -103,7 +104,7 @@ export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(
     inputOutputLogger({
-      logger: (request) => logger.info(request)
+      logger: (request) => logger.info(request as LogItemMessage)
     })
   )
   .use(middyErrorHandler.errorHandler({logger}))
