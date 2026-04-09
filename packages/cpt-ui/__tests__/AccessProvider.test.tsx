@@ -644,7 +644,7 @@ describe("AccessProvider", () => {
       expect(mockSetLogoutModalType).toHaveBeenCalledWith("timeout")
       expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalledWith({
         showModal: true,
-        timeLeft: Math.floor(remainingTime / 1000),
+        sessionEndTime: expect.any(Number),
         buttonDisabled: false,
         action: undefined
       })
@@ -674,7 +674,6 @@ describe("AccessProvider", () => {
 
     it("should hide modal when session is still valid", async () => {
       const fifteenMinutesInMilliseconds = 15 * 60 * 1000
-      const fifteenMinutesInSeconds = 15 * 60
       mockUpdateTrackerUserInfo.mockResolvedValue({
         error: null,
         remainingSessionTime: fifteenMinutesInMilliseconds
@@ -696,7 +695,7 @@ describe("AccessProvider", () => {
       )
       expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalledWith({
         showModal: false,
-        timeLeft: fifteenMinutesInSeconds,
+        sessionEndTime: null,
         buttonDisabled: false,
         action: undefined
       })

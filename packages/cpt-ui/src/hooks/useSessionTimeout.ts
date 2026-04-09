@@ -15,10 +15,6 @@ export const useSessionTimeout = () => {
   const navigate = useNavigate()
   const actionLockRef = useRef<"extending" | "loggingOut" | undefined>(undefined)
 
-  const clearCountdownTimer = () => {
-    auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: 0}))
-  }
-
   const handleStayLoggedIn = useCallback(async () => {
     // Prevent multiple simultaneous extension attempts or cross-calls
     if (actionLockRef.current !== undefined) {
@@ -29,17 +25,24 @@ export const useSessionTimeout = () => {
     try {
       actionLockRef.current = "extending"
       logger.info("User chose to extend session")
-      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "extending", buttonDisabled: true}))
+
+      auth.setLogoutModalType(undefined)
+      auth.setSessionTimeoutModalInfo(prev => ({
+        ...prev,
+        showModal: false,
+        sessionEndTime: null,
+        action: "extending",
+        buttonDisabled: true
+      }))
 
       // Call the selectedRole API with current role to refresh session
       if (auth.selectedRole) {
         await updateRemoteSelectedRole(auth.selectedRole)
         logger.info("Session extended successfully")
 
-        // Hide modal and refresh user info
-        auth.setLogoutModalType(undefined)
+        // Reset state after successful extension
         auth.setSessionTimeoutModalInfo(
-          prev => ({...prev, showModal: false, timeLeft: 0, buttonDisabled: false, action: undefined}))
+          prev => ({...prev, buttonDisabled: false, action: undefined}))
         actionLockRef.current = undefined
         await auth.updateTrackerUserInfo()
       } else {
@@ -51,7 +54,15 @@ export const useSessionTimeout = () => {
       }
     } catch (error) {
       logger.error("Error extending session:", error)
-      auth.setSessionTimeoutModalInfo(prev => ({...prev, action: "loggingOut", buttonDisabled: true}))
+      // Hide modal and clear timer, then proceed to logout
+      auth.setLogoutModalType(undefined)
+      auth.setSessionTimeoutModalInfo(prev => ({
+        ...prev,
+        showModal: false,
+        sessionEndTime: null,
+        action: "loggingOut",
+        buttonDisabled: true
+      }))
       // Clear the extending lock so handleLogOut can proceed with logout
       actionLockRef.current = undefined
       await handleLogOut()
@@ -73,7 +84,6 @@ export const useSessionTimeout = () => {
 
   const handleTimeout = useCallback(async () => {
     logger.warn("Session automatically timed out")
-    clearCountdownTimer()
     await handleSignoutEvent(auth, navigate, "Timeout", "Timeout")
   }, [auth])
 
