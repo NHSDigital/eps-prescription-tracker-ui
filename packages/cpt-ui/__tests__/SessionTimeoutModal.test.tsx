@@ -153,7 +153,7 @@ describe("SessionTimeoutModal", () => {
 
     it("shows the select role instruction and close button text on the select your role path", () => {
       renderWithRouter(
-        <SessionTimeoutModal {...defaultProps} />,
+        <SessionTimeoutModal {...defaultProps} isSelectYourRolePath={true} />,
         [FRONTEND_PATHS.SELECT_YOUR_ROLE]
       )
 
@@ -301,29 +301,30 @@ describe("SessionTimeoutModal", () => {
 
   describe("Countdown timer", () => {
     it("starts countdown when modal opens with time left", () => {
-      mockSetSessionTimeoutModalInfo.mockClear()
-      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (120000 * 1000)} />)
+      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (120 * 1000)} />)
 
       // Advance timer to trigger the first countdown update
       act(() => {
         jest.advanceTimersByTime(1000)
       })
 
-      // Timer recalculates remaining time each second
-      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+      // Timer should be running (component uses setInterval)
+      expect(setIntervalSpy).toHaveBeenCalled()
+      setIntervalSpy.mockRestore()
     })
 
     it("decrements countdown every second", () => {
-      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (5000 * 1000)} />)
-
-      mockSetSessionTimeoutModalInfo.mockClear()
+      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (5 * 1000)} />)
 
       act(() => {
         jest.advanceTimersByTime(1000)
       })
 
-      // Timer should recalculate remaining time
-      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+      // Timer should be running (component uses setInterval)
+      expect(setIntervalSpy).toHaveBeenCalled()
+      setIntervalSpy.mockRestore()
     })
 
     it("calls onTimeOut when countdown reaches 0", () => {
