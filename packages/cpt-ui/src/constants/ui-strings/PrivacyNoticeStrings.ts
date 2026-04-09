@@ -57,6 +57,14 @@ export const PrivacyNoticeStrings = {
     + " we process your data to comply with our legal obligation to operate the service and any"
     + " other applicable laws or regulations"
   },
+  betaParticipation: {
+    "header": "Taking part in our private beta",
+    "p1": "By using the Prescription Tracker, you are giving us permission to contact you for feedback.",
+    "p2": "We will do this by emailing your NHS email address. Giving feedback is voluntary"
+    + " and you can ask us to stop contacting you for feedback at any time.",
+    "p3": "We might also email your NHS email address with information about the private beta.",
+    "p4": "All personal data will be stored securely."
+  },
   legal: {
     header: "Our legal basis for data processing",
     base1: "Legal obligation: Article 6(1)(c) of UK GDPR."

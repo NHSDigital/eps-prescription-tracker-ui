@@ -3,9 +3,6 @@ name: release all stacks
 on:
   workflow_call:
     inputs:
-      BRANCH_NAME:
-        required: true
-        type: string
       SERVICE_NAME:
         required: true
         type: string
@@ -38,8 +35,9 @@ on:
         type: boolean
         required: true
       pinned_image:
-        type: string
         required: true
+        type: string
+permissions: {}
 jobs:
   release_all_code:
     runs-on: ubuntu-22.04
@@ -85,7 +83,7 @@ jobs:
           CF_LONDON_EXPORTS=$(aws cloudformation list-exports --region eu-west-2 --output json)
           RUM_APP_ID=$(echo "$CF_LONDON_EXPORTS" | \
               jq \
-              --arg EXPORT_NAME "${{ inputs.SERVICE_NAME }}:rum:rumApp:Id" \
+              --arg EXPORT_NAME "${SERVICE_NAME}:rum:rumApp:Id" \
               -r '.Exports[] | select(.Name == $EXPORT_NAME) | .Value')
 
           FRESH_STATEFUL_STACK="false"
@@ -96,6 +94,8 @@ jobs:
 
           echo "FRESH_STATEFUL_STACK=$FRESH_STATEFUL_STACK" >> "$GITHUB_OUTPUT"
         shell: bash
+        env:
+          SERVICE_NAME: ${{ inputs.SERVICE_NAME }}
 
       - name: Initial Deploy of Stateful Stacks
         if: ${{ steps.check_fresh_stateful_stack.outputs.FRESH_STATEFUL_STACK == 'true' }}
@@ -183,28 +183,35 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
+          persist-credentials: true
 
       - name: update release tag in github pages
         run: |
           cd gh-pages
           NOW=$(date +'%Y-%m-%dT%H:%M:%S')
-          echo "tag,release_datetime" > _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          echo "${{ inputs.VERSION_NUMBER }},${NOW}" >> _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
+          echo "tag,release_datetime" > "_data/${TARGET_ENVIRONMENT}_latest.csv"
+          echo "${VERSION_NUMBER},${NOW}" >> "_data/${TARGET_ENVIRONMENT}_latest.csv"
+          echo "${VERSION_NUMBER},${NOW}" >> "_data/${TARGET_ENVIRONMENT}_deployments.csv"
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_latest.csv
-          git add _data/${{ inputs.TARGET_ENVIRONMENT }}_deployments.csv
-          git commit -m 'update releases for ${{ inputs.TARGET_ENVIRONMENT }}'
+          git add "_data/${TARGET_ENVIRONMENT}_latest.csv"
+          git add "_data/${TARGET_ENVIRONMENT}_deployments.csv"
+          git commit -m "update releases for ${TARGET_ENVIRONMENT}"
           parallel --retries 10 --delay 3 ::: "git pull --rebase && git push"
+        env:
+          TARGET_ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
+          VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
 
   regression_tests:
     name: Regression Tests
     uses: ./.github/workflows/run_regression_tests.yml
     if: ${{ inputs.RUN_REGRESSION_TESTS == true }}
     needs: [update_front_door]
+    permissions:
+      contents: write
+      id-token: write
+
     with:
-      BRANCH_NAME: ${{ inputs.BRANCH_NAME }}
       ENVIRONMENT: ${{ inputs.TARGET_ENVIRONMENT }}
       VERSION_NUMBER: ${{ inputs.VERSION_NUMBER }}
       pinned_image: ${{ inputs.pinned_image }}
