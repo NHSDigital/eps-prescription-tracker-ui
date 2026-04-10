@@ -11,9 +11,7 @@ export const AUTH_CONFIG = {
 // Environment Configuration
 export const ENV_CONFIG = {
   TARGET_ENVIRONMENT: import.meta.env.VITE_TARGET_ENVIRONMENT || "prod",
-  API_DOMAIN_OVERRIDE: import.meta.env.VITE_API_DOMAIN_OVERRIDE,
   BASE_PATH: import.meta.env.BASE_PATH || "site",
-  LOCAL_DEV: import.meta.env.VITE_LOCAL_DEV === "true",
   BASE_URL: import.meta.env.BASE_URL,
   BASE_URL_PATH: `${import.meta.env.BASE_URL}/${import.meta.env.BASE_PATH || "site"}/`,
   RUM_ERROR_TIMER_INTERVAL: Number(import.meta.env.VITE_RUM_ERROR_TIMER_INTERVAL) || 10000
@@ -21,7 +19,6 @@ export const ENV_CONFIG = {
 
 // Application Configuration
 export const APP_CONFIG = {
-  SERVICE_NAME: import.meta.env.VITE_SERVICE_NAME,
   COMMIT_ID: import.meta.env.VITE_COMMIT_ID,
   VERSION_NUMBER: import.meta.env.VITE_VERSION_NUMBER,
   REACT_LOG_LEVEL: import.meta.env.VITE_REACT_LOG_LEVEL
@@ -46,10 +43,6 @@ export const RUM_CONFIG = {
   APPLICATION_ID: import.meta.env.VITE_RUM_APPLICATION_ID,
   REGION: "eu-west-2",
   VERSION: "1.0.0",
-  ALLOW_COOKIES: import.meta.env.VITE_RUM_ALLOW_COOKIES === "true",
-  ENABLE_XRAY: import.meta.env.VITE_RUM_ENABLE_XRAY === "true",
-  SESSION_SAMPLE_RATE: Number(import.meta.env.VITE_RUM_SESSION_SAMPLE_RATE),
-  TELEMETRIES: import.meta.env.VITE_RUM_TELEMETRIES?.split(",") || [],
   RELEASE_ID: import.meta.env.VITE_COMMIT_ID
 } as const
 

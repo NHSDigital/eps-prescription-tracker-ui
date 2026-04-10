@@ -25,7 +25,7 @@ _site/
 .jekyll-cache
 .jekyll-metadata
 vendor
-cfn_guard_output/
+.cfn_guard_out
 test/
 amplify_outputs.json
 .asdf

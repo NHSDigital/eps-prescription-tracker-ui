@@ -20,13 +20,9 @@ jest.mock("aws-rum-web", () => {
 
 jest.mock("@/constants/environment", () => ({
   RUM_CONFIG: {
-    SESSION_SAMPLE_RATE: 1,
     GUEST_ROLE_ARN: "test-role-arn",
     IDENTITY_POOL_ID: "test-pool-id",
     ENDPOINT: "test-endpoint",
-    TELEMETRIES: ["performance", "errors"],
-    ALLOW_COOKIES: true,
-    ENABLE_XRAY: false,
     APPLICATION_ID: "test-app-id",
     VERSION: "1.0.0",
     REGION: "us-west-2",
@@ -57,13 +53,13 @@ describe("AwsRumHelper", () => {
       RUM_CONFIG.VERSION,
       RUM_CONFIG.REGION,
       {
-        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        sessionSampleRate: 1,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: RUM_CONFIG.TELEMETRIES,
+        telemetries: ["errors", "performance"],
         allowCookies: false,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        enableXRay: true,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
         sessionAttributes: {
@@ -89,13 +85,13 @@ describe("AwsRumHelper", () => {
       RUM_CONFIG.VERSION,
       RUM_CONFIG.REGION,
       {
-        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        sessionSampleRate: 1,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: RUM_CONFIG.TELEMETRIES,
+        telemetries: ["errors", "performance"],
         allowCookies: true,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        enableXRay: true,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
         sessionAttributes: {
@@ -121,13 +117,13 @@ describe("AwsRumHelper", () => {
       RUM_CONFIG.VERSION,
       RUM_CONFIG.REGION,
       {
-        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        sessionSampleRate: 1,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: RUM_CONFIG.TELEMETRIES,
+        telemetries: ["errors", "performance"],
         allowCookies: false,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        enableXRay: true,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
         sessionAttributes: {
@@ -161,13 +157,13 @@ describe("AwsRumHelper", () => {
       RUM_CONFIG.VERSION,
       RUM_CONFIG.REGION,
       {
-        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        sessionSampleRate: 1,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: RUM_CONFIG.TELEMETRIES,
+        telemetries: ["errors", "performance"],
         allowCookies: true,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        enableXRay: true,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
         sessionAttributes: {
@@ -189,13 +185,13 @@ describe("AwsRumHelper", () => {
       RUM_CONFIG.VERSION,
       RUM_CONFIG.REGION,
       {
-        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        sessionSampleRate: 1,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: RUM_CONFIG.TELEMETRIES,
+        telemetries: ["errors", "performance"],
         allowCookies: false,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        enableXRay: true,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
         sessionAttributes: {

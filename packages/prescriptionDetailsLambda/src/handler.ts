@@ -102,7 +102,7 @@ export const newHandler = (initParams: HandlerInitialisationParameters) => {
     .use(
       inputOutputLogger({
         logger: (request) => {
-          initParams.logger.info(request)
+          initParams.logger.info("request", {request})
         }
       })
     )

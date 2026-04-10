@@ -103,7 +103,7 @@ export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
   .use(
     inputOutputLogger({
-      logger: (request) => logger.info(request)
+      logger: (request) => logger.info("request", {request})
     })
   )
   .use(middyErrorHandler.errorHandler({logger}))
