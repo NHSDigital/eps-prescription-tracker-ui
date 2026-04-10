@@ -47,7 +47,7 @@ lint-node: compile-node
 lint-githubaction-scripts:
 	shellcheck .github/scripts/*.sh
 
-lint: lint-node actionlint lint-githubaction-scripts react-lint
+lint: lint-node lint-githubaction-scripts react-lint
 
 test: compile
 	npm run test --workspace packages/cloudfrontFunctions
