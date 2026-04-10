@@ -63,7 +63,7 @@ export const handler = middy((event: APIGatewayProxyEventBase<AuthResult>) => la
   .use(
     inputOutputLogger({
       logger: (request) => {
-        logger.info(request)
+        logger.info("request", {request})
       }
     })
   )
