@@ -1,5 +1,5 @@
 import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
-import {AwsRum, AwsRumConfig, Telemetry} from "aws-rum-web"
+import {AwsRum, AwsRumConfig} from "aws-rum-web"
 import {readItemGroupFromLocalStorage} from "./useLocalStorageState"
 
 export class CptAwsRum {
@@ -38,19 +38,14 @@ export class CptAwsRum {
     let awsRum: AwsRum | null = null
     // see if we have already accepted cookies
     try {
-      let telemetries: Array<Telemetry> = RUM_CONFIG.TELEMETRIES
-      if (telemetries.includes("http")) {
-      // remove http logging to prevent PID leakage
-        telemetries = telemetries.filter(item => item !== "http")
-      }
       const config: AwsRumConfig = {
-        sessionSampleRate: RUM_CONFIG.SESSION_SAMPLE_RATE,
+        sessionSampleRate: 1,
         guestRoleArn: RUM_CONFIG.GUEST_ROLE_ARN,
         identityPoolId: RUM_CONFIG.IDENTITY_POOL_ID,
         endpoint: RUM_CONFIG.ENDPOINT,
-        telemetries: telemetries,
+        telemetries: ["errors", "performance"],
         allowCookies: allowCookies,
-        enableXRay: RUM_CONFIG.ENABLE_XRAY,
+        enableXRay: true,
         releaseId: RUM_CONFIG.RELEASE_ID,
         sessionEventLimit: 0,
         cookieAttributes: {secure: true, sameSite: "strict"},
