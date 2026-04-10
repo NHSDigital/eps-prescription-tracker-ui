@@ -84,6 +84,7 @@ clean:
 	find . -name 'lib' -type d -prune -exec rm -rf '{}' +
 	rm -rf cdk.out
 	rm -rf .local_config
+	rm -rf .cfn_guard_out
 
 deep-clean: clean
 	rm -rf .venv

@@ -1,7 +1,6 @@
 import {APIGatewayProxyEventBase} from "aws-lambda"
 import {Logger} from "@aws-lambda-powertools/logger"
 import {injectLambdaContext} from "@aws-lambda-powertools/logger/middleware"
-import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 import middy from "@middy/core"
 import axios from "axios"
 import inputOutputLogger from "@middy/input-output-logger"
@@ -64,7 +63,7 @@ export const handler = middy((event: APIGatewayProxyEventBase<AuthResult>) => la
   .use(
     inputOutputLogger({
       logger: (request) => {
-        logger.info(request as LogItemMessage)
+        logger.info("request", {request})
       }
     })
   )

@@ -55,7 +55,6 @@ jest.mock("@/constants/environment", () => ({
     APPLICATION_ID: "test-app-id",
     REGION: "eu-west-2",
     VERSION: "1.0.0",
-    TELEMETRIES: [],
     RELEASE_ID: "test-commit"
   },
   FRONTEND_PATHS: {

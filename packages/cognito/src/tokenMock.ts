@@ -6,7 +6,6 @@ import {DynamoDBClient} from "@aws-sdk/client-dynamodb"
 import {DynamoDBDocumentClient} from "@aws-sdk/lib-dynamodb"
 import middy from "@middy/core"
 import inputOutputLogger from "@middy/input-output-logger"
-import {LogItemMessage} from "@aws-lambda-powertools/logger/lib/cjs/types/Logger"
 import {parse} from "querystring"
 import {PrivateKey} from "jsonwebtoken"
 import {exchangeTokenForApigeeAccessToken, fetchUserInfo, initializeOidcConfig} from "@cpt-ui-common/authFunctions"
@@ -211,5 +210,5 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
-  .use(inputOutputLogger({logger: (request) => logger.info(request as LogItemMessage)}))
+  .use(inputOutputLogger({logger: (request) => logger.info("request", {request})}))
   .use(middyErrorHandler.errorHandler({logger}))
