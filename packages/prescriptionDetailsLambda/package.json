@@ -39,6 +39,6 @@
     "axios-mock-adapter": "^2.0.0",
     "mock-jwks": "^3.3.5",
     "vitest": "^4.0.18",
-    "nock": "^14.0.11"
+    "nock": "^15.0.0"
   }
 }
