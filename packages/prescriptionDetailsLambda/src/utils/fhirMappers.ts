@@ -97,7 +97,7 @@ export const extractItems = (
 
     // determine if initiallyPrescribed should be included (only if different from dispensed)
 
-    // get prescription level pending cancellation status
+    // get line item level pending cancellation status
     let itemPendingCancellation: boolean
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
     if (pendingCancellationExt?.extension){
