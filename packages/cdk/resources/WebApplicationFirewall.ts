@@ -1,6 +1,11 @@
 import {Construct} from "constructs"
 import {CfnIPSet, CfnLoggingConfiguration, CfnWebACL} from "aws-cdk-lib/aws-wafv2"
 
+export interface AllowList {
+  readonly ipv4: Array<string>
+  readonly ipv6: Array<string>
+}
+
 /**
  * WAF ACL and supporting resources
  */
@@ -8,18 +13,13 @@ export interface WebACLProps {
   readonly serviceName: string
   readonly rateLimitTransactions: number // Total transactions limit within an evaluation window (seconds)
   readonly rateLimitWindowSeconds?: number // Minimum is 60 seconds, default is 60 seconds.
-  readonly githubAllowListIpv4: Array<string>
-  readonly githubAllowListIpv6: Array<string>
-  readonly wafAllowGaRunnerConnectivity: boolean
+  readonly githubAllowList?: AllowList
   readonly allowedHeaders?: Map<string, string>
   readonly scope: string
   readonly wafLogGroupName: string
 }
 
 export class WebACL extends Construct {
-  public readonly githubAllowListIpv4: CfnIPSet
-  public readonly githubAllowListIpv6: CfnIPSet
-  public readonly wafAllowGaRunnerConnectivity: boolean
   public readonly webAcl: CfnWebACL
   public readonly attrArn: string
   public readonly allowedHeaders?: Map<string, string>
@@ -31,37 +31,24 @@ export class WebACL extends Construct {
   ) {
     super(scope, id)
 
-    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
-      this.githubAllowListIpv4 = new CfnIPSet(this, "githubAllowListIpv4", {
-        addresses: props.githubAllowListIpv4,
+    const rules: Array<CfnWebACL.RuleProperty> = []
+    let nextPriority = 0
+
+    if (props.githubAllowList) {
+      const githubAllowListIpv4 = new CfnIPSet(this, "githubAllowListIpv4", {
+        addresses: props.githubAllowList.ipv4,
         ipAddressVersion: "IPV4",
         scope: props.scope,
         description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
         name: `${props.serviceName}-PermittedGithubActionRunners`
       })
-    }
-
-    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
-      this.githubAllowListIpv6 = new CfnIPSet(this, "githubAllowListIpv6", {
-        addresses: props.githubAllowListIpv6,
-        ipAddressVersion: "IPV6",
-        scope: props.scope,
-        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
-        name: `${props.serviceName}-PermittedGithubActionRunnersIPV6`
-      })
-    }
-
-    const rules: Array<CfnWebACL.RuleProperty> = []
-    let nextPriority = 0
-
-    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv4.length > 0) {
       rules.push({
         name: "PermitGithubActionsRunnersOutsideUKandCrown",
         priority: nextPriority++,
         action: {allow: {}},
         statement: {
           ipSetReferenceStatement: {
-            arn: this.githubAllowListIpv4.attrArn
+            arn: githubAllowListIpv4.attrArn
           }
         },
         visibilityConfig: {
@@ -70,16 +57,21 @@ export class WebACL extends Construct {
           metricName: `${props.serviceName}-PermitGithubActionsRunnersOutsideUKandCrown`
         }
       })
-    }
 
-    if (props.wafAllowGaRunnerConnectivity && props.githubAllowListIpv6.length > 0) {
+      const githubAllowListIpv6 = new CfnIPSet(this, "githubAllowListIpv6", {
+        addresses: props.githubAllowList.ipv6,
+        ipAddressVersion: "IPV6",
+        scope: props.scope,
+        description: "Allow list IPs that may originate outside of the UK or Crown dependencies.",
+        name: `${props.serviceName}-PermittedGithubActionRunnersIPV6`
+      })
       rules.push({
         name: "PermitGithubActionsRunnersOutsideUKandCrownIPv6",
         priority: nextPriority++,
         action: {allow: {}},
         statement: {
           ipSetReferenceStatement: {
-            arn: this.githubAllowListIpv6.attrArn
+            arn: githubAllowListIpv6.attrArn
           }
         },
         visibilityConfig: {

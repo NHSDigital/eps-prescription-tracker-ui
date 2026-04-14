@@ -44,7 +44,7 @@ jobs:
 
   quality_checks:
     # always run, but only block in the non-skip case
-    needs: [get_commit_message, get_config_values]
+    needs: [get_config_values]
     uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -144,32 +144,6 @@ jobs:
     permissions:
       pull-requests: write
 
-  get_issue_number:
-    runs-on: ubuntu-22.04
-    outputs:
-      issue_number: ${{steps.get_issue_number.outputs.result}}
-
-    steps:
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
-        name: get issue number
-        id: get_issue_number
-        with:
-          script: |
-            if (context.issue.number) {
-              // Return issue number if present
-              return context.issue.number;
-            } else {
-              // Otherwise return issue number from commit
-              return (
-                await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                commit_sha: context.sha,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                })
-              ).data[0].number;
-            }
-          result-encoding: string
-
   tag_release:
     needs: [get_config_values]
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@c8f899f30a6a726859b0277faa73cd9ff7f4de20
@@ -183,89 +157,42 @@ jobs:
       branch_name: ${{ github.event.pull_request.head.ref }}
       tag_format: ${{ needs.get_config_values.outputs.tag_format }}
 
-  get_commit_id:
-    runs-on: ubuntu-22.04
-    outputs:
-      commit_id: ${{ steps.commit_id.outputs.commit_id }}
-    steps:
-      - name: Get Commit ID
-        id: commit_id
-        run: |
-          echo "commit_id=${{ github.sha }}" >> "$GITHUB_OUTPUT"
-
   package_code:
-    needs: [get_issue_number, get_commit_id, quality_gate, get_config_values]
+    needs: [quality_gate, get_config_values]
     permissions:
       contents: read
       packages: read
       id-token: write
-    if: |
-      always() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
     uses: ./.github/workflows/cdk_package_code.yml
     with:
-      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
-      COMMIT_ID: ${{ needs.get_commit_id.outputs.commit_id }}
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
 
-
   release_code:
-    needs: [get_issue_number, package_code, get_commit_id, get_config_values]
-    if: |
-      always() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    needs: [package_code, get_config_values]
     uses: ./.github/workflows/release_all_stacks.yml
     permissions:
       contents: write
       id-token: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
-      SERVICE_NAME: cpt-ui-pr-${{needs.get_issue_number.outputs.issue_number}}
+      SERVICE_NAME: cpt-ui-pr-${{ github.event.pull_request.number }}
       TARGET_ENVIRONMENT: dev-pr
-      VERSION_NUMBER: PR-${{ needs.get_issue_number.outputs.issue_number }}
+      VERSION_NUMBER: PR-${{ github.event.pull_request.number }}
       COMMIT_ID: "static-pr"
       useMockOidc: true
-      primaryOidcIssuer: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare"
-      primaryOidcAuthorizeEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/authorize"
-      primaryOidcTokenEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/access_token"
-      primaryOidcUserInfoEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/userinfo"
-      primaryOidcjwksEndpoint: "https://am.nhsint.auth-ptl.cis2.spineservices.nhs.uk:443/openam/oauth2/realms/root/realms/NHSIdentity/realms/Healthcare/connect/jwk_uri"
-      mockOidcIssuer: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev"
-      mockOidcAuthorizeEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/authorize"
-      mockOidcTokenEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      mockOidcUserInfoEndpoint: "https://internal-dev.api.service.nhs.uk/oauth2-mock/userinfo"
-      mockOidcjwksEndpoint: "https://identity.ptl.api.platform.nhs.uk/realms/Cis2-mock-internal-dev/protocol/openid-connect/certs"
-      allowLocalhostAccess: true
-      useCustomCognitoDomain: false
-      APIGEE_CIS2_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2/token"
-      APIGEE_MOCK_TOKEN_ENDPOINT: "https://internal-dev.api.service.nhs.uk/oauth2-mock/token"
-      APIGEE_PRESCRIPTIONS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/clinical-prescription-tracker/"
-      APIGEE_PDS_ENDPOINT: "https://internal-dev.api.service.nhs.uk/personal-demographics/FHIR/R4/"
-      APIGEE_DOHS_ENDPOINT: "https://int.api.service.nhs.uk/service-search-api/"
       JWT_KID: "eps-cpt-ui-dev"
-      ROLE_ID: "555254242106"
       LOG_LEVEL: "DEBUG"
       RUN_REGRESSION_TESTS: true
-      WAF_ALLOW_GA_RUNNER_CONNECTIVITY: true
-      USE_ZONE_APEX: false
-      ROUTE53_EXPORT_NAME: EPS
       REACT_LOG_LEVEL: "debug"
       LOG_RETENTION_IN_DAYS: 30
       IS_PULL_REQUEST: true
-      FORWARD_CSOC_LOGS: false
     secrets: inherit
   report_deployed_url:
-    needs: [release_code, get_issue_number]
-    if: |
-      always() &&
-      ! contains(needs.*.result, 'failure') &&
-      ! contains(needs.*.result, 'cancelled')
+    needs: [release_code]
     runs-on: ubuntu-22.04
     steps:
       - name: Report Deployed URL
         run: |
           echo "Deployed URL: https://cpt-ui-pr-${ISSUE_NUMBER}.dev.eps.national.nhs.uk" >> "$GITHUB_STEP_SUMMARY"
         env:
-          ISSUE_NUMBER: ${{ needs.get_issue_number.outputs.issue_number }}
+          ISSUE_NUMBER: ${{ github.event.pull_request.number }}

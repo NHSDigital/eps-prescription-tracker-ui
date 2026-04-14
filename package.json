@@ -61,7 +61,6 @@
         "jest-environment-jsdom": "^30.3.0",
         "jest-junit": "^16.0.0",
         "ts-jest": "^29.4.9",
-        "ts-node": "^10.9.2",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.57.2",
         "vitest": "^4.0.18"

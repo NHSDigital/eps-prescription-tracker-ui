@@ -1,10 +1,20 @@
-guard-%:
-	@ if [ "${${*}}" = "" ]; then \
-		echo "Environment variable $* not set"; \
-		exit 1; \
-	fi
+export CDK_CONFIG_serviceName=${stack_name}
+export CDK_CONFIG_versionNumber=undefined
+export CDK_CONFIG_commitId=undefined
+export CDK_CONFIG_isPullRequest=true # Turns off drift detection when true
+export CDK_CONFIG_environment=dev
+export CDK_CONFIG_rumCloudwatchLogEnabled=true
+export CDK_CONFIG_useMockOidc=false
+export CDK_CONFIG_primaryOidcClientId=undefined
+export CDK_CONFIG_mockOidcClientId=undefined
+export CDK_CONFIG_logRetentionInDays=30
+export CDK_CONFIG_logLevel=debug
+export CDK_CONFIG_reactLogLevel=debug
+export CDK_CONFIG_jwtKid=foo
+export CDK_CONFIG_cloudfrontOriginCustomHeader=foo
+export PULL_REQUEST_ID=${pr_id}
 
-.PHONY: install build test publish release clean lint compile cdk-synth cdk-deploy cdk-diff react-dev react-build react-start react-lint check-licenses cdk-synth-no-mock cdk-synth-mock cdk-synth-stateful-resources-no-mock cdk-synth-stateless-resources-no-mock cdk-synth-stateful-resources-mock cdk-synth-stateless-resources-mock
+.PHONY: install compile test publish release clean lint cdk-synth cdk-deploy cdk-diff react-build react-start react-lint cdk-synth-no-mock cdk-synth-mock
 
 install: install-node install-python install-hooks
 
@@ -74,14 +84,11 @@ clean:
 	find . -name 'lib' -type d -prune -exec rm -rf '{}' +
 	rm -rf cdk.out
 	rm -rf .local_config
-	rm -rf .cfn_guard_output
+	rm -rf .cfn_guard_out
 
 deep-clean: clean
 	rm -rf .venv
 	find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
-
-react-dev:
-	npm run dev --workspace packages/cpt-ui
 
 react-build:
 	export BASE_PATH=/site && npm run build --workspace packages/cpt-ui
@@ -92,227 +99,45 @@ react-start:
 react-lint:
 	npm run lint --workspace packages/cpt-ui
 
-cdk-deploy: guard-service_name guard-CDK_APP_NAME
-	REQUIRE_APPROVAL="$${REQUIRE_APPROVAL:-any-change}" && \
-	VERSION_NUMBER="$${VERSION_NUMBER:-undefined}" && \
-	COMMIT_ID="$${COMMIT_ID:-undefined}" && \
-		npx cdk deploy \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
-		--all \
-		--ci true \
-		--require-approval $${REQUIRE_APPROVAL} \
-		--context serviceName=$$service_name \
-		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID
+cdk-deploy:
+	export REQUIRE_APPROVAL=any-change
+	CDK_STACK_NAME="UsCertsStack StatefulStack" \
+	CDK_CONFIG_rumCloudwatchLogEnabled=false \
+	npm run cdk-deploy --workspace packages/cdk -- \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=undefined" \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=undefined" \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=undefined" \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=undefined"
+	CDK_STACK_NAME="UsCertsStack StatefulStack" \
+	npm run cdk-deploy --workspace packages/cdk -- \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:JwtPrivateKey=undefined" \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeApiKey=undefined" \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeSecretKey=undefined" \
+		--parameters "${CDK_CONFIG_serviceName}-stateful-resources:ApigeeDoHSApiKey=undefined"
+	CDK_STACK_NAME="StatelessStack UsStatelessStack" \
+	npm run cdk-deploy --workspace packages/cdk
+	CDK_STACK_NAME="FrontDoorStack" \
+	npm run cdk-deploy --workspace packages/cdk
 
 cdk-watch:
-	./scripts/run_sync.sh
+	mkdir -p .local_config
+	(trap 'kill 0' INT; \
+	npm run cdk-watch --workspace packages/cdk > .local_config/cdk.log 2>&1 & \
+	npm run dev --workspace packages/cpt-ui > .local_config/website.log 2>&1)
 
 cdk-synth: compile cdk-synth-no-mock cdk-synth-mock
 
-cdk-synth-no-mock: cdk-synth-stateful-resources-no-mock cdk-synth-stateless-resources-no-mock
-
-cdk-synth-mock: cdk-synth-stateful-resources-mock cdk-synth-stateless-resources-mock
-
-cdk-synth-stateful-resources-no-mock:
-	mkdir -p .local_config
-	CDK_APP_NAME=StatefulResourcesApp \
-	SERVICE_NAME=cpt-ui \
-	VERSION_NUMBER=undefined \
-	COMMIT_ID=undefined \
-	AUTO_DELETE_OBJECTS=true \
-	CLOUDFRONT_DISTRIBUTION_ID=123 \
-	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
-	SHORT_CLOUDFRONT_DOMAIN=dummy \
-	FULL_CLOUDFRONT_DOMAIN=dummy.local \
-	EPS_DOMAIN_NAME=dummy.local \
-	FULL_COGNITO_DOMAIN=dummy.local \
-	RUM_LOG_GROUP_ARN=123 \
-	RUM_APP_NAME=dummy \
-	EPS_HOSTED_ZONE_ID=123 \
-	USE_MOCK_OIDC=false \
-	PRIMARY_OIDC_CLIENT_ID=undefined \
-	PRIMARY_OIDC_ISSUER=undefined \
-	PRIMARY_OIDC_AUTHORIZE_ENDPOINT=undefined \
-	PRIMARY_OIDC_TOKEN_ENDPOINT=undefined \
-	PRIMARY_OIDC_USERINFO_ENDPOINT=undefined \
-	PRIMARY_OIDC_JWKS_ENDPOINT=undefined \
-	LOG_RETENTION_IN_DAYS=30 \
-	LOG_LEVEL=debug \
-	USE_CUSTOM_COGNITO_DOMAIN=true \
-	ALLOW_LOCALHOST_ACCESS=false \
-	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
-	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
-	SPLUNK_DELIVERY_STREAM=foo \
-	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
+cdk-synth-no-mock:
+	CDK_CONFIG_useMockOidc=false \
+	CDK_CONFIG_serviceName="cpt-ui" \
 	DO_NOT_GET_AWS_EXPORT=true \
-	IS_PULL_REQUEST=false \
-	USE_ZONE_APEX=false \
-	FORWARD_CSOC_LOGS=true \
-		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
-	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
-		--quiet \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" 
+	npm run cdk-synth --workspace packages/cdk
 
-cdk-synth-stateless-resources-no-mock:
-	mkdir -p .local_config
-	CDK_APP_NAME=StatelessResourcesApp \
-	SERVICE_NAME=cpt-ui \
-	VERSION_NUMBER=undefined \
-	COMMIT_ID=undefined \
-	AUTO_DELETE_OBJECTS=true \
-	LOG_RETENTION_IN_DAYS=30 \
-	LOG_LEVEL=debug \
-	EPS_DOMAIN_NAME=dummy.local \
-	EPS_HOSTED_ZONE_ID=123 \
-	CLOUDFRONT_DISTRIBUTION_ID=123 \
-	SHORT_CLOUDFRONT_DOMAIN=dummy \
-	FULL_CLOUDFRONT_DOMAIN=dummy.local \
-	FULL_COGNITO_DOMAIN=dummy.local \
-	RUM_LOG_GROUP_ARN=123 \
-	RUM_APP_NAME=dummy \
-	PRIMARY_OIDC_CLIENT_ID=undefined \
-	PRIMARY_OIDC_ISSUER=undefined \
-	PRIMARY_OIDC_AUTHORIZE_ENDPOINT=undefined \
-	PRIMARY_OIDC_TOKEN_ENDPOINT=undefined \
-	PRIMARY_OIDC_USERINFO_ENDPOINT=undefined \
-	PRIMARY_OIDC_JWKS_ENDPOINT=undefined \
-	USE_MOCK_OIDC=false \
-	APIGEE_API_KEY=foo \
-	APIGEE_API_SECRET=foo \
-	APIGEE_DOHS_API_KEY=foo \
-	APIGEE_CIS2_TOKEN_ENDPOINT=foo \
-	APIGEE_PRESCRIPTION_ENDPOINT=foo \
-	APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
-	APIGEE_DOHS_ENDPOINT=foo \
-	WEBACL_ATTRIBUTE_ARN=foo \
-	WEBACL_ATTRIBUTE_ARN=foo \
-	JWT_KID=foo \
-	ROLE_ID=foo \
-	ALLOW_LOCALHOST_ACCESS=false \
-	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
-	GITHUB_ACTIONS_RUNNER_IPV4='["127.0.0.1"]' \
-	GITHUB_ACTIONS_RUNNER_IPV6='["::1"]' \
-	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
+cdk-synth-mock:
+	CDK_CONFIG_useMockOidc=true \
+	CDK_CONFIG_serviceName="cpt-ui" \
 	DO_NOT_GET_AWS_EXPORT=true \
-	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
-	IS_PULL_REQUEST=false \
-	USE_ZONE_APEX=false \
-	FORWARD_CSOC_LOGS=true \
-		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
-	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
-		--quiet \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" \
-
-
-cdk-synth-stateful-resources-mock:
-	mkdir -p .local_config
-	CDK_APP_NAME=StatefulResourcesApp \
-	SERVICE_NAME=cpt-ui \
-	VERSION_NUMBER=undefined \
-	COMMIT_ID=undefined \
-	AUTO_DELETE_OBJECTS=true \
-	CLOUDFRONT_DISTRIBUTION_ID=123 \
-	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
-	SHORT_CLOUDFRONT_DOMAIN=dummy \
-	FULL_CLOUDFRONT_DOMAIN=dummy.local \
-	EPS_DOMAIN_NAME=dummy.local \
-	FULL_COGNITO_DOMAIN=dummy.local \
-	RUM_LOG_GROUP_ARN=123 \
-	RUM_APP_NAME=dummy \
-	EPS_HOSTED_ZONE_ID=123 \
-	USE_MOCK_OIDC=true \
-	PRIMARY_OIDC_CLIENT_ID=undefined \
-	PRIMARY_OIDC_ISSUER=undefined \
-	PRIMARY_OIDC_AUTHORIZE_ENDPOINT=undefined \
-	PRIMARY_OIDC_TOKEN_ENDPOINT=undefined \
-	PRIMARY_OIDC_USERINFO_ENDPOINT=undefined \
-	PRIMARY_OIDC_JWKS_ENDPOINT=undefined \
-	MOCK_OIDC_CLIENT_ID=undefined \
-	MOCK_OIDC_ISSUER=undefined \
-	MOCK_OIDC_AUTHORIZE_ENDPOINT=undefined \
-	MOCK_OIDC_TOKEN_ENDPOINT=undefined \
-	MOCK_OIDC_USERINFO_ENDPOINT=undefined \
-	MOCK_OIDC_JWKS_ENDPOINT=undefined \
-	LOG_RETENTION_IN_DAYS=30 \
-	LOG_LEVEL=debug \
-	USE_CUSTOM_COGNITO_DOMAIN=true \
-	ALLOW_LOCALHOST_ACCESS=false \
-	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
-	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
-	SPLUNK_DELIVERY_STREAM=foo \
-	SPLUNK_SUBSCRIPTION_FILTER_ROLE=foo \
-	DO_NOT_GET_AWS_EXPORT=true \
-	IS_PULL_REQUEST=false \
-	USE_ZONE_APEX=false \
-	FORWARD_CSOC_LOGS=true \
-		 ./.github/scripts/fix_cdk_json.sh .local_config/stateful_app.config.json
-	CONFIG_FILE_NAME=.local_config/stateful_app.config.json npx cdk synth \
-		--quiet \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatefulResourcesApp.ts" 
-
-cdk-synth-stateless-resources-mock:
-	mkdir -p .local_config
-	CDK_APP_NAME=StatelessResourcesApp \
-	SERVICE_NAME=cpt-ui \
-	VERSION_NUMBER=undefined \
-	COMMIT_ID=undefined \
-	AUTO_DELETE_OBJECTS=true \
-	LOG_RETENTION_IN_DAYS=30 \
-	LOG_LEVEL=debug \
-	EPS_DOMAIN_NAME=dummy.local \
-	EPS_HOSTED_ZONE_ID=123 \
-	CLOUDFRONT_DISTRIBUTION_ID=123 \
-	SHORT_CLOUDFRONT_DOMAIN=dummy \
-	FULL_CLOUDFRONT_DOMAIN=dummy.local \
-	FULL_COGNITO_DOMAIN=dummy.local \
-	RUM_LOG_GROUP_ARN=123 \
-	RUM_APP_NAME=dummy \
-	PRIMARY_OIDC_CLIENT_ID=undefined \
-	PRIMARY_OIDC_ISSUER=undefined \
-	PRIMARY_OIDC_AUTHORIZE_ENDPOINT=undefined \
-	PRIMARY_OIDC_TOKEN_ENDPOINT=undefined \
-	PRIMARY_OIDC_USERINFO_ENDPOINT=undefined \
-	PRIMARY_OIDC_JWKS_ENDPOINT=undefined \
-	MOCK_OIDC_CLIENT_ID=undefined \
-	MOCK_OIDC_ISSUER=undefined \
-	MOCK_OIDC_AUTHORIZE_ENDPOINT=undefined \
-	MOCK_OIDC_TOKEN_ENDPOINT=undefined \
-	MOCK_OIDC_USERINFO_ENDPOINT=undefined \
-	MOCK_OIDC_JWKS_ENDPOINT=undefined \
-	USE_MOCK_OIDC=true \
-	WEBACL_ATTRIBUTE_ARN=foo \
-	APIGEE_API_KEY=foo \
-    APIGEE_API_SECRET=foo \
-    APIGEE_DOHS_API_KEY=foo \
-    APIGEE_CIS2_TOKEN_ENDPOINT=foo \
-    APIGEE_MOCK_TOKEN_ENDPOINT=foo \
-    APIGEE_PRESCRIPTION_ENDPOINT=foo \
-    APIGEE_PERSONAL_DEMOGRAPHICS_ENDPOINT=foo \
-    APIGEE_DOHS_ENDPOINT=foo \
-	JWT_KID=foo \
-	ROLE_ID=foo \
-	ALLOW_LOCALHOST_ACCESS=false \
-	CLOUDFRONT_CERT_ARN=arn:aws:acm:us-east-1:444455556666:certificate/certificate_ID \
-	WAF_ALLOW_GA_RUNNER_CONNECTIVITY=true \
-	GITHUB_ACTIONS_RUNNER_IPV4='["127.0.0.1"]' \
-	GITHUB_ACTIONS_RUNNER_IPV6='["::1"]' \
-	DO_NOT_GET_AWS_EXPORT=true \
-	CLOUDFRONT_ORIGIN_CUSTOM_HEADER=foo \
-	IS_PULL_REQUEST=false \
-	USE_ZONE_APEX=false \
-	FORWARD_CSOC_LOGS=true \
-		 ./.github/scripts/fix_cdk_json.sh .local_config/stateless_app.config.json
-	CONFIG_FILE_NAME=.local_config/stateless_app.config.json npx cdk synth \
-		--quiet \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/StatelessResourcesApp.ts" 
-
-cdk-diff: guard-CDK_APP_NAME
-	npx cdk diff \
-		--app "npx ts-node --prefer-ts-exts packages/cdk/bin/$$CDK_APP_NAME.ts" \
-		--context serviceName=$$service_name \
-		--context VERSION_NUMBER=$$VERSION_NUMBER \
-		--context COMMIT_ID=$$COMMIT_ID
+	npm run cdk-synth --workspace packages/cdk
 
 %:
 	@$(MAKE) -f /usr/local/share/eps/Mk/common.mk $@

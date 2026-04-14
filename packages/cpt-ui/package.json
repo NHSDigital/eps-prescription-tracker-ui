@@ -4,15 +4,15 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "compile": "tsc --build",
-    "dev": "vite --host",
-    "build": "tsc --build && vite build",
+    "dev": "vite --host --config vite.local.config.ts",
+    "compile": "vite build",
     "lint": "eslint  --max-warnings 0 --fix --config ../../eslint.config.mjs .",
     "start": "vite preview",
     "test": "NODE_NO_WARNINGS=1 jest --no-cache --coverage"
   },
   "dependencies": {
     "@cpt-ui-common/common-types": "^1.0.0",
+    "@nhsdigital/eps-deployment-utils": "^1.6.1",
     "aws-amplify": "^6.16.3",
     "aws-rum-web": "^2.0.0",
     "axios": "^1.14.0",

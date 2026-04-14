@@ -3,9 +3,9 @@ export const AUTH_CONFIG = {
   USER_POOL_ID: import.meta.env.VITE_userPoolId,
   USER_POOL_CLIENT_ID: import.meta.env.VITE_userPoolClientId,
   HOSTED_LOGIN_DOMAIN: import.meta.env.VITE_hostedLoginDomain,
-  REDIRECT_SIGN_IN: import.meta.env.VITE_redirectSignIn,
-  REDIRECT_SIGN_OUT: import.meta.env.VITE_redirectSignOut,
-  REDIRECT_SESSION_SIGN_OUT: import.meta.env.VITE_redirectSessionSignOut
+  REDIRECT_SIGN_IN: `${import.meta.env.VITE_cloudfrontBaseUrl}/site/select-your-role`,
+  REDIRECT_SIGN_OUT: `${import.meta.env.VITE_cloudfrontBaseUrl}/site/logout`,
+  REDIRECT_SESSION_SIGN_OUT: `${import.meta.env.VITE_cloudfrontBaseUrl}/site/session-logged-out`
 } as const
 
 // Environment Configuration
