@@ -17,8 +17,8 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.14"
-pytest = "^9.0.2"
-requests = "^2.33.0"
+pytest = "^9.0.3"
+requests = "^2.33.1"
 
 [tool.poetry.scripts]
 

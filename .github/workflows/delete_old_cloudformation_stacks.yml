@@ -6,24 +6,21 @@ on:
   schedule:
     - cron: "20 * * * *"
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions: {}
 jobs:
-  # This workflow contains a single job called "combine-prs"
   delete-old-cloudformation-stacks:
-    # The type of runner that the job will run on
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
       contents: read
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Checkout local github scripts
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ${{ env.BRANCH_NAME }}
           sparse-checkout: |
             .github/scripts
+          persist-credentials: false
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7

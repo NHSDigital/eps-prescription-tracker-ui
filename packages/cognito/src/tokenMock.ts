@@ -210,5 +210,5 @@ const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPro
 
 export const handler = middy(lambdaHandler)
   .use(injectLambdaContext(logger, {clearState: true}))
-  .use(inputOutputLogger({logger: (request) => logger.info(request)}))
+  .use(inputOutputLogger({logger: (request) => logger.info("request", {request})}))
   .use(middyErrorHandler.errorHandler({logger}))

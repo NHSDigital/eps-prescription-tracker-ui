@@ -9,8 +9,7 @@
     "unit": "POWERTOOLS_DEV=true NODE_OPTIONS=--experimental-vm-modules jest --no-cache --coverage",
     "lint": "eslint  --max-warnings 0 --fix --config ../../../eslint.config.mjs .",
     "compile": "tsc --build",
-    "test": "npm run compile && npm run unit",
-    "check-licenses": "license-checker --failOn GPL --failOn LGPL --start ../.."
+    "test": "npm run compile && npm run unit"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.32.0",
@@ -20,6 +19,6 @@
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",
-    "nock": "^14.0.11"
+    "nock": "^14.0.12"
   }
 }
