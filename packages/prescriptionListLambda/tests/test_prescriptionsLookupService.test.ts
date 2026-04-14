@@ -53,8 +53,7 @@ describe("Prescriptions Lookup Service Tests", () => {
         statusCode: "0001",
         issueDate: "2023-01-01",
         prescriptionTreatmentType: TreatmentType.ACUTE,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false,
+        pendingCancellation: false,
         nhsNumber: "9999999999"
       })
     })
@@ -132,8 +131,7 @@ describe("Prescriptions Lookup Service Tests", () => {
         statusCode: "0001",
         issueDate: "2023-01-01",
         prescriptionTreatmentType: TreatmentType.ACUTE,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false,
+        pendingCancellation: false,
         nhsNumber: "9999999999"
       })
     })

@@ -124,18 +124,24 @@ export const mapResponseToPrescriptionSummary = (
       ext.url === "numberOfRepeatsIssued"
     )?.valueInteger
 
-    // Extract pending cancellation - fixed to match the structure
+    // Extract pending cancellation
+    let pendingCancellation = false
     const pendingCancellationExt = resource.extension?.find(ext =>
       ext.url === "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation"
     )
 
-    const prescriptionPendingCancellation = pendingCancellationExt?.extension?.find(ext =>
-      ext.url === "prescriptionPendingCancellation"
-    )?.valueBoolean || false
-
-    const itemsPendingCancellation = pendingCancellationExt?.extension?.find(ext =>
-      ext.url === "lineItemPendingCancellation"
-    )?.valueBoolean || false
+    if(pendingCancellationExt?.extension){
+      // handle old split extension
+      for(const extension of pendingCancellationExt.extension){
+        // if either is true set overarching pendingCancellation as true
+        if (extension.valueBoolean){
+          pendingCancellation = true
+        }
+      }
+    } else {
+      // handle new combined extension
+      pendingCancellation = pendingCancellationExt?.valueBoolean || false
+    }
 
     prescriptions.push({
       prescriptionId: resource.identifier?.[0]?.value as string,
@@ -143,8 +149,7 @@ export const mapResponseToPrescriptionSummary = (
       statusCode,
       issueDate: resource.authoredOn as string,
       prescriptionTreatmentType: treatmentType,
-      prescriptionPendingCancellation,
-      itemsPendingCancellation,
+      pendingCancellation,
       maxRepeats,
       issueNumber,
       nhsNumber,

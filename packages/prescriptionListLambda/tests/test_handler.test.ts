@@ -99,10 +99,9 @@ describe("handler tests with cis2 auth", () => {
     expect(responseBody).toEqual({
       currentPrescriptions: [{
         issueDate: "2023-01-01",
-        itemsPendingCancellation: false,
         nhsNumber: "9999999999",
         prescriptionId: "01ABC123",
-        prescriptionPendingCancellation: false,
+        pendingCancellation: false,
         prescriptionTreatmentType: "0001",
         statusCode: "0001",
         isDeleted: false
@@ -150,10 +149,9 @@ describe("handler tests with cis2 auth", () => {
       currentPrescriptions: [{
         isDeleted: false,
         issueDate: "2023-01-01",
-        itemsPendingCancellation: false,
         nhsNumber: "9999999999",
         prescriptionId: "01ABC123",
-        prescriptionPendingCancellation: false,
+        pendingCancellation: false,
         prescriptionTreatmentType: "0001",
         statusCode: "0001"
       }],

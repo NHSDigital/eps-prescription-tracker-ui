@@ -111,7 +111,8 @@ describe("extractPrescribedItems", () => {
     })
   })
 
-  it("should extract pending cancellation status from extensions", () => {
+  // old pending cancellation
+  it("should extract pending cancellation status from old format extensions", () => {
     const medicationRequests: Array<MedicationRequest> = [
       {
         resourceType: "MedicationRequest",
@@ -124,6 +125,27 @@ describe("extractPrescribedItems", () => {
             extension: [
               {url: "lineItemPendingCancellation", valueBoolean: true}
             ]
+          }
+        ]
+      }
+    ]
+
+    const result = extractItems(medicationRequests, [])
+    expect(result[0].itemPendingCancellation).toBe(true)
+  })
+
+  // new pending cancellation
+  it("should extract pending cancellation status from extensions", () => {
+    const medicationRequests: Array<MedicationRequest> = [
+      {
+        resourceType: "MedicationRequest",
+        status: "active",
+        intent: "order",
+        subject: {},
+        extension: [
+          {
+            url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+            valueBoolean: true
           }
         ]
       }

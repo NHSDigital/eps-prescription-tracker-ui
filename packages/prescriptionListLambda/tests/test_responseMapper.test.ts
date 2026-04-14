@@ -53,8 +53,7 @@ describe("Response Mapper Tests", () => {
         statusCode: "0001",
         issueDate: "20250204000000",
         prescriptionTreatmentType: TreatmentType.ACUTE,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false,
+        pendingCancellation: false,
         nhsNumber: "9999999111",
         given: ["Fall"],
         family: "Back"
@@ -75,8 +74,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0001",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -140,8 +138,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0001",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -152,8 +149,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0004",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -164,8 +160,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0000",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -193,8 +188,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0001",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -205,8 +199,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0000",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -217,8 +210,7 @@ describe("Response Mapper Tests", () => {
           statusCode: "0004",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9999999111",
           given: ["Fall"],
           family: "Back"
@@ -368,8 +360,7 @@ describe("Response Mapper Tests", () => {
           issueNumber: 1,
           maxRepeats: 7,
           prescriptionTreatmentType: TreatmentType.ERD,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
           nhsNumber: "9732730684",
           given: ["ETTA"],
           family: "CORY",
@@ -382,8 +373,482 @@ describe("Response Mapper Tests", () => {
           statusCode: "0006",
           issueDate: "20250204000000",
           prescriptionTreatmentType: TreatmentType.ACUTE,
-          prescriptionPendingCancellation: false,
-          itemsPendingCancellation: false,
+          pendingCancellation: false,
+          nhsNumber: "9732730684",
+          given: ["ETTA"],
+          family: "CORY",
+          prefix: ["MISS"],
+          suffix: ["OBE"]
+        }
+      ])
+    })
+
+    // new combined extension
+    it("should correctly set the pending cancellation flag", () => {
+      const mockBundle: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [
+          {
+            fullUrl: "urn:uuid:PATIENT-123-567-890",
+            search: {
+              mode: "include"
+            },
+            resource: {
+              resourceType: "Patient",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/nhs-number",
+                value: "9732730684"
+              }],
+              name: [{
+                prefix: ["MISS"],
+                suffix: ["OBE"],
+                given: ["ETTA"],
+                family: "CORY"
+              }]
+            }
+          },
+          {
+            fullUrl: "urn:uuid:PRESCRIPTION-111-111-111",
+            search: {
+              mode: "match"
+            },
+            resource: {
+              resourceType: "RequestGroup",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/prescription-order-number",
+                value: "335C70-A83008-111111"
+              }],
+              subject: {
+                reference: "urn:uuid:PATIENT-123-567-890"
+              },
+              status: "active",
+              intent: "reflex-order",
+              authoredOn: "20250204000000",
+              extension: [
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory", //old
+                  extension: [{
+                    url: "status",
+                    valueCoding : {
+                      system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                      code: "0001",
+                      display: "To be Dispensed"
+                    }
+                  }]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation",
+                  extension: [
+                    {
+                      url: "numberOfRepeatsIssued",
+                      valueInteger: 1
+                    },
+                    {
+                      url: "numberOfRepeatsAllowed",
+                      valueInteger: 7
+                    }
+                  ]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                  valueBoolean: true
+                }
+              ]
+            }
+          },
+          {
+            fullUrl: "urn:uuid:PRESCRIPTION-222-222-222",
+            search: {
+              mode: "match"
+            },
+            resource: {
+              resourceType: "RequestGroup",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/prescription-order-number",
+                value: "335C70-A83008-222222"
+              }],
+              subject: {
+                reference: "urn:uuid:PATIENT-123-567-890"
+              },
+              status: "active",
+              intent: "order",
+              authoredOn: "20250204000000",
+              extension: [
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
+                  extension: [{
+                    url: "status",
+                    valueCoding : {
+                      system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                      code: "0006",
+                      display: "Dispensed"
+                    }
+                  }]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                  valueBoolean: false
+                }
+              ]
+            }
+          }
+        ]
+      }
+
+      const result = mapResponseToPrescriptionSummary(mockBundle)
+
+      expect(result).toEqual([
+        {
+          prescriptionId: "335C70-A83008-111111",
+          isDeleted: false,
+          statusCode: "0001",
+          issueDate: "20250204000000",
+          issueNumber: 1,
+          maxRepeats: 7,
+          prescriptionTreatmentType: TreatmentType.ERD,
+          pendingCancellation: true,
+          nhsNumber: "9732730684",
+          given: ["ETTA"],
+          family: "CORY",
+          prefix: ["MISS"],
+          suffix: ["OBE"]
+        },
+        {
+          prescriptionId: "335C70-A83008-222222",
+          isDeleted: false,
+          statusCode: "0006",
+          issueDate: "20250204000000",
+          prescriptionTreatmentType: TreatmentType.ACUTE,
+          pendingCancellation: false,
+          nhsNumber: "9732730684",
+          given: ["ETTA"],
+          family: "CORY",
+          prefix: ["MISS"],
+          suffix: ["OBE"]
+        }
+      ])
+    })
+
+    // old separate extension
+    // eslint-disable-next-line max-len
+    it("should correctly set the pending cancellation flag when there is a prescription level pending cancellation", () => {
+      const mockBundle: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [
+          {
+            fullUrl: "urn:uuid:PATIENT-123-567-890",
+            search: {
+              mode: "include"
+            },
+            resource: {
+              resourceType: "Patient",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/nhs-number",
+                value: "9732730684"
+              }],
+              name: [{
+                prefix: ["MISS"],
+                suffix: ["OBE"],
+                given: ["ETTA"],
+                family: "CORY"
+              }]
+            }
+          },
+          {
+            fullUrl: "urn:uuid:PRESCRIPTION-111-111-111",
+            search: {
+              mode: "match"
+            },
+            resource: {
+              resourceType: "RequestGroup",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/prescription-order-number",
+                value: "335C70-A83008-111111"
+              }],
+              subject: {
+                reference: "urn:uuid:PATIENT-123-567-890"
+              },
+              status: "active",
+              intent: "reflex-order",
+              authoredOn: "20250204000000",
+              extension: [
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory", //old
+                  extension: [{
+                    url: "status",
+                    valueCoding : {
+                      system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                      code: "0001",
+                      display: "To be Dispensed"
+                    }
+                  }]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation",
+                  extension: [
+                    {
+                      url: "numberOfRepeatsIssued",
+                      valueInteger: 1
+                    },
+                    {
+                      url: "numberOfRepeatsAllowed",
+                      valueInteger: 7
+                    }
+                  ]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                  extension: [
+                    {
+                      url: "prescriptionPendingCancellation",
+                      valueBoolean: true
+                    },
+                    {
+                      url: "lineItemPendingCancellation",
+                      valueBoolean: false
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            fullUrl: "urn:uuid:PRESCRIPTION-222-222-222",
+            search: {
+              mode: "match"
+            },
+            resource: {
+              resourceType: "RequestGroup",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/prescription-order-number",
+                value: "335C70-A83008-222222"
+              }],
+              subject: {
+                reference: "urn:uuid:PATIENT-123-567-890"
+              },
+              status: "active",
+              intent: "order",
+              authoredOn: "20250204000000",
+              extension: [
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
+                  extension: [{
+                    url: "status",
+                    valueCoding : {
+                      system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                      code: "0006",
+                      display: "Dispensed"
+                    }
+                  }]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                  extension: [
+                    {
+                      url: "prescriptionPendingCancellation",
+                      valueBoolean: false
+                    },
+                    {
+                      url: "lineItemPendingCancellation",
+                      valueBoolean: false
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+      const result = mapResponseToPrescriptionSummary(mockBundle)
+
+      expect(result).toEqual([
+        {
+          prescriptionId: "335C70-A83008-111111",
+          isDeleted: false,
+          statusCode: "0001",
+          issueDate: "20250204000000",
+          issueNumber: 1,
+          maxRepeats: 7,
+          prescriptionTreatmentType: TreatmentType.ERD,
+          pendingCancellation: true,
+          nhsNumber: "9732730684",
+          given: ["ETTA"],
+          family: "CORY",
+          prefix: ["MISS"],
+          suffix: ["OBE"]
+        },
+        {
+          prescriptionId: "335C70-A83008-222222",
+          isDeleted: false,
+          statusCode: "0006",
+          issueDate: "20250204000000",
+          prescriptionTreatmentType: TreatmentType.ACUTE,
+          pendingCancellation: false,
+          nhsNumber: "9732730684",
+          given: ["ETTA"],
+          family: "CORY",
+          prefix: ["MISS"],
+          suffix: ["OBE"]
+        }
+      ])
+    })
+
+    it("should correctly set the pending cancellation flag when there is a item level pending cancellation", () => {
+      const mockBundle: Bundle = {
+        resourceType: "Bundle",
+        type: "searchset",
+        entry: [
+          {
+            fullUrl: "urn:uuid:PATIENT-123-567-890",
+            search: {
+              mode: "include"
+            },
+            resource: {
+              resourceType: "Patient",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/nhs-number",
+                value: "9732730684"
+              }],
+              name: [{
+                prefix: ["MISS"],
+                suffix: ["OBE"],
+                given: ["ETTA"],
+                family: "CORY"
+              }]
+            }
+          },
+          {
+            fullUrl: "urn:uuid:PRESCRIPTION-111-111-111",
+            search: {
+              mode: "match"
+            },
+            resource: {
+              resourceType: "RequestGroup",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/prescription-order-number",
+                value: "335C70-A83008-111111"
+              }],
+              subject: {
+                reference: "urn:uuid:PATIENT-123-567-890"
+              },
+              status: "active",
+              intent: "reflex-order",
+              authoredOn: "20250204000000",
+              extension: [
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-PrescriptionStatusHistory", //old
+                  extension: [{
+                    url: "status",
+                    valueCoding : {
+                      system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                      code: "0001",
+                      display: "To be Dispensed"
+                    }
+                  }]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-EPS-RepeatInformation",
+                  extension: [
+                    {
+                      url: "numberOfRepeatsIssued",
+                      valueInteger: 1
+                    },
+                    {
+                      url: "numberOfRepeatsAllowed",
+                      valueInteger: 7
+                    }
+                  ]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                  extension: [
+                    {
+                      url: "prescriptionPendingCancellation",
+                      valueBoolean: false
+                    },
+                    {
+                      url: "lineItemPendingCancellation",
+                      valueBoolean: true
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            fullUrl: "urn:uuid:PRESCRIPTION-222-222-222",
+            search: {
+              mode: "match"
+            },
+            resource: {
+              resourceType: "RequestGroup",
+              identifier: [{
+                system: "https://fhir.nhs.uk/Id/prescription-order-number",
+                value: "335C70-A83008-222222"
+              }],
+              subject: {
+                reference: "urn:uuid:PATIENT-123-567-890"
+              },
+              status: "active",
+              intent: "order",
+              authoredOn: "20250204000000",
+              extension: [
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-DM-PrescriptionStatusHistory",
+                  extension: [{
+                    url: "status",
+                    valueCoding : {
+                      system: "https://fhir.nhs.uk/CodeSystem/EPS-task-business-status",
+                      code: "0006",
+                      display: "Dispensed"
+                    }
+                  }]
+                },
+                {
+                  url: "https://fhir.nhs.uk/StructureDefinition/Extension-PendingCancellation",
+                  extension: [
+                    {
+                      url: "prescriptionPendingCancellation",
+                      valueBoolean: false
+                    },
+                    {
+                      url: "lineItemPendingCancellation",
+                      valueBoolean: false
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+      const result = mapResponseToPrescriptionSummary(mockBundle)
+
+      expect(result).toEqual([
+        {
+          prescriptionId: "335C70-A83008-111111",
+          isDeleted: false,
+          statusCode: "0001",
+          issueDate: "20250204000000",
+          issueNumber: 1,
+          maxRepeats: 7,
+          prescriptionTreatmentType: TreatmentType.ERD,
+          pendingCancellation: true,
+          nhsNumber: "9732730684",
+          given: ["ETTA"],
+          family: "CORY",
+          prefix: ["MISS"],
+          suffix: ["OBE"]
+        },
+        {
+          prescriptionId: "335C70-A83008-222222",
+          isDeleted: false,
+          statusCode: "0006",
+          issueDate: "20250204000000",
+          prescriptionTreatmentType: TreatmentType.ACUTE,
+          pendingCancellation: false,
           nhsNumber: "9732730684",
           given: ["ETTA"],
           family: "CORY",

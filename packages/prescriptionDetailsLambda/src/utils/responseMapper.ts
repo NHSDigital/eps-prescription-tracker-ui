@@ -12,7 +12,6 @@ import {mapPrescriptionOrigin, mapMessageHistoryTitleToMessageCode, extractItems
 import {
   findExtensionByKey,
   findExtensionsByKey,
-  getBooleanFromNestedExtension,
   getIntegerFromNestedExtension,
   PrescriptionOdsCodes
 } from "./extensionUtils"
@@ -206,11 +205,17 @@ export const mergePrescriptionDetails = (
   )[0]
   const daysSupply = lineItemsAction.timingTiming?.repeat!.period!.toString() ?? "Not applicable"
 
-  // get pending cancellation status
-  const prescriptionPendingCancellation = getBooleanFromNestedExtension(
-    findExtensionByKey(requestGroup.extension, "PENDING_CANCELLATION"),
-    "prescriptionPendingCancellation"
-  )
+  // get prescription level pending cancellation status
+  let prescriptionPendingCancellation: boolean
+  const pendingCancellationExt = findExtensionByKey(requestGroup.extension, "PENDING_CANCELLATION")
+  if (pendingCancellationExt?.extension){
+    // handle old sub extension
+    prescriptionPendingCancellation = pendingCancellationExt.extension.find(
+      ext => ext.url === "prescriptionPendingCancellation")?.valueBoolean || false
+  } else {
+    // handle new single value extension
+    prescriptionPendingCancellation = pendingCancellationExt?.valueBoolean || false
+  }
 
   // extract and format all the data
   const patientDetails: PatientSummary = {

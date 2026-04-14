@@ -154,10 +154,8 @@ const PrescriptionsListTable = ({
 
     sorted.sort((a, b) => {
       if (sortConfig.key === "cancellationWarning") {
-        const aHasWarning =
-          a.prescriptionPendingCancellation || a.itemsPendingCancellation
-        const bHasWarning =
-          b.prescriptionPendingCancellation || b.itemsPendingCancellation
+        const aHasWarning = a.pendingCancellation
+        const bHasWarning = b.pendingCancellation
 
         if (aHasWarning === bHasWarning) {
           const aDateTimestamp = getValidDateTimestamp(a.issueDate)
@@ -316,9 +314,7 @@ const PrescriptionsListTable = ({
     }
 
     if (key === "cancellationWarning") {
-      const showWarning =
-        row.prescriptionPendingCancellation ||
-        row.itemsPendingCancellation
+      const showWarning = row.pendingCancellation
       return (
         <Table.Cell
           key={key}
