@@ -11,6 +11,7 @@ const jestConfig: JestConfigWithTsJest = {
   moduleFileExtensions: ["js", "json", "ts", "d.ts", "jsx", "tsx"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^@tests/(.*)$": "<rootDir>/__tests__/$1",
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
     "^@/styles/searchforaprescription\\.scss$": "<rootDir>/__mocks__/searchforaprescription.scss.js"
   },

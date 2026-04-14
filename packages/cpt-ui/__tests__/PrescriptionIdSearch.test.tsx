@@ -33,29 +33,21 @@ jest.mock("@/context/NavigationProvider", () => ({
   useNavigationContext: () => mockNavigationContext
 }))
 
+// Test auth context data
 const mockAuthContext: AuthContextType = {
   ...mockAuthState,
-  error: null,
-  user: null,
   isSignedIn: true,
-  isSigningIn: false,
-  invalidSessionCause: undefined,
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  selectedRole: undefined,
-  userDetails: undefined,
-  isConcurrentSession: false,
-  sessionId: undefined,
-  cognitoSignIn: jest.fn(),
-  cognitoSignOut: jest.fn(),
-  clearAuthState: jest.fn(),
-  hasSingleRoleAccess: jest.fn().mockReturnValue(false),
-  updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn(),
-  isSigningOut: false,
-  setIsSigningOut: jest.fn(),
-  remainingSessionTime: undefined
+  selectedRole: {
+    role_name: "Pharmacist",
+    org_name: "Test Health Centre",
+    org_code: "THC001"
+  },
+  userDetails: {
+    sub: "test-user-123",
+    family_name: "Doe",
+    given_name: "John"
+  },
+  sessionId: "test-session-id"
 }
 
 const mockClearSearchParameters = jest.fn()

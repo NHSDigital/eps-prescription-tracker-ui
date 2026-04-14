@@ -21,6 +21,8 @@ import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
+import {useAuth} from "@/context/AuthProvider"
+import {logFormValidationError, formatValidationErrorsForLogging} from "@/helpers/formValidationLogger"
 import {validateNhsNumber, normalizeNhsNumber, NhsNumberValidationError} from "@/helpers/validateNhsNumber"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
@@ -28,6 +30,7 @@ export default function NhsNumSearch() {
   const navigate = useNavigate()
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
+  const authContext = useAuth()
   const [nhsNumber, setNhsNumber] = useState<string>(
     searchContext.nhsNumber || ""
   )
@@ -36,11 +39,9 @@ export default function NhsNumSearch() {
   )
   const errorRef = useRef<HTMLDivElement | null>(null)
 
-  const errorMessages = STRINGS.errors
+  const errorStrings = STRINGS.errors
 
-  const displayedError = useMemo(() => errorKey ? errorMessages[errorKey] : "", [errorKey])
-
-  // usePageTitle(STRINGS.pageTitle)
+  const displayedError = useMemo(() => errorKey ? errorStrings[errorKey] : "", [errorKey])
 
   usePageTitle(errorKey
     ? STRINGS.pageTitle_ERROR
@@ -75,6 +76,24 @@ export default function NhsNumSearch() {
 
     if (validationError) {
       setErrorKey(validationError)
+
+      const validationResult = formatValidationErrorsForLogging(
+        validationError,
+        "nhsNumber",
+        errorStrings
+      )
+
+      // Defensive check for mocking/test environments
+      if (validationResult && validationResult.errorMessages && validationResult.errorSummary) {
+        const {errorMessages, errorSummary} = validationResult
+        logFormValidationError(
+          "nhsNumber",
+          errorMessages,
+          errorSummary,
+          authContext
+        )
+      }
+
       return
     }
     setErrorKey(null)

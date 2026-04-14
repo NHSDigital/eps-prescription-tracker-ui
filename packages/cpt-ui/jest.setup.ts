@@ -7,6 +7,52 @@ jest.mock("*.css", () => ({}), {virtual: true})
 jest.mock("*.scss", () => ({}), {virtual: true})
 jest.mock("@/styles/searchforaprescription.scss", () => ({}), {virtual: true})
 
+// Mock AWS RUM
+jest.mock("aws-rum-web", () => ({
+  AwsRum: jest.fn().mockImplementation(() => ({
+    allowCookies: jest.fn(),
+    dispatch: jest.fn(),
+    recordError: jest.fn(),
+    recordEvent: jest.fn(),
+    recordPageView: jest.fn(),
+    addUserAttributes: jest.fn(),
+    addSessionAttributes: jest.fn()
+  }))
+}))
+
+// Mock the AWS RUM helper to provide a working instance for most tests
+// Individual tests can override this if needed (like awsRumHelper.test.tsx)
+jest.mock("@/helpers/awsRum", () => {
+  const mockRumInstance = {
+    allowCookies: jest.fn(),
+    dispatch: jest.fn(),
+    recordError: jest.fn(),
+    recordEvent: jest.fn(),
+    recordPageView: jest.fn(),
+    addUserAttributes: jest.fn(),
+    addSessionAttributes: jest.fn()
+  }
+
+  return {
+    CptAwsRum: jest.fn().mockImplementation(() => ({
+      awsRum: mockRumInstance,
+      getAwsRum: jest.fn(() => mockRumInstance),
+      disable: jest.fn(),
+      enable: jest.fn(),
+      dispatchRumEvent: jest.fn()
+    })),
+    cptAwsRum: {
+      awsRum: mockRumInstance,
+      getAwsRum: jest.fn(() => mockRumInstance),
+      disable: jest.fn(),
+      enable: jest.fn(),
+      dispatchRumEvent: jest.fn()
+    }
+  }
+})
+
+// Don't mock formValidationLogger globally - let the real implementation run with test environment checks
+
 // Mock FooterStrings to avoid import.meta issues
 jest.mock("@/constants/ui-strings/FooterStrings", () => ({
   FOOTER_COPYRIGHT: "© NHS England",
@@ -70,10 +116,20 @@ jest.mock("@/constants/environment", () => ({
   },
   APP_CONFIG: {
     COMMIT_ID: "test-commit-id",
-    VERSION_NUMBER: "test-version-number"
+    VERSION_NUMBER: "test-version-number",
+    REACT_LOG_LEVEL: "info"
   },
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info"
+  },
+  RUM_CONFIG: {
+    GUEST_ROLE_ARN: "test-role-arn",
+    IDENTITY_POOL_ID: "test-pool-id",
+    ENDPOINT: "https://test.endpoint",
+    APPLICATION_ID: "test-app-id",
+    REGION: "eu-west-2",
+    VERSION: "1.0.0",
+    RELEASE_ID: "test-commit-id"
   },
   FRONTEND_PATHS: {
     PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",

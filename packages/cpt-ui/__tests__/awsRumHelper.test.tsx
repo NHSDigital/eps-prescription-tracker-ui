@@ -13,10 +13,19 @@ jest.mock("@/helpers/useLocalStorageState", () => ({
 jest.mock("aws-rum-web", () => {
   return {
     AwsRum: jest.fn().mockImplementation(() => ({
-      allowCookies: jest.fn()
+      allowCookies: jest.fn(),
+      dispatch: jest.fn(),
+      recordError: jest.fn(),
+      recordEvent: jest.fn(),
+      recordPageView: jest.fn(),
+      addUserAttributes: jest.fn(),
+      addSessionAttributes: jest.fn()
     }))
   }
 })
+
+// Unmock the AWS RUM helper so we can test the real implementation
+jest.unmock("@/helpers/awsRum")
 
 jest.mock("@/constants/environment", () => ({
   RUM_CONFIG: {

@@ -28,6 +28,8 @@ import {
 } from "@/helpers/validatePrescriptionDetailsSearch"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
+import {useAuth} from "@/context/AuthProvider"
+import {logFormValidationError, formatValidationErrorsForLogging} from "@/helpers/formValidationLogger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function PrescriptionIdSearch() {
@@ -35,11 +37,12 @@ export default function PrescriptionIdSearch() {
   const errorRef = useRef<HTMLDivElement | null>(null)
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
+  const authContext = useAuth()
 
   const [prescriptionId, setPrescriptionId] = useState<string>(searchContext.prescriptionId || "")
   const [errorKey, setErrorKey] = useState<PrescriptionValidationError | null>(null)
 
-  const errorMessages = PRESCRIPTION_ID_SEARCH_STRINGS.errors
+  const errorStrings = PRESCRIPTION_ID_SEARCH_STRINGS.errors
 
   useEffect(() => {
     const relevantParams = navigationContext.getRelevantSearchParameters("prescriptionId")
@@ -58,8 +61,8 @@ export default function PrescriptionIdSearch() {
     key: PrescriptionValidationError | null
   ): string => {
     if (!key) return ""
-    if (key === "noMatch") return errorMessages.noMatch
-    return errorMessages[key] || errorMessages.noMatch
+    if (key === "noMatch") return errorStrings.noMatch
+    return errorStrings[key] || errorStrings.noMatch
   }
 
   // Memoised error message for display
@@ -92,6 +95,23 @@ export default function PrescriptionIdSearch() {
 
     if (key) {
       setErrorKey(key)
+
+      const validationResult = formatValidationErrorsForLogging(
+        key,
+        "prescriptionId",
+        errorStrings
+      )
+
+      // Defensive check for mocking/test environments
+      if (validationResult && validationResult.errorMessages && validationResult.errorSummary) {
+        const {errorMessages, errorSummary} = validationResult
+        logFormValidationError(
+          "prescriptionId",
+          errorMessages,
+          errorSummary,
+          authContext
+        )
+      }
       return
     }
     setErrorKey(null) // Clear error on valid submit
