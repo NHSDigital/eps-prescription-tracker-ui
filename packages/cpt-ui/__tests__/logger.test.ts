@@ -3,6 +3,36 @@ import {jest} from "@jest/globals"
 import {logger} from "../src/helpers/logger"
 import {cptAwsRum} from "../src/helpers/awsRum"
 
+// Mock the AWS RUM helper for this test file
+jest.mock("@/helpers/awsRum", () => {
+  const mockRumInstance = {
+    allowCookies: jest.fn(),
+    dispatch: jest.fn(),
+    recordError: jest.fn(),
+    recordEvent: jest.fn(),
+    recordPageView: jest.fn(),
+    addUserAttributes: jest.fn(),
+    addSessionAttributes: jest.fn()
+  }
+
+  return {
+    CptAwsRum: jest.fn().mockImplementation(() => ({
+      awsRum: mockRumInstance,
+      getAwsRum: jest.fn(() => mockRumInstance),
+      disable: jest.fn(),
+      enable: jest.fn(),
+      dispatchRumEvent: jest.fn()
+    })),
+    cptAwsRum: {
+      awsRum: mockRumInstance,
+      getAwsRum: jest.fn(() => mockRumInstance),
+      disable: jest.fn(),
+      enable: jest.fn(),
+      dispatchRumEvent: jest.fn()
+    }
+  }
+})
+
 describe("logger", () => {
 
   beforeEach(() => {

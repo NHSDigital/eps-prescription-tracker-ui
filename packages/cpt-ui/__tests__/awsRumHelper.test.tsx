@@ -4,6 +4,7 @@ import {AwsRumProvider} from "@/context/AwsRumProvider" // Adjust import path as
 import {AwsRum} from "aws-rum-web"
 import {APP_CONFIG, RUM_CONFIG} from "@/constants/environment"
 import {readItemGroupFromLocalStorage} from "@/helpers/useLocalStorageState"
+import {CptAwsRum} from "@/helpers/awsRum"
 
 jest.mock("@/helpers/useLocalStorageState", () => ({
   readItemGroupFromLocalStorage: jest.fn()
@@ -23,9 +24,6 @@ jest.mock("aws-rum-web", () => {
     }))
   }
 })
-
-// Unmock the AWS RUM helper so we can test the real implementation
-jest.unmock("@/helpers/awsRum")
 
 jest.mock("@/constants/environment", () => ({
   RUM_CONFIG: {
@@ -53,8 +51,7 @@ describe("AwsRumHelper", () => {
     (readItemGroupFromLocalStorage as jest.Mock)
       .mockReturnValueOnce({})
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+    const rum = new CptAwsRum()
 
     // Check that AwsRum constructor was called with correct parameters
     expect(AwsRum).toHaveBeenCalledWith(
@@ -85,8 +82,7 @@ describe("AwsRumHelper", () => {
     (readItemGroupFromLocalStorage as jest.Mock)
       .mockReturnValueOnce({"epsCookieConsent": "accepted"})
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+    const rum = new CptAwsRum()
 
     // Check that AwsRum constructor was called with correct parameters
     expect(AwsRum).toHaveBeenCalledWith(
@@ -117,8 +113,7 @@ describe("AwsRumHelper", () => {
     (readItemGroupFromLocalStorage as jest.Mock)
       .mockReturnValueOnce({"epsCookieConsent": "rejected"})
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+    const rum = new CptAwsRum()
 
     // Check that AwsRum constructor was called with correct parameters
     expect(AwsRum).toHaveBeenCalledWith(
@@ -151,14 +146,12 @@ describe("AwsRumHelper", () => {
       throw new Error("RUM failed")
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+    const rum = new CptAwsRum()
     expect(rum.getAwsRum()).toBeNull()
   })
 
   it("should call allowCookies(true) on enable", () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, no-undef
-    const rum = new (require("@/helpers/awsRum").CptAwsRum)()
+    const rum = new CptAwsRum()
     rum.enable()
 
     expect(AwsRum).toHaveBeenCalledWith(

@@ -11,12 +11,12 @@ export interface FormValidationLogData {
 }
 
 /**
- * Logs form validation errors, will be used to track commonly made UI/UX errors for evaluation of what weve made.
+ * Logs form validation errors, will be used to track commonly made UI/UX errors for evaluation of what we've made.
  *
  * @param searchType - which search form was used
  * @param errorMessages
  * @param errorSummary
- * @param authContextn
+ * @param authContext
  */
 export function logFormValidationError(
   searchType: "prescriptionId" | "nhsNumber" | "basicDetails",

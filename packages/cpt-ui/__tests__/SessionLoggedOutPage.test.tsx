@@ -7,7 +7,36 @@ import SessionSelectionPage from "@/pages/SessionSelection"
 import SessionLoggedOutPage from "@/pages/SessionLoggedOut"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
-jest.mock("@/helpers/awsRum")
+// Mock the AWS RUM helper for this test file
+jest.mock("@/helpers/awsRum", () => {
+  const mockRumInstance = {
+    allowCookies: jest.fn(),
+    dispatch: jest.fn(),
+    recordError: jest.fn(),
+    recordEvent: jest.fn(),
+    recordPageView: jest.fn(),
+    addUserAttributes: jest.fn(),
+    addSessionAttributes: jest.fn()
+  }
+
+  return {
+    CptAwsRum: jest.fn().mockImplementation(() => ({
+      awsRum: mockRumInstance,
+      getAwsRum: jest.fn(() => mockRumInstance),
+      disable: jest.fn(),
+      enable: jest.fn(),
+      dispatchRumEvent: jest.fn()
+    })),
+    cptAwsRum: {
+      awsRum: mockRumInstance,
+      getAwsRum: jest.fn(() => mockRumInstance),
+      disable: jest.fn(),
+      enable: jest.fn(),
+      dispatchRumEvent: jest.fn()
+    }
+  }
+})
+
 jest.mock("@/context/configureAmplify")
 jest.mock("@/helpers/logout", () => ({
   signOut: jest.fn()

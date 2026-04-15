@@ -20,39 +20,6 @@ jest.mock("aws-rum-web", () => ({
   }))
 }))
 
-// Mock the AWS RUM helper to provide a working instance for most tests
-// Individual tests can override this if needed (like awsRumHelper.test.tsx)
-jest.mock("@/helpers/awsRum", () => {
-  const mockRumInstance = {
-    allowCookies: jest.fn(),
-    dispatch: jest.fn(),
-    recordError: jest.fn(),
-    recordEvent: jest.fn(),
-    recordPageView: jest.fn(),
-    addUserAttributes: jest.fn(),
-    addSessionAttributes: jest.fn()
-  }
-
-  return {
-    CptAwsRum: jest.fn().mockImplementation(() => ({
-      awsRum: mockRumInstance,
-      getAwsRum: jest.fn(() => mockRumInstance),
-      disable: jest.fn(),
-      enable: jest.fn(),
-      dispatchRumEvent: jest.fn()
-    })),
-    cptAwsRum: {
-      awsRum: mockRumInstance,
-      getAwsRum: jest.fn(() => mockRumInstance),
-      disable: jest.fn(),
-      enable: jest.fn(),
-      dispatchRumEvent: jest.fn()
-    }
-  }
-})
-
-// Don't mock formValidationLogger globally - let the real implementation run with test environment checks
-
 // Mock FooterStrings to avoid import.meta issues
 jest.mock("@/constants/ui-strings/FooterStrings", () => ({
   FOOTER_COPYRIGHT: "© NHS England",
