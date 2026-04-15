@@ -1,6 +1,6 @@
 import {logFormValidationError, formatValidationErrorsForLogging} from "@/helpers/formValidationLogger"
 import {logger} from "@/helpers/logger"
-import {mockAuthState} from "@tests/mocks/AuthStateMock"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 // Mock the logger
 jest.mock("@/helpers/logger", () => ({
