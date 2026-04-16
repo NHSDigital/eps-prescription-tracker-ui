@@ -194,7 +194,6 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
 
   const checkUserInfo = () => {
     // Check if a user is signed in, if it fails sign the user out
-    // wip
     if (auth.isSigningIn && ALLOWED_NO_ROLE_PATHS.includes(location.pathname)) {
       logger.debug("Not checking user info")
       return
