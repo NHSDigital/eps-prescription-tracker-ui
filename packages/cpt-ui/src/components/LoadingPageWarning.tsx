@@ -21,8 +21,10 @@ Please could you investigate this issue?`
         {/* Using JSX spacing to overcome spacing not being respected when rendered. */}
         If you keep seeing this page, email{" "}
         <a href={
-          `mailto:epssupport@nhs.net?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
-        } data-testid="email" aria-label="EPS Prescription Tracker support email">epssupport@nhs.net</a>
+          `mailto:england.prescriptiontrackerpilot@nhs.net?subject=
+          ${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+        } data-testid="email"
+        aria-label="EPS Prescription Tracker support email">england.prescriptiontrackerpilot@nhs.net</a>
         {" "}and include this information:</p>
       <ul>
         {auth.sessionId && <li>session ID {auth.sessionId}</li>}

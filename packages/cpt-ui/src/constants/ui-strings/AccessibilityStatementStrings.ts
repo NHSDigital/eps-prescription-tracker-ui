@@ -53,12 +53,14 @@ export const AccessibilityStatementStrings = {
     HEADER: "Feedback and contact information",
     P1: [
       "If you find any problems not listed on this page or think we're not meeting accessibility requirements, email ",
-      {text: "epssupport@nhs.net", href: "mailto:epssupport@nhs.net"} satisfies RichTextNode,
+      {text: "england.prescriptiontrackerpilot@nhs.net",
+        href: "mailto:england.prescriptiontrackerpilot@nhs.net"} satisfies RichTextNode,
       "."
     ] satisfies Array<RichTextNode>,
     P2: [
       "If you need information on this website in a different format, email ",
-      {text: "epssupport@nhs.net", href: "mailto:epssupport@nhs.net"} satisfies RichTextNode,
+      {text: "england.prescriptiontrackerpilot@nhs.net",
+        href: "mailto:england.prescriptiontrackerpilot@nhs.net"} satisfies RichTextNode,
       "."
     ] satisfies Array<RichTextNode>,
     P3: "We'll consider your request and get back to you within 5 working days."
