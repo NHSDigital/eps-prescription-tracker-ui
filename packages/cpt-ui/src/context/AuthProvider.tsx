@@ -2,6 +2,7 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   SetStateAction
 } from "react"
@@ -61,12 +62,15 @@ export interface AuthContextType {
   setIsSigningOut: (value: boolean) => void
   setStateForSignOut: () => void
   setStateForSignIn: () => void
+  registerBeforeUnloadGuard: () => void
+  clearBeforeUnloadGuard: () => void
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)
 
 export const AuthProvider = ({children}: { children: React.ReactNode }) => {
   Amplify.configure(authConfig, {ssr: false})
+  const beforeUnloadHandlerRef = useRef<((e: BeforeUnloadEvent) => void) | null>(null)
   const [deviceId] = useLocalStorageState<string | undefined>(
     "deviceId", "deviceId", crypto.randomUUID())
   const [error, setError] = useState<string | null>(null)
@@ -296,6 +300,23 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
     return rolesWithAccess.length === 1 && rolesWithoutAccess.length === 0
   }
 
+  const registerBeforeUnloadGuard = () => {
+    if (beforeUnloadHandlerRef.current) return // already registered
+    beforeUnloadHandlerRef.current = (e: BeforeUnloadEvent) => {
+      // Ensure navigate-away protection works consistently across browsers
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", beforeUnloadHandlerRef.current)
+  }
+
+  const clearBeforeUnloadGuard = () => {
+    if (beforeUnloadHandlerRef.current) {
+      window.removeEventListener("beforeunload", beforeUnloadHandlerRef.current)
+      beforeUnloadHandlerRef.current = null
+    }
+  }
+
   // Wrap setLogoutModalType to match the expected signature
   const setLogoutModalTypeAsync = async (value: "userInitiated" | "timeout" | undefined) => {
     if (logoutModalType === undefined || value === undefined) {
@@ -336,7 +357,9 @@ export const AuthProvider = ({children}: { children: React.ReactNode }) => {
       updateInvalidSessionCause,
       setIsSigningOut,
       setStateForSignOut,
-      setStateForSignIn
+      setStateForSignIn,
+      registerBeforeUnloadGuard,
+      clearBeforeUnloadGuard
     }}>
       {children}
     </AuthContext.Provider>

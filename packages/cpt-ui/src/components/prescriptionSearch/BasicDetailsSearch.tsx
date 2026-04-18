@@ -24,6 +24,7 @@ import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
 import {usePageTitle} from "@/hooks/usePageTitle"
+import {useAuth} from "@/context/AuthProvider"
 
 export default function BasicDetailsSearch() {
   const navigate = useNavigate()
@@ -41,6 +42,7 @@ export default function BasicDetailsSearch() {
   const inlineErrors = getInlineErrors(errors)
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
+  const auth = useAuth()
 
   usePageTitle(errors.length > 0
     ? STRINGS.PAGE_TITLE_ERROR
@@ -57,6 +59,13 @@ export default function BasicDetailsSearch() {
       errorRef.current.focus()
     }
   }, [errors])
+
+  useEffect(() => {
+    // Clear the before-unload guard when leaving/unmounting this page
+    return () => {
+      auth.clearBeforeUnloadGuard()
+    }
+  }, [])
 
   // restore original search parameters when available
   useEffect(() => {

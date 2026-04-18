@@ -20,7 +20,7 @@ export const getOrCreateTabId = () => {
   const existingTabId = window.sessionStorage.getItem(TAB_ID_SESSION_KEY)
   if (existingTabId) {
     // Check if another tab is already using this ID (i.e. this tab was duplicated).
-    // On a normal reload, beforeunload removes the ID from the open tabs list first,
+    // On a normal reload, pagehide removes the ID from the open tabs list first,
     // so it won't appear here. On a duplicate, the original tab is still open and
     // its ID remains in the list, so we detect the collision and create a new one.
     const openTabIds = getOpenTabIds()

@@ -112,7 +112,6 @@ export default function SearchResultsPage() {
   const [patients, setPatients] = useState<Array<PatientSummary>>([])
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
-
   const [error, setError] = useState(false)
 
   const auth = useAuth()
@@ -124,15 +123,19 @@ export default function SearchResultsPage() {
   usePageTitle(pageTitle)
 
   useEffect(() => {
+    auth.registerBeforeUnloadGuard()
     getSearchResults()
+    return () => {
+      auth.clearBeforeUnloadGuard()
+    }
   }, [])
 
   const getSearchResults = async () => {
     try {
       // Catch empty search parameters, caused by loading the page without coming from the search component
       // ie. Hard refresh on the page
-      if (searchContext.searchType !== "basicDetails" && !searchContext.lastName &&
-         !searchContext.dobDay && !searchContext.dobMonth && !searchContext.dobYear) {
+      if (searchContext.searchType !== "basicDetails" || !searchContext.lastName ||
+         !searchContext.dobDay || !searchContext.dobMonth || !searchContext.dobYear) {
         logger.info("Missing basic details search parameters - redirecting to basic details search")
         navigate(FRONTEND_PATHS.SEARCH_BY_BASIC_DETAILS)
         return
@@ -192,6 +195,8 @@ export default function SearchResultsPage() {
     .toSorted((a, b) => (a.givenName?.[0] ?? "").localeCompare(b.givenName?.[0] ?? ""))
 
   if (loading) {
+    // Protect against navigating away using browser controls or refreshing while loading
+    auth.registerBeforeUnloadGuard()
     return (
       <main className="nhsuk-main-wrapper" id="main-content" role="main">
         <Container>

@@ -453,4 +453,66 @@ describe("AuthProvider", () => {
         )
       })
     })
+
+  it("should call preventDefault on beforeunload after registerBeforeUnloadGuard is called", async () => {
+    let contextValue: AuthContextType | null = null
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext)
+      return null
+    }
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </MemoryRouter>
+      )
+    })
+
+    act(() => {
+      contextValue?.registerBeforeUnloadGuard()
+    })
+
+    const event = new Event("beforeunload", {cancelable: true})
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault")
+    window.dispatchEvent(event)
+
+    expect(preventDefaultSpy).toHaveBeenCalled()
+
+    // Cleanup so the guard doesn't leak into other tests
+    act(() => {
+      contextValue?.clearBeforeUnloadGuard()
+    })
+  })
+
+  it("should not call preventDefault on beforeunload after clearBeforeUnloadGuard is called", async () => {
+    let contextValue: AuthContextType | null = null
+    const TestComponent = () => {
+      contextValue = useContext(AuthContext)
+      return null
+    }
+
+    await act(async () => {
+      render(
+        <MemoryRouter>
+          <AuthProvider>
+            <TestComponent />
+          </AuthProvider>
+        </MemoryRouter>
+      )
+    })
+
+    act(() => {
+      contextValue?.registerBeforeUnloadGuard()
+      contextValue?.clearBeforeUnloadGuard()
+    })
+
+    const event = new Event("beforeunload", {cancelable: true})
+    const preventDefaultSpy = jest.spyOn(event, "preventDefault")
+    window.dispatchEvent(event)
+
+    expect(preventDefaultSpy).not.toHaveBeenCalled()
+  })
 })
