@@ -83,11 +83,11 @@ describe("EpsRichText", () => {
     it("renders a mailto link correctly", () => {
       const content: Array<RichTextNode> = [
         "Contact us at ",
-        {text: "epssupport@nhs.net", href: "mailto:epssupport@nhs.net"}
+        {text: "england.prescriptiontrackerpilot@nhs.net", href: "mailto:england.prescriptiontrackerpilot@nhs.net"}
       ]
       render(<EpsRichText content={content} />)
-      const link = screen.getByRole("link", {name: "epssupport@nhs.net"})
-      expect(link).toHaveAttribute("href", "mailto:epssupport@nhs.net")
+      const link = screen.getByRole("link", {name: "england.prescriptiontrackerpilot@nhs.net"})
+      expect(link).toHaveAttribute("href", "mailto:england.prescriptiontrackerpilot@nhs.net")
     })
   })
 })

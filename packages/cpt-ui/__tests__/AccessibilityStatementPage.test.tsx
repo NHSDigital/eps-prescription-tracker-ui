@@ -160,10 +160,10 @@ describe("AccessibilityStatementPage", () => {
     })
 
     it("renders the email link in the feedback section", () => {
-      const links = screen.getAllByRole("link", {name: "epssupport@nhs.net"})
+      const links = screen.getAllByRole("link", {name: "england.prescriptiontrackerpilot@nhs.net"})
       expect(links).toHaveLength(2)
       links.forEach((link) => {
-        expect(link).toHaveAttribute("href", "mailto:epssupport@nhs.net")
+        expect(link).toHaveAttribute("href", "mailto:england.prescriptiontrackerpilot@nhs.net")
       })
     })
 

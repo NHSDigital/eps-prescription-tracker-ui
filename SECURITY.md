@@ -21,7 +21,7 @@ If you wish to notify us of a vulnerability via email, please include detailed i
 
 You can reach us at:
 
-- [epssupport@nhs.net](epssupport@nhs.net)
+- [england.prescriptiontrackerpilot@nhs.net](england.prescriptiontrackerpilot@nhs.net)
 - [cybersecurity@nhs.net](cybersecurity@nhs.net)
 
 ### NCSC
