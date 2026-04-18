@@ -12,7 +12,7 @@
     "test": "npm run compile && npm run unit"
   },
   "devDependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1019.0",
+    "@aws-sdk/client-dynamodb": "^3.1029.0",
     "axios": "^1.14.0",
     "mock-jwks": "^3.3.5"
   },
