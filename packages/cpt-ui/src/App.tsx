@@ -115,11 +115,12 @@ function AppContent() {
         </PrescriptionInformationProvider>
         <SessionTimeoutModal
           isOpen={auth.logoutModalType === "timeout" && auth.sessionTimeoutModalInfo.showModal}
-          timeLeft={auth.sessionTimeoutModalInfo.timeLeft}
+          sessionEndTime={auth.sessionTimeoutModalInfo.sessionEndTime}
           onStayLoggedIn={onStayLoggedIn}
           onLogOut={onLogOut}
           onTimeOut={onTimeOut}
           buttonDisabledState={auth.sessionTimeoutModalInfo.buttonDisabled}
+          isSelectYourRolePath={location.pathname === FRONTEND_PATHS.SELECT_YOUR_ROLE}
         />
       </PatientDetailsProvider>
     </>

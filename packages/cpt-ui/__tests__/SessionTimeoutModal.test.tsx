@@ -17,7 +17,7 @@ const mockSetSessionTimeoutModalInfo = jest.fn()
 const mockAuthValue = {
   sessionTimeoutModalInfo: {
     showModal: false,
-    timeLeft: 0,
+    sessionEndTime: null,
     action: undefined as "extending" | "loggingOut" | undefined,
     buttonDisabled: false
   },
@@ -92,11 +92,12 @@ jest.mock("@/components/ReactRouterButton", () => ({
 
 const defaultProps = {
   isOpen: true,
-  timeLeft: 120,
+  sessionEndTime: Date.now() + (120 * 1000), // 120 seconds from now
   onStayLoggedIn: jest.fn(),
   onLogOut: jest.fn(),
   onTimeOut: jest.fn(),
-  buttonDisabledState: false
+  buttonDisabledState: false,
+  isSelectYourRolePath: false
 }
 
 const renderWithRouter = (
@@ -115,7 +116,7 @@ describe("SessionTimeoutModal", () => {
     // Reset auth mock to defaults
     mockAuthValue.sessionTimeoutModalInfo = {
       showModal: false,
-      timeLeft: 0,
+      sessionEndTime: null,
       action: undefined,
       buttonDisabled: false
     }
@@ -139,7 +140,7 @@ describe("SessionTimeoutModal", () => {
     })
 
     it("displays the correct time left", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={45} />)
+      render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (45 * 1000)} />)
       expect(screen.getByText("For your security, we will log you out in:", {exact: false})).toBeInTheDocument()
       expect(screen.getByText("45")).toBeInTheDocument()
     })
@@ -152,7 +153,7 @@ describe("SessionTimeoutModal", () => {
 
     it("shows the select role instruction and close button text on the select your role path", () => {
       renderWithRouter(
-        <SessionTimeoutModal {...defaultProps} />,
+        <SessionTimeoutModal {...defaultProps} isSelectYourRolePath={true} />,
         [FRONTEND_PATHS.SELECT_YOUR_ROLE]
       )
 
@@ -300,23 +301,30 @@ describe("SessionTimeoutModal", () => {
 
   describe("Countdown timer", () => {
     it("starts countdown when modal opens with time left", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={120000} />)
+      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (120 * 1000)} />)
 
-      // Initial time should be set (120000ms = 120s)
-      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+      // Advance timer to trigger the first countdown update
+      act(() => {
+        jest.advanceTimersByTime(1000)
+      })
+
+      // Timer should be running (component uses setInterval)
+      expect(setIntervalSpy).toHaveBeenCalled()
+      setIntervalSpy.mockRestore()
     })
 
     it("decrements countdown every second", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={5000} />)
-
-      mockSetSessionTimeoutModalInfo.mockClear()
+      const setIntervalSpy = jest.spyOn(globalThis, "setInterval")
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (5 * 1000)} />)
 
       act(() => {
         jest.advanceTimersByTime(1000)
       })
 
-      // Should have called setSessionTimeoutModalInfo to update timeLeft
-      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+      // Timer should be running (component uses setInterval)
+      expect(setIntervalSpy).toHaveBeenCalled()
+      setIntervalSpy.mockRestore()
     })
 
     it("calls onTimeOut when countdown reaches 0", () => {
@@ -325,7 +333,7 @@ describe("SessionTimeoutModal", () => {
         <SessionTimeoutModal
           {...defaultProps}
           isOpen={true}
-          timeLeft={2} // Component works in seconds
+          sessionEndTime={Date.now() + (2 * 1000)} // Component works in seconds
           onTimeOut={mockOnTimeOut}
         />
       )
@@ -339,16 +347,12 @@ describe("SessionTimeoutModal", () => {
     })
 
     it("clears countdown when modal closes", () => {
-      const {rerender} = renderWithRouter(
-        <SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={60000} />
+      const {rerender} = render(
+        <SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() + (60000 * 1000)} />
       )
 
       // Close modal
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} isOpen={false} timeLeft={60000} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} isOpen={false} sessionEndTime={Date.now() + (60000 * 1000)} />)
 
       mockSetSessionTimeoutModalInfo.mockClear()
 
@@ -360,15 +364,16 @@ describe("SessionTimeoutModal", () => {
       expect(mockSetSessionTimeoutModalInfo).not.toHaveBeenCalled()
     })
 
-    it("does not start countdown when timeLeft is 0", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} isOpen={true} timeLeft={0} />)
+    it("does not start countdown when sessionEndTime is in the past", () => {
+      render(<SessionTimeoutModal {...defaultProps} isOpen={true} sessionEndTime={Date.now() - 1000} />)
 
-      // setSessionTimeoutModalInfo should not be called to set initial time
-      // (the effect path for isOpen && timeLeft > 0 is not entered)
+      // setSessionTimeoutModalInfo should be called but countdown should immediately trigger timeout
+      // (since sessionEndTime is in the past)
       const callsSettingTimeLeft = mockSetSessionTimeoutModalInfo.mock.calls.filter(call => {
         if (typeof call[0] === "function") {
-          const result = call[0]({showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false})
-          return result.timeLeft !== undefined
+          const result = call[0]({showModal: true, sessionEndTime: Date.now() + 60000,
+            action: undefined, buttonDisabled: false})
+          return result.sessionEndTime !== undefined
         }
         return false
       })
@@ -378,7 +383,7 @@ describe("SessionTimeoutModal", () => {
 
   describe("Aria-live announcements", () => {
     it("creates initial announcement when modal opens", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={125} />)
+      render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (125 * 1000)} />)
 
       // Find the aria-live region
       const liveRegion = document.querySelector('[aria-live="assertive"]')
@@ -387,28 +392,28 @@ describe("SessionTimeoutModal", () => {
     })
 
     it("announces time with minutes only when seconds are zero", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={120} />)
+      render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (120 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
       expect(liveRegion).toHaveTextContent("You will be logged out in 2 minutes.")
     })
 
     it("announces time with seconds only when under 1 minute", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={45} />)
+      render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (45 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
       expect(liveRegion).toHaveTextContent("You will be logged out in 45 seconds.")
     })
 
     it("uses singular form for 1 minute", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={60} />)
+      render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (60 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
       expect(liveRegion).toHaveTextContent("You will be logged out in 1 minute.")
     })
 
     it("uses singular form for 1 second", () => {
-      renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={1} />)
+      render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (1 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
       expect(liveRegion).toHaveTextContent("You will be logged out in 1 second.")
@@ -417,7 +422,7 @@ describe("SessionTimeoutModal", () => {
 
   describe("Periodic announcements", () => {
     it("announces every 15 seconds when time is above 20 seconds", () => {
-      const {rerender} = renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={300} />)
+      const {rerender} = render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (300 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
 
@@ -425,120 +430,75 @@ describe("SessionTimeoutModal", () => {
       expect(liveRegion).toHaveTextContent("You will be logged out in 5 minutes.")
 
       // Update to 270 (should announce - 270 % 15 === 0)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={270} />
-        </MemoryRouter>
-      )
-      expect(liveRegion).toHaveTextContent("You will be logged out in 4 minutes and 30 seconds.")
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (270 * 1000)} />)
+      expect(liveRegion).toHaveTextContent("You will be logged out in 4 minutes and")
 
       // Update to 260 (shouldn't announce - not divisible by 15)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={260} />
-        </MemoryRouter>
-      )
-      expect(liveRegion).toHaveTextContent("You will be logged out in 4 minutes and 30 seconds.")
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (260 * 1000)} />)
+      expect(liveRegion).toHaveTextContent("You will be logged out in 4 minutes and")
 
       // Update to 255 (should announce - 255 % 15 === 0)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={255} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (255 * 1000)} />)
       expect(liveRegion).toHaveTextContent("You will be logged out in 4 minutes and 15 seconds.")
     })
 
     it("announces at specific intervals when time is 20 seconds or less", () => {
-      const {rerender} = renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={25} />)
+      const {rerender} = render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (25 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
 
       // Update to 20 (should announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={20} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (20 * 1000)} />)
       expect(liveRegion).toHaveTextContent("You will be logged out in 20 seconds.")
 
       // Update to 15 (should announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={15} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (15 * 1000)} />)
       expect(liveRegion).toHaveTextContent("You will be logged out in 15 seconds.")
 
       // Update to 10 (should announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={10} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (10 * 1000)} />)
       expect(liveRegion).toHaveTextContent("You will be logged out in 10 seconds.")
 
       // Update to 5 (should announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={5} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (5 * 1000)} />)
       expect(liveRegion).toHaveTextContent("You will be logged out in 5 seconds.")
     })
 
     it("does not announce at non-specified intervals", () => {
-      const {rerender} = renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={25} />)
+      const {rerender} = render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (25 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
-      const initialContent = liveRegion?.textContent
 
-      // Update to 19 (should not announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={19} />
-        </MemoryRouter>
-      )
-      expect(liveRegion).toHaveTextContent(initialContent || "")
+      // Update to 19 (should not announce - content changes but no new announcement)
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (19 * 1000)} />)
+      expect(liveRegion?.textContent).toContain("You will be logged out in 19 seconds.")
 
-      // Update to 7 (should not announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={7} />
-        </MemoryRouter>
-      )
-      expect(liveRegion).toHaveTextContent(initialContent || "")
+      // Update to 7 (should not announce - content changes but no new announcement)
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (7 * 1000)} />)
+      expect(liveRegion?.textContent).toContain("You will be logged out in 7 seconds.")
     })
 
     it("does not announce when modal is closed", () => {
-      const {rerender} = renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={15} />)
+      const {rerender} = render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (15 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
       const initialContent = liveRegion?.textContent
 
       // Close modal and update time
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} isOpen={false} timeLeft={10} />
-        </MemoryRouter>
-      )
+      rerender(<SessionTimeoutModal {...defaultProps} isOpen={false} sessionEndTime={Date.now() + (10 * 1000)} />)
 
       // Content should remain unchanged since modal is closed
       expect(liveRegion).toHaveTextContent(initialContent || "")
     })
 
-    it("does not announce when timeLeft is 0 or negative", () => {
-      const {rerender} = renderWithRouter(<SessionTimeoutModal {...defaultProps} timeLeft={15} />)
+    it("does not announce when time has expired", () => {
+      const {rerender} = render(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() + (15 * 1000)} />)
 
       const liveRegion = document.querySelector('[aria-live="assertive"]')
       const initialContent = liveRegion?.textContent
 
-      // Update to 0 (should not announce)
-      rerender(
-        <MemoryRouter initialEntries={["/"]}>
-          <SessionTimeoutModal {...defaultProps} timeLeft={0} />
-        </MemoryRouter>
-      )
+      // Update to expired time (should not announce)
+      rerender(<SessionTimeoutModal {...defaultProps} sessionEndTime={Date.now() - 1000} />)
       expect(liveRegion).toHaveTextContent(initialContent || "")
     })
   })

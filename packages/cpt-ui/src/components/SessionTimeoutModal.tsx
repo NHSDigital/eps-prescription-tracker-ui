@@ -1,21 +1,25 @@
-import React, {useEffect, useRef, useCallback} from "react"
-import {useLocation} from "react-router-dom"
-import {normalizePath} from "@/helpers/utils"
+import React, {
+  useEffect,
+  useRef,
+  useCallback,
+  useState
+} from "react"
 import {Container} from "nhsuk-react-components"
 
 import {EpsModal} from "@/components/EpsModal"
 import {SESSION_TIMEOUT_MODAL_STRINGS} from "@/constants/ui-strings/SessionTimeoutModalStrings"
 import {Button} from "./ReactRouterButton"
 import {useAuth} from "@/context/AuthProvider"
-import {FRONTEND_PATHS} from "@/constants/environment"
+import {logger} from "@/helpers/logger"
 
 interface SessionTimeoutModalProps {
   isOpen: boolean
-  timeLeft: number
+  sessionEndTime: number | null
   onStayLoggedIn: () => Promise<void>
   onLogOut: () => Promise<void>
   onTimeOut: () => Promise<void>
   buttonDisabledState: boolean
+  isSelectYourRolePath: boolean
 }
 
 // Helper functions moved outside component to reduce cognitive complexity
@@ -87,7 +91,7 @@ const useAriaLiveAnnouncements = (
         updateLiveRegion(liveRegionRef, announcement)
       }
     }
-  }, [isOpen]) // Only run when modal opens
+  }, [isOpen, timeLeft]) // Depend on both isOpen and timeLeft
 
   // Handle periodic announcements for screen readers
   useEffect(() => {
@@ -107,18 +111,26 @@ const useAriaLiveAnnouncements = (
 
 export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   isOpen,
-  timeLeft,
+  sessionEndTime,
   onStayLoggedIn,
   onLogOut,
   onTimeOut,
-  buttonDisabledState
+  buttonDisabledState,
+  isSelectYourRolePath
 }) => {
   const liveRegionRef = useRef<HTMLSpanElement>(null)
   const auth = useAuth()
-  const location = useLocation()
-  const path = normalizePath(location.pathname)
-  const isSelectYourRolePath = (path === FRONTEND_PATHS.SELECT_YOUR_ROLE)
+  const [, forceUpdate] = useState({})
   const countdownTimerRef = useRef<number | null>(null)
+
+  // Calculate remaining time from sessionEndTime
+  const calculateRemainingTime = useCallback((endTime: number): number => {
+    const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000))
+    return remaining
+  }, [])
+
+  // Get current timeLeft for display and announcements
+  const timeLeft = sessionEndTime ? calculateRemainingTime(sessionEndTime) : 0
 
   const clearCountdownTimer = useCallback(() => {
     if (countdownTimerRef.current) {
@@ -139,24 +151,27 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
     }
   }
 
-  // // Effect to start/stop countdown based on modal visibility
+  // Effect to start/stop countdown based on modal visibility
   useEffect(() => {
-    if (isOpen && timeLeft > 0) {
-      // Only start if not already running or if starting fresh
+    if (isOpen && sessionEndTime) {
+      // Only start if not already running
       if (!countdownTimerRef.current) {
-
-        // Set initial time
-        auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
-
-        // Start countdown that decrements every second
+        // Start countdown that recalculates every second
         countdownTimerRef.current = setInterval(() => {
-          timeLeft -= 1
+          // Force component re-render to update displayed time
+          forceUpdate({})
 
-          auth.setSessionTimeoutModalInfo(prev => ({...prev, timeLeft: timeLeft}))
+          // Calculate current remaining time
+          const currentTimeLeft = calculateRemainingTime(sessionEndTime)
+
           // Auto-logout when countdown reaches 0
-          if (timeLeft <= 0) {
-            clearInterval(countdownTimerRef.current!)
-            countdownTimerRef.current = null
+          if (currentTimeLeft <= 0) {
+            // Don't timeout if a session extension is in progress
+            if (auth.sessionTimeoutModalInfo.action === "extending") {
+              logger.info("Session countdown reached 0 but extension in progress, not timing out")
+              return
+            }
+            clearCountdownTimer()
             onTimeOut()
           }
         }, 1000) as unknown as number
@@ -168,7 +183,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
 
     // Cleanup on unmount
     return clearCountdownTimer
-  }, [isOpen]) // Only depend on showModal, not timeLeft
+  }, [isOpen, sessionEndTime, calculateRemainingTime, auth, onTimeOut, clearCountdownTimer])
 
   return (
     <EpsModal

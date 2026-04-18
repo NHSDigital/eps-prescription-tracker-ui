@@ -211,9 +211,14 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
           const remainingSeconds = remainingTime !== undefined ? Math.floor(remainingTime / 1000) : undefined
 
           if (remainingSeconds !== undefined) {
-            const twoMinutes = 2 * 60 // Minutes into seconds
+            const twoMinutes = 2 * 60 // 2 minutes in seconds
 
             if (remainingSeconds <= twoMinutes && remainingSeconds > 0) {
+              // const currentPath = normalizePath(location.pathname)
+              // if (currentPath === FRONTEND_PATHS.SELECT_YOUR_ROLE) {
+              //   return
+              // }
+
               // Show timeout modal when 2 minutes or less remaining
               logger.info("Session timeout warning triggered - showing modal", {
                 remainingTime,
@@ -222,7 +227,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
               auth.setLogoutModalType("timeout")
               auth.setSessionTimeoutModalInfo({
                 showModal: true,
-                timeLeft: remainingSeconds,
+                sessionEndTime: Date.now() + (remainingSeconds * 1000),
                 buttonDisabled: false,
                 action: undefined
               })
@@ -235,7 +240,7 @@ export const AccessProvider = ({children}: {children: ReactNode}) => {
               logger.debug("Session still valid - hiding modal if shown", {remainingTime})
               auth.setSessionTimeoutModalInfo({
                 showModal: false,
-                timeLeft: remainingSeconds,
+                sessionEndTime: null,
                 buttonDisabled: false,
                 action: undefined
               })

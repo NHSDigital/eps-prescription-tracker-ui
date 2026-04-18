@@ -84,7 +84,7 @@ const createAuthMock = (overrides: Partial<AuthContextType> = {}): AuthContextTy
   logoutModalType: undefined,
   sessionTimeoutModalInfo: {
     showModal: false,
-    timeLeft: 60,
+    sessionEndTime: null,
     action: undefined,
     buttonDisabled: false
   },
@@ -178,7 +178,7 @@ describe("useSessionTimeout", () => {
       const firstCall = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
       // It's a functional updater, so call it with mock prev state
       const updatedState = firstCall({
-        showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false
+        showModal: true, sessionEndTime: Date.now() + 60000, action: undefined, buttonDisabled: false
       })
       expect(updatedState.action).toBe("extending")
       expect(updatedState.buttonDisabled).toBe(true)
@@ -191,15 +191,25 @@ describe("useSessionTimeout", () => {
         await result.current.onStayLoggedIn()
       })
 
-      // Second call should hide modal & reset
-      const secondCall = mockSetSessionTimeoutModalInfo.mock.calls[1][0]
-      const updatedState = secondCall({
-        showModal: true, timeLeft: 60, action: "extending", buttonDisabled: true
+      // Should have been called twice: first for extending state, then for reset
+      expect(mockSetSessionTimeoutModalInfo).toHaveBeenCalled()
+
+      // Check that the first call sets showModal to false and action to extending
+      const firstCall = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
+      const initialState = firstCall({
+        showModal: true, sessionEndTime: Date.now() + 60000, action: undefined, buttonDisabled: false
       })
-      expect(updatedState.showModal).toBe(false)
-      expect(updatedState.timeLeft).toBe(0)
-      expect(updatedState.buttonDisabled).toBe(false)
-      expect(updatedState.action).toBeUndefined()
+      expect(initialState.showModal).toBe(false)
+      expect(initialState.action).toBe("extending")
+
+      // Check that the final call resets the action and buttonDisabled
+      const calls = mockSetSessionTimeoutModalInfo.mock.calls
+      const finalCall = calls[calls.length - 1][0]
+      const finalState = finalCall({
+        showModal: false, sessionEndTime: null, action: "extending", buttonDisabled: true
+      })
+      expect(finalState.buttonDisabled).toBe(false)
+      expect(finalState.action).toBeUndefined()
     })
 
     it("should log error when selectedRole is missing and trigger logout", async () => {
@@ -232,7 +242,7 @@ describe("useSessionTimeout", () => {
       // Should set action to loggingOut
       const errorCall = mockSetSessionTimeoutModalInfo.mock.calls[1][0]
       const updatedState = errorCall({
-        showModal: true, timeLeft: 60, action: "extending", buttonDisabled: true
+        showModal: true, sessionEndTime: Date.now() + 60000, action: "extending", buttonDisabled: true
       })
       expect(updatedState.action).toBe("loggingOut")
       expect(updatedState.buttonDisabled).toBe(true)
@@ -293,7 +303,7 @@ describe("useSessionTimeout", () => {
 
       const updaterFn = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
       const updatedState = updaterFn({
-        showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false
+        showModal: true, sessionEndTime: Date.now() + 60000, action: undefined, buttonDisabled: false
       })
       expect(updatedState.action).toBe("loggingOut")
       expect(updatedState.buttonDisabled).toBe(true)
@@ -352,12 +362,8 @@ describe("useSessionTimeout", () => {
 
       expect(logger.warn).toHaveBeenCalledWith("Session automatically timed out")
       expect(handleSignoutEvent).toHaveBeenCalledWith(authMock, mockNavigate, "Timeout", "Timeout")
-      // clearCountdownTimer should have reset timeLeft to 0
-      const updaterFn = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
-      const updatedState = updaterFn({
-        showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false
-      })
-      expect(updatedState.timeLeft).toBe(0)
+      // onTimeOut only calls handleSignoutEvent, doesn't update session modal state
+      expect(mockSetSessionTimeoutModalInfo).not.toHaveBeenCalled()
     })
   })
 })
