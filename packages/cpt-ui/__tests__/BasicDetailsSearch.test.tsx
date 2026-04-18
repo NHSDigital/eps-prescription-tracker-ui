@@ -24,6 +24,15 @@ import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider
 import {NavigationProvider} from "@/context/NavigationProvider"
 import {mockAuthState} from "./mocks/AuthStateMock"
 
+// Mock the logger function but let formatValidationErrorsForLogging run normally
+jest.mock("@/helpers/formValidationLogger", () => {
+  const actual = jest.requireActual("@/helpers/formValidationLogger")
+  return {
+    ...actual,
+    logFormValidationError: jest.fn()
+  }
+})
+
 jest.mock("react-router-dom", () => {
   const actual = jest.requireActual("react-router-dom")
   return {
@@ -33,34 +42,21 @@ jest.mock("react-router-dom", () => {
   }
 })
 
-// Mock auth context
-const mockCognitoSignIn = jest.fn()
-const mockCognitoSignOut = jest.fn()
-const mockClearAuthState = jest.fn()
-
-const signedInAuthState: AuthContextType = {
+// Test auth context data
+const mockAuthContext: AuthContextType = {
   ...mockAuthState,
   isSignedIn: true,
-  isSigningIn: false,
-  invalidSessionCause: undefined,
-  user: "testUser",
-  error: null,
-  rolesWithAccess: [],
-  rolesWithoutAccess: [],
-  selectedRole: undefined,
-  userDetails: undefined,
-  isConcurrentSession: false,
-  sessionId: "test-session-id",
-  remainingSessionTime: undefined,
-  cognitoSignIn: mockCognitoSignIn,
-  cognitoSignOut: mockCognitoSignOut,
-  clearAuthState: mockClearAuthState,
-  hasSingleRoleAccess: jest.fn().mockReturnValue(false),
-  updateSelectedRole: jest.fn(),
-  updateTrackerUserInfo: jest.fn(),
-  updateInvalidSessionCause: jest.fn(),
-  isSigningOut: false,
-  setIsSigningOut: jest.fn()
+  selectedRole: {
+    role_name: "Pharmacist",
+    org_name: "Test Health Centre",
+    org_code: "THC001"
+  },
+  userDetails: {
+    sub: "test-user-123",
+    family_name: "Doe",
+    given_name: "John"
+  },
+  sessionId: "test-session-id"
 }
 
 const mockClearSearchParameters = jest.fn()
@@ -110,7 +106,7 @@ const LocationDisplay = () => {
 
 const renderWithRouter = (ui: React.ReactElement, searchState: SearchProviderContextType) => {
   return render(
-    <AuthContext.Provider value={signedInAuthState}>
+    <AuthContext.Provider value={mockAuthContext}>
       <SearchContext.Provider value={searchState}>
         <MemoryRouter initialEntries={["/search"]}>
           <NavigationProvider>

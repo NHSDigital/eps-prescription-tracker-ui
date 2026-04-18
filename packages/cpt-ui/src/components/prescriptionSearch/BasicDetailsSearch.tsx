@@ -23,6 +23,8 @@ import {STRINGS} from "@/constants/ui-strings/BasicDetailsSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {useSearchContext} from "@/context/SearchProvider"
 import {useNavigationContext} from "@/context/NavigationProvider"
+import {useAuth} from "@/context/AuthProvider"
+import {logFormValidationError, formatValidationErrorsForLogging} from "@/helpers/formValidationLogger"
 import {usePageTitle} from "@/hooks/usePageTitle"
 
 export default function BasicDetailsSearch() {
@@ -41,6 +43,7 @@ export default function BasicDetailsSearch() {
   const inlineErrors = getInlineErrors(errors)
   const searchContext = useSearchContext()
   const navigationContext = useNavigationContext()
+  const authContext = useAuth()
 
   usePageTitle(errors.length > 0
     ? STRINGS.PAGE_TITLE_ERROR
@@ -123,6 +126,26 @@ export default function BasicDetailsSearch() {
     // DOB field highlights are preserved until the next form submission.
     if (newErrors.length > 0) {
       setErrors(newErrors)
+
+      const validationResult = formatValidationErrorsForLogging(
+        newErrors,
+        "basicDetails",
+        STRINGS.ERRORS
+      )
+
+      // Defensive check for mocking/test environments
+      if (validationResult && validationResult.errorMessages && validationResult.errorSummary) {
+        const {errorMessages, errorSummary} = validationResult
+        const inlineFieldErrors = getInlineErrors(newErrors)
+        const inlineErrorMessages = inlineFieldErrors.map(([field, message]) => `${field}: ${message}`)
+
+        logFormValidationError(
+          "basicDetails",
+          [...errorMessages, ...inlineErrorMessages],
+          errorSummary,
+          authContext
+        )
+      }
 
       const dobErrorKeys = new Set([
         "DOB_REQUIRED",

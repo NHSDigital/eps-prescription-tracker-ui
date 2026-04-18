@@ -33,10 +33,11 @@ class Logger {
 
   private sendToRum(logLevel: LogLevel, message: string, additionalFields?: unknown, error?: Error): void {
     const rumInstance = cptAwsRum.getAwsRum()
-    if (rumInstance !== null) {
+    // More defensive check - handles null, undefined, and missing methods
+    if (rumInstance && typeof rumInstance.recordEvent === "function") {
       rumInstance.recordEvent(`logger_${logLevel}`, {message, ...(additionalFields ? {...additionalFields}: {})})
 
-      if(error){
+      if(error && typeof rumInstance.recordError === "function"){
         rumInstance.recordError(error)
       }
     }

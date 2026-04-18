@@ -15,6 +15,8 @@ import {STRINGS} from "@/constants/ui-strings/NhsNumSearchStrings"
 import {FRONTEND_PATHS} from "@/constants/environment"
 import {SearchContext, SearchProviderContextType} from "@/context/SearchProvider"
 import {NavigationProvider} from "@/context/NavigationProvider"
+import {AuthContext, AuthContextType} from "@/context/AuthProvider"
+import {mockAuthState} from "./mocks/AuthStateMock"
 
 const mockNavigationContext = {
   pushNavigation: jest.fn(),
@@ -40,6 +42,23 @@ jest.mock("react-router-dom", () => {
     useNavigate: jest.fn()
   }
 })
+
+// Test auth context data
+const mockAuthContext: AuthContextType = {
+  ...mockAuthState,
+  isSignedIn: true,
+  selectedRole: {
+    role_name: "Pharmacist",
+    org_name: "Test Health Centre",
+    org_code: "THC001"
+  },
+  userDetails: {
+    sub: "test-user-123",
+    family_name: "Doe",
+    given_name: "John"
+  },
+  sessionId: "test-session-id"
+}
 
 const mockClearSearchParameters = jest.fn()
 const mockSetPrescriptionId = jest.fn()
@@ -92,16 +111,18 @@ const LocationDisplay = () => {
 
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(
-    <SearchContext.Provider value={defaultSearchState}>
-      <MemoryRouter initialEntries={["/search"]}>
-        <NavigationProvider>
-          <Routes>
-            <Route path="/search" element={ui} />
-            <Route path="*" element={<LocationDisplay />} />
-          </Routes>
-        </NavigationProvider>
-      </MemoryRouter>
-    </SearchContext.Provider>
+    <AuthContext.Provider value={mockAuthContext}>
+      <SearchContext.Provider value={defaultSearchState}>
+        <MemoryRouter initialEntries={["/search"]}>
+          <NavigationProvider>
+            <Routes>
+              <Route path="/search" element={ui} />
+              <Route path="*" element={<LocationDisplay />} />
+            </Routes>
+          </NavigationProvider>
+        </MemoryRouter>
+      </SearchContext.Provider>
+    </AuthContext.Provider>
   )
 }
 

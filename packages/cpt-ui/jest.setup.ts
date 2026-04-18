@@ -7,6 +7,19 @@ jest.mock("*.css", () => ({}), {virtual: true})
 jest.mock("*.scss", () => ({}), {virtual: true})
 jest.mock("@/styles/searchforaprescription.scss", () => ({}), {virtual: true})
 
+// Mock AWS RUM
+jest.mock("aws-rum-web", () => ({
+  AwsRum: jest.fn().mockImplementation(() => ({
+    allowCookies: jest.fn(),
+    dispatch: jest.fn(),
+    recordError: jest.fn(),
+    recordEvent: jest.fn(),
+    recordPageView: jest.fn(),
+    addUserAttributes: jest.fn(),
+    addSessionAttributes: jest.fn()
+  }))
+}))
+
 // Mock FooterStrings to avoid import.meta issues
 jest.mock("@/constants/ui-strings/FooterStrings", () => ({
   FOOTER_COPYRIGHT: "© NHS England",
@@ -70,10 +83,20 @@ jest.mock("@/constants/environment", () => ({
   },
   APP_CONFIG: {
     COMMIT_ID: "test-commit-id",
-    VERSION_NUMBER: "test-version-number"
+    VERSION_NUMBER: "test-version-number",
+    REACT_LOG_LEVEL: "info"
   },
   API_ENDPOINTS: {
     TRACKER_USER_INFO: "/api/tracker-user-info"
+  },
+  RUM_CONFIG: {
+    GUEST_ROLE_ARN: "test-role-arn",
+    IDENTITY_POOL_ID: "test-pool-id",
+    ENDPOINT: "https://test.endpoint",
+    APPLICATION_ID: "test-app-id",
+    REGION: "eu-west-2",
+    VERSION: "1.0.0",
+    RELEASE_ID: "test-commit-id"
   },
   FRONTEND_PATHS: {
     PRESCRIPTION_LIST_CURRENT: "/prescription-list-current",
