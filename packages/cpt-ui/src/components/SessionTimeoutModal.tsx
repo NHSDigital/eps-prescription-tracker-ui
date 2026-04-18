@@ -70,7 +70,7 @@ const useAriaLiveAnnouncements = (
   isOpen: boolean,
   timeLeft: number,
   liveRegionRef: React.RefObject<HTMLSpanElement>,
-  isSelectYourRolePath: boolean
+  isSpecialPath: boolean
 ) => {
   // Initialize aria-live region when modal first opens
   useEffect(() => {
@@ -78,7 +78,7 @@ const useAriaLiveAnnouncements = (
     if (shouldInitialize) {
       const minutes = Math.floor(timeLeft / 60)
       const seconds = timeLeft % 60
-      if (isSelectYourRolePath) {
+      if (isSpecialPath) {
         const selectRoleAnnouncement =
           formatTimeAnnouncement(minutes, seconds) + ". " + SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION
         updateLiveRegion(liveRegionRef, selectRoleAnnouncement)
@@ -118,6 +118,8 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   const location = useLocation()
   const path = normalizePath(location.pathname)
   const isSelectYourRolePath = (path === FRONTEND_PATHS.SELECT_YOUR_ROLE)
+  const isSessionSelectionPath = (path === FRONTEND_PATHS.SESSION_SELECTION)
+  const isSpecialPath = isSelectYourRolePath || isSessionSelectionPath
   const countdownTimerRef = useRef<number | null>(null)
 
   const clearCountdownTimer = useCallback(() => {
@@ -128,7 +130,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
   }, [])
 
   useModalFocus(isOpen)
-  useAriaLiveAnnouncements(isOpen, timeLeft, liveRegionRef, isSelectYourRolePath)
+  useAriaLiveAnnouncements(isOpen, timeLeft, liveRegionRef, isSpecialPath)
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Escape") {
@@ -194,7 +196,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
             {SESSION_TIMEOUT_MODAL_STRINGS.MESSAGE} <strong>
               {timeLeft}</strong> {SESSION_TIMEOUT_MODAL_STRINGS.COUNTDOWN_SECONDS}.
 
-            {isSelectYourRolePath && (
+            {isSpecialPath && (
               <span aria-hidden="true">
                 <br /><br />
                 {SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION}
@@ -210,7 +212,7 @@ export const SessionTimeoutModal: React.FC<SessionTimeoutModalProps> = ({
             onClick={onStayLoggedIn}
             disabled={buttonDisabledState}
           >
-            {isSelectYourRolePath ?
+            {isSpecialPath ?
               SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE : SESSION_TIMEOUT_MODAL_STRINGS.STAY_LOGGED_IN}
           </Button>
 

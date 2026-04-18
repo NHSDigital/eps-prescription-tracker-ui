@@ -38,7 +38,8 @@ jest.mock("@/helpers/awsRum", () => ({
 }))
 jest.mock("@/constants/environment", () => ({
   FRONTEND_PATHS: {
-    SELECT_YOUR_ROLE: "/select-your-role"
+    SELECT_YOUR_ROLE: "/select-your-role",
+    SESSION_SELECTION: "/select-active-session"
   },
   AUTH_CONFIG: {
     REDIRECT_SIGN_OUT: "mock-redirect-url",
@@ -149,6 +150,28 @@ describe("useSessionTimeout", () => {
 
       expect(updatedState.action).toBe(undefined)
       expect(updatedState.buttonDisabled).toBe(false)
+      expect(updatedState.showModal).toBe(false)
+    })
+
+    it("should close the modal instead of extending the session on the session selection path", async () => {
+      const {result} = renderHookWithRouter(["/select-active-session"])
+
+      await act(async () => {
+        await result.current.onStayLoggedIn()
+      })
+
+      expect(updateRemoteSelectedRole).not.toHaveBeenCalled()
+      expect(handleSignoutEvent).not.toHaveBeenCalled()
+      expect(mockSetLogoutModalType).toHaveBeenCalledWith(undefined)
+
+      const updaterFn = mockSetSessionTimeoutModalInfo.mock.calls[0][0]
+      const updatedState = updaterFn({
+        showModal: true, timeLeft: 60, action: undefined, buttonDisabled: false
+      })
+
+      expect(updatedState.action).toBe(undefined)
+      expect(updatedState.buttonDisabled).toBe(false)
+      expect(updatedState.showModal).toBe(false)
     })
 
     it("should extend the session when a role is selected", async () => {

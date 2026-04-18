@@ -163,6 +163,20 @@ describe("SessionTimeoutModal", () => {
         screen.getByRole("button", {name: SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE})
       ).toBeInTheDocument()
     })
+
+    it("shows the select role instruction and close button text on the session selection path", () => {
+      renderWithRouter(
+        <SessionTimeoutModal {...defaultProps} />,
+        [FRONTEND_PATHS.SESSION_SELECTION]
+      )
+
+      expect(
+        screen.getByText(SESSION_TIMEOUT_MODAL_STRINGS.SELECT_YOUR_ROLE_INSTRUCTION)
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole("button", {name: SESSION_TIMEOUT_MODAL_STRINGS.CLOSE_MESSAGE})
+      ).toBeInTheDocument()
+    })
   })
 
   describe("Focus management", () => {
