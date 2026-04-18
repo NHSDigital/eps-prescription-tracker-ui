@@ -45,8 +45,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
@@ -56,8 +55,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
   ]
 
@@ -70,8 +68,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
   ]
 
@@ -84,8 +81,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "RX005",
@@ -95,8 +91,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "RX006",
@@ -106,8 +101,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
   ]
 
@@ -195,8 +189,7 @@ describe("PrescriptionsListTabs", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 2,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
 
     const testPage = (

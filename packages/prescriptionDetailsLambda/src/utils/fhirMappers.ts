@@ -1,6 +1,6 @@
 import {MedicationDispense, MedicationRequest} from "fhir/r4"
 import {ItemDetails} from "@cpt-ui-common/common-types"
-import {findExtensionByKey, getBooleanFromNestedExtension, getCodeFromNestedExtension} from "./extensionUtils"
+import {findExtensionByKey, getCodeFromNestedExtension} from "./extensionUtils"
 import {Logger} from "@aws-lambda-powertools/logger"
 
 /**
@@ -96,8 +96,19 @@ export const extractItems = (
     const notDispensedReason = correspondingDispense?.statusReasonCodeableConcept?.coding?.[0]?.code
 
     // determine if initiallyPrescribed should be included (only if different from dispensed)
+
+    // get line item level pending cancellation status
+    let itemPendingCancellation: boolean
     const pendingCancellationExt = findExtensionByKey(request.extension, "PENDING_CANCELLATION")
-    const itemPendingCancellation = getBooleanFromNestedExtension(pendingCancellationExt, "lineItemPendingCancellation")
+    if (pendingCancellationExt?.extension){
+    // handle old sub extension
+      itemPendingCancellation = pendingCancellationExt.extension.find(
+        ext => ext.url === "lineItemPendingCancellation")?.valueBoolean || false
+    } else {
+    // handle new single value extension
+      itemPendingCancellation = pendingCancellationExt?.valueBoolean || false
+    }
+
     const cancellationReason = request.statusReason?.text ?? request.statusReason?.coding?.[0]?.code
 
     const businessStatusExt = findExtensionByKey(request.extension, "DISPENSING_INFORMATION")

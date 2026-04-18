@@ -126,8 +126,7 @@ const mockPrescription: PrescriptionSummary = {
   statusCode: "0001",
   issueDate: "2024-01-15T10:30:00Z",
   prescriptionTreatmentType: TreatmentType.ACUTE,
-  prescriptionPendingCancellation: false,
-  itemsPendingCancellation: false
+  pendingCancellation: false
 }
 
 const mockSearchResponse: SearchResponse = {

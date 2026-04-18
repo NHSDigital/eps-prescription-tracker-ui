@@ -101,8 +101,7 @@ describe("PrescriptionsListTable", () => {
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
@@ -112,8 +111,7 @@ describe("PrescriptionsListTable", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 2,
       maxRepeats: 5,
-      prescriptionPendingCancellation: true,
-      itemsPendingCancellation: false
+      pendingCancellation: true
     },
     {
       prescriptionId: "209E3D-A83008-327FXZ",
@@ -123,8 +121,7 @@ describe("PrescriptionsListTable", () => {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 3,
       maxRepeats: 10,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: true
+      pendingCancellation: true
     }
   ]
 
@@ -350,8 +347,7 @@ describe("PrescriptionsListTable", () => {
         prescriptionTreatmentType: TreatmentType.REPEAT,
         issueNumber: 3,
         maxRepeats: 6,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
+        pendingCancellation: false
       },
       {
         prescriptionId: "7F1A4B-A83008-91DC2E",
@@ -361,8 +357,7 @@ describe("PrescriptionsListTable", () => {
         prescriptionTreatmentType: TreatmentType.REPEAT,
         issueNumber: 2,
         maxRepeats: 5,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
+        pendingCancellation: false
       },
       {
         prescriptionId: "4D6F2C-A83008-A3E7D1",
@@ -372,8 +367,7 @@ describe("PrescriptionsListTable", () => {
         prescriptionTreatmentType: TreatmentType.REPEAT,
         issueNumber: 1,
         maxRepeats: 4,
-        prescriptionPendingCancellation: false,
-        itemsPendingCancellation: false
+        pendingCancellation: false
       }
     ]
 
@@ -448,8 +442,7 @@ describe("PrescriptionsListTable", () => {
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 1,
       maxRepeats: 1,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
 
     renderWithRouter(

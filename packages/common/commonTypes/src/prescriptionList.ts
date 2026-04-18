@@ -38,8 +38,7 @@ export interface PrescriptionSummary {
   prescriptionTreatmentType: TreatmentType
   issueNumber?: number
   maxRepeats?: number
-  prescriptionPendingCancellation: boolean
-  itemsPendingCancellation: boolean
+  pendingCancellation: boolean
   nhsNumber?: string
 }
 

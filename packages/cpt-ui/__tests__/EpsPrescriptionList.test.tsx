@@ -209,8 +209,7 @@ const mockSearchResponse: SearchResponse = {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 5,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "209E3D-A83008-327F9F",
@@ -220,8 +219,7 @@ const mockSearchResponse: SearchResponse = {
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 2,
       maxRepeats: 3,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "RX003",
@@ -231,8 +229,7 @@ const mockSearchResponse: SearchResponse = {
       prescriptionTreatmentType: TreatmentType.ERD,
       issueNumber: 3,
       maxRepeats: 4,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: true
+      pendingCancellation: false
     }
   ],
   pastPrescriptions: [
@@ -244,8 +241,7 @@ const mockSearchResponse: SearchResponse = {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 2,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     },
     {
       prescriptionId: "RX005",
@@ -255,8 +251,7 @@ const mockSearchResponse: SearchResponse = {
       prescriptionTreatmentType: TreatmentType.ACUTE,
       issueNumber: 1,
       maxRepeats: 1,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
   ],
   futurePrescriptions: [
@@ -268,8 +263,7 @@ const mockSearchResponse: SearchResponse = {
       prescriptionTreatmentType: TreatmentType.REPEAT,
       issueNumber: 1,
       maxRepeats: 10,
-      prescriptionPendingCancellation: false,
-      itemsPendingCancellation: false
+      pendingCancellation: false
     }
   ]
 }
